@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = log
+omit = log/tests/*,log/openstack/*
+
+[report]
+ignore-errors = True
