@@ -1,3 +1,5 @@
+# Copyright 2013 IBM Corp.
+#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -10,19 +12,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 
-from oslo.log.fixture import logging as logging_fixture
-from oslo.log import log as logging
-from oslotest import base as test_base
+from oslo.config import cfg
 
-LOG = logging.getLogger(__name__)
+from oslo.log.openstack.common import notifier
 
 
-class TestLoggingFixture(test_base.BaseTestCase):
-    def test_logging_handle_error(self):
-        LOG.info('pid of first child is %(foo)s', 1)
-        self.useFixture(logging_fixture.get_logging_handle_error_fixture())
-        self.assertRaises(TypeError,
-                          LOG.info,
-                          'pid of first child is %(foo)s',
-                          1)
+class PublishErrorsHandler(logging.Handler):
+    def emit(self, record):
+        if ('openstack.common.notifier.log_notifier' in
+                cfg.CONF.notification_driver):
+            return
+        notifier.api.notify(None, 'error.publisher',
+                            'error_notification',
+                            notifier.api.ERROR,
+                            dict(error=record.getMessage()))

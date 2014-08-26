@@ -1,3 +1,6 @@
+# Copyright 2011 OpenStack Foundation.
+# All Rights Reserved.
+#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -10,19 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-from oslo.log.fixture import logging as logging_fixture
-from oslo.log import log as logging
-from oslotest import base as test_base
-
-LOG = logging.getLogger(__name__)
+NOTIFICATIONS = []
 
 
-class TestLoggingFixture(test_base.BaseTestCase):
-    def test_logging_handle_error(self):
-        LOG.info('pid of first child is %(foo)s', 1)
-        self.useFixture(logging_fixture.get_logging_handle_error_fixture())
-        self.assertRaises(TypeError,
-                          LOG.info,
-                          'pid of first child is %(foo)s',
-                          1)
+def notify(_context, message):
+    """Test notifier, stores notifications in memory for unittests."""
+    NOTIFICATIONS.append(message)

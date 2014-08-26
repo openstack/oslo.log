@@ -25,15 +25,15 @@ from oslotest import base as test_base
 from oslotest import moxstubout
 import six
 
-from openstack.common import context
-from openstack.common import fileutils
-from openstack.common.fixture import config
-from openstack.common import gettextutils
-from openstack.common import jsonutils
-from openstack.common import local
-from openstack.common import log
-from openstack.common import log_handler
-from openstack.common.notifier import api as notifier
+from oslo.log import context
+from oslo.log import local
+from oslo.log import log
+from oslo.log.openstack.common import fileutils
+from oslo.log.openstack.common.fixture import config
+from oslo.log.openstack.common import gettextutils
+from oslo.log.openstack.common import jsonutils
+from oslo.log.openstack.common import log_handler
+from oslo.log.openstack.common.notifier import api as notifier
 
 
 def _fake_context():

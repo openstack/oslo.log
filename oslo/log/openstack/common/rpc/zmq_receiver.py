@@ -1,3 +1,5 @@
+#    Copyright 2011 OpenStack Foundation
+#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -10,19 +12,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import eventlet
+eventlet.monkey_patch()
 
-from oslo.log.fixture import logging as logging_fixture
-from oslo.log import log as logging
-from oslotest import base as test_base
+import contextlib
+import sys
 
-LOG = logging.getLogger(__name__)
+from oslo.config import cfg
+
+from oslo.log.openstack.common import log as logging
+from oslo.log.openstack.common import rpc
+from oslo.log.openstack.common.rpc import impl_zmq
+
+CONF = cfg.CONF
+CONF.register_opts(rpc.rpc_opts)
+CONF.register_opts(impl_zmq.zmq_opts)
 
 
-class TestLoggingFixture(test_base.BaseTestCase):
-    def test_logging_handle_error(self):
-        LOG.info('pid of first child is %(foo)s', 1)
-        self.useFixture(logging_fixture.get_logging_handle_error_fixture())
-        self.assertRaises(TypeError,
-                          LOG.info,
-                          'pid of first child is %(foo)s',
-                          1)
+def main():
+    CONF(sys.argv[1:], project='oslo')
+    logging.setup("oslo")
+
+    with contextlib.closing(impl_zmq.ZmqProxy(CONF)) as reactor:
+        reactor.consume_in_thread()
+        reactor.wait()

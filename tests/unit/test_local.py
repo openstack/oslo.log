@@ -18,7 +18,7 @@ import threading
 from oslotest import base as test_base
 from six import moves
 
-from openstack.common import local
+from oslo.log import local
 
 
 class Dict(dict):
