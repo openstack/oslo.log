@@ -374,17 +374,6 @@ def getLazyLogger(name='unknown', version='unknown'):
     return LazyAdapter(name, version)
 
 
-class WritableLogger(object):
-    """A thin wrapper that responds to `write` and logs."""
-
-    def __init__(self, logger, level=logging.INFO):
-        self.logger = logger
-        self.level = level
-
-    def write(self, msg):
-        self.logger.log(self.level, msg.rstrip())
-
-
 class DeprecatedConfig(Exception):
     message = _("Fatal call to deprecated config: %(msg)s")
 
