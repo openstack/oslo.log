@@ -23,6 +23,9 @@ context or provide additional information in their specific WSGI pipeline.
 import itertools
 import uuid
 
+# NOTE(dims): We need this variable for ContextAdapter and ContextFormatter
+_config = None
+
 
 def generate_request_id():
     return b'req-' + str(uuid.uuid4()).encode('ascii')

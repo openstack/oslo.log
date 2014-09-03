@@ -1,0 +1,181 @@
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+import itertools
+import logging
+import logging.config
+import logging.handlers
+import sys
+import traceback
+
+import six
+from six import moves
+
+from oslo.log import _local
+from oslo.log import context as ctx
+from oslo.log.openstack.common import jsonutils
+
+
+def _dictify_context(context):
+    if context is None:
+        return None
+    if not isinstance(context, dict) and getattr(context, 'to_dict', None):
+        context = context.to_dict()
+    return context
+
+
+class JSONFormatter(logging.Formatter):
+    def __init__(self, fmt=None, datefmt=None):
+        # NOTE(jkoelker) we ignore the fmt argument, but its still there
+        #                since logging.config.fileConfig passes it.
+        self.datefmt = datefmt
+
+    def formatException(self, ei, strip_newlines=True):
+        lines = traceback.format_exception(*ei)
+        if strip_newlines:
+            lines = [moves.filter(
+                lambda x: x,
+                line.rstrip().splitlines()) for line in lines]
+            lines = list(itertools.chain(*lines))
+        return lines
+
+    def format(self, record):
+        message = {'message': record.getMessage(),
+                   'asctime': self.formatTime(record, self.datefmt),
+                   'name': record.name,
+                   'msg': record.msg,
+                   'args': record.args,
+                   'levelname': record.levelname,
+                   'levelno': record.levelno,
+                   'pathname': record.pathname,
+                   'filename': record.filename,
+                   'module': record.module,
+                   'lineno': record.lineno,
+                   'funcname': record.funcName,
+                   'created': record.created,
+                   'msecs': record.msecs,
+                   'relative_created': record.relativeCreated,
+                   'thread': record.thread,
+                   'thread_name': record.threadName,
+                   'process_name': record.processName,
+                   'process': record.process,
+                   'traceback': None}
+
+        if hasattr(record, 'extra'):
+            message['extra'] = record.extra
+
+        if record.exc_info:
+            message['traceback'] = self.formatException(record.exc_info)
+
+        return jsonutils.dumps(message)
+
+
+class ContextFormatter(logging.Formatter):
+    """A context.RequestContext aware formatter configured through flags.
+
+    The flags used to set format strings are: logging_context_format_string
+    and logging_default_format_string.  You can also specify
+    logging_debug_format_suffix to append extra formatting if the log level is
+    debug.
+
+    For information about what variables are available for the formatter see:
+    http://docs.python.org/library/logging.html#formatter
+
+    If available, uses the context value stored in TLS - local.store.context
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Initialize ContextFormatter instance
+
+        Takes additional keyword arguments which can be used in the message
+        format string.
+
+        :keyword project: project name
+        :type project: string
+        :keyword version: project version
+        :type version: string
+
+        """
+
+        self.project = kwargs.pop('project', 'unknown')
+        self.version = kwargs.pop('version', 'unknown')
+        self.conf = kwargs.pop('config', ctx._config)
+
+        logging.Formatter.__init__(self, *args, **kwargs)
+
+    def format(self, record):
+        """Uses contextstring if request_id is set, otherwise default."""
+
+        # NOTE(jecarey): If msg is not unicode, coerce it into unicode
+        #                before it can get to the python logging and
+        #                possibly cause string encoding trouble
+        if not isinstance(record.msg, six.text_type):
+            record.msg = six.text_type(record.msg)
+
+        # store project info
+        record.project = self.project
+        record.version = self.version
+
+        # store request info
+        context = getattr(_local.store, 'context', None)
+        if context:
+            d = _dictify_context(context)
+            for k, v in d.items():
+                setattr(record, k, v)
+
+        # NOTE(sdague): default the fancier formatting params
+        # to an empty string so we don't throw an exception if
+        # they get used
+        for key in ('instance', 'color', 'user_identity'):
+            if key not in record.__dict__:
+                record.__dict__[key] = ''
+
+        if record.__dict__.get('request_id'):
+            fmt = self.conf.logging_context_format_string
+        else:
+            fmt = self.conf.logging_default_format_string
+
+        if (record.levelno == logging.DEBUG and
+                self.conf.logging_debug_format_suffix):
+            fmt += " " + self.conf.logging_debug_format_suffix
+
+        if sys.version_info < (3, 2):
+            self._fmt = fmt
+        else:
+            self._style = logging.PercentStyle(fmt)
+            self._fmt = self._style._fmt
+        # Cache this on the record, Logger will respect our formatted copy
+        if record.exc_info:
+            record.exc_text = self.formatException(record.exc_info, record)
+        return logging.Formatter.format(self, record)
+
+    def formatException(self, exc_info, record=None):
+        """Format exception output with CONF.logging_exception_prefix."""
+        if not record:
+            return logging.Formatter.formatException(self, exc_info)
+
+        stringbuffer = moves.StringIO()
+        traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
+                                  None, stringbuffer)
+        lines = stringbuffer.getvalue().split('\n')
+        stringbuffer.close()
+
+        if self.conf.logging_exception_prefix.find('%(asctime)') != -1:
+            record.asctime = self.formatTime(record, self.datefmt)
+
+        formatted_lines = []
+        for line in lines:
+            pl = self.conf.logging_exception_prefix % record.__dict__
+            fl = '%s%s' % (pl, line)
+            formatted_lines.append(fl)
+        return '\n'.join(formatted_lines)

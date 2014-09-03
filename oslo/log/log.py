@@ -27,8 +27,6 @@ It also allows setting of formatting information through conf.
 
 """
 
-import inspect
-import itertools
 import logging
 import logging.config
 import logging.handlers
@@ -45,41 +43,17 @@ _PY26 = sys.version_info[0:2] == (2, 6)
 
 from oslo.log import _local
 from oslo.log import _options
+from oslo.log import context as ctx
+from oslo.log import formatters
+from oslo.log import handlers
 from oslo.log.openstack.common.gettextutils import _
 from oslo.log.openstack.common import importutils
-from oslo.log.openstack.common import jsonutils
 
 # our new audit level
 # NOTE(jkoelker) Since we synthesized an audit level, make the logging
 #                module aware of it so it acts like other levels.
 logging.AUDIT = logging.INFO + 1
 logging.addLevelName(logging.AUDIT, 'AUDIT')
-
-
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:  # NOTE(jkoelker) NullHandler added in Python 2.7
-    class NullHandler(logging.Handler):
-        def handle(self, record):
-            pass
-
-        def emit(self, record):
-            pass
-
-        def createLock(self):
-            self.lock = None
-
-
-def _dictify_context(context):
-    if context is None:
-        return None
-    if not isinstance(context, dict) and getattr(context, 'to_dict', None):
-        context = context.to_dict()
-    return context
-
-
-def _get_binary_name():
-    return os.path.basename(inspect.stack()[-1][1])
 
 
 def _get_log_file_path(conf, binary=None):
@@ -93,7 +67,7 @@ def _get_log_file_path(conf, binary=None):
         return os.path.join(logdir, logfile)
 
     if logdir:
-        binary = binary or _get_binary_name()
+        binary = binary or handlers._get_binary_name()
         return '%s.log' % (os.path.join(logdir, binary),)
 
     return None
@@ -160,7 +134,7 @@ class ContextAdapter(BaseLoggerAdapter):
 
         """
         stdmsg = _("Deprecated: %s") % msg
-        if _config.fatal_deprecations:
+        if ctx._config.fatal_deprecations:
             self.critical(stdmsg, *args, **kwargs)
             raise DeprecatedConfig(msg=stdmsg)
 
@@ -189,16 +163,16 @@ class ContextAdapter(BaseLoggerAdapter):
         if not context:
             context = getattr(_local.store, 'context', None)
         if context:
-            extra.update(_dictify_context(context))
+            extra.update(formatters._dictify_context(context))
 
         instance = kwargs.pop('instance', None)
         instance_uuid = (extra.get('instance_uuid') or
                          kwargs.pop('instance_uuid', None))
         instance_extra = ''
         if instance:
-            instance_extra = _config.instance_format % instance
+            instance_extra = ctx._config.instance_format % instance
         elif instance_uuid:
-            instance_extra = (_config.instance_uuid_format
+            instance_extra = (ctx._config.instance_uuid_format
                               % {'uuid': instance_uuid})
         extra['instance'] = instance_extra
 
@@ -208,52 +182,6 @@ class ContextAdapter(BaseLoggerAdapter):
         extra['version'] = self.version
         extra['extra'] = extra.copy()
         return msg, kwargs
-
-
-class JSONFormatter(logging.Formatter):
-    def __init__(self, fmt=None, datefmt=None):
-        # NOTE(jkoelker) we ignore the fmt argument, but its still there
-        #                since logging.config.fileConfig passes it.
-        self.datefmt = datefmt
-
-    def formatException(self, ei, strip_newlines=True):
-        lines = traceback.format_exception(*ei)
-        if strip_newlines:
-            lines = [moves.filter(
-                lambda x: x,
-                line.rstrip().splitlines()) for line in lines]
-            lines = list(itertools.chain(*lines))
-        return lines
-
-    def format(self, record):
-        message = {'message': record.getMessage(),
-                   'asctime': self.formatTime(record, self.datefmt),
-                   'name': record.name,
-                   'msg': record.msg,
-                   'args': record.args,
-                   'levelname': record.levelname,
-                   'levelno': record.levelno,
-                   'pathname': record.pathname,
-                   'filename': record.filename,
-                   'module': record.module,
-                   'lineno': record.lineno,
-                   'funcname': record.funcName,
-                   'created': record.created,
-                   'msecs': record.msecs,
-                   'relative_created': record.relativeCreated,
-                   'thread': record.thread,
-                   'thread_name': record.threadName,
-                   'process_name': record.processName,
-                   'process': record.process,
-                   'traceback': None}
-
-        if hasattr(record, 'extra'):
-            message['extra'] = record.extra
-
-        if record.exc_info:
-            message['traceback'] = self.formatException(record.exc_info)
-
-        return jsonutils.dumps(message)
 
 
 def _create_logging_excepthook(product_name):
@@ -286,14 +214,10 @@ def _load_log_config(log_config_append):
         raise LogConfigError(log_config_append, six.text_type(exc))
 
 
-_config = None
-
-
 def register_options(conf):
     # NOTE(dims): We need this global variable until we
-    # deprecate ContextAdapter
-    global _config
-    _config = conf
+    # deprecate ContextAdapter and ContextFormatter
+    ctx._config = conf
 
     conf.register_cli_opts(_options.common_cli_opts)
     conf.register_cli_opts(_options.logging_cli_opts)
@@ -350,23 +274,6 @@ def _find_facility_from_conf(conf):
     return facility
 
 
-class RFCSysLogHandler(logging.handlers.SysLogHandler):
-    def __init__(self, *args, **kwargs):
-        self.binary_name = _get_binary_name()
-        # Do not use super() unless type(logging.handlers.SysLogHandler)
-        #  is 'type' (Python 2.7).
-        # Use old style calls, if the type is 'classobj' (Python 2.6)
-        logging.handlers.SysLogHandler.__init__(self, *args, **kwargs)
-
-    def format(self, record):
-        # Do not use super() unless type(logging.handlers.SysLogHandler)
-        #  is 'type' (Python 2.7).
-        # Use old style calls, if the type is 'classobj' (Python 2.6)
-        msg = logging.handlers.SysLogHandler.format(self, record)
-        msg = self.binary_name + ' ' + msg
-        return msg
-
-
 def _setup_logging_from_conf(conf, project, version):
     log_root = getLogger(None).logger
     for handler in log_root.handlers:
@@ -378,7 +285,7 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(filelog)
 
     if conf.use_stderr:
-        streamlog = ColorHandler()
+        streamlog = handlers.ColorHandler()
         log_root.addHandler(streamlog)
 
     elif not logpath:
@@ -408,10 +315,10 @@ def _setup_logging_from_conf(conf, project, version):
             log_root.info('Deprecated: log_format is now deprecated and will '
                           'be removed in the next release')
         else:
-            handler.setFormatter(ContextFormatter(project=project,
-                                                  version=version,
-                                                  datefmt=datefmt,
-                                                  config=conf))
+            handler.setFormatter(formatters.ContextFormatter(project=project,
+                                                             version=version,
+                                                             datefmt=datefmt,
+                                                             config=conf))
 
     if conf.debug:
         log_root.setLevel(logging.DEBUG)
@@ -437,7 +344,7 @@ def _setup_logging_from_conf(conf, project, version):
             # TODO(bogdando) use the format provided by RFCSysLogHandler
             #   after existing syslog format deprecation in J
             if conf.use_syslog_rfc_format:
-                syslog = RFCSysLogHandler(facility=facility)
+                syslog = handlers.RFCSysLogHandler(facility=facility)
             else:
                 syslog = logging.handlers.SysLogHandler(facility=facility)
             log_root.addHandler(syslog)
@@ -476,123 +383,6 @@ class WritableLogger(object):
 
     def write(self, msg):
         self.logger.log(self.level, msg.rstrip())
-
-
-class ContextFormatter(logging.Formatter):
-    """A context.RequestContext aware formatter configured through flags.
-
-    The flags used to set format strings are: logging_context_format_string
-    and logging_default_format_string.  You can also specify
-    logging_debug_format_suffix to append extra formatting if the log level is
-    debug.
-
-    For information about what variables are available for the formatter see:
-    http://docs.python.org/library/logging.html#formatter
-
-    If available, uses the context value stored in TLS - local.store.context
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Initialize ContextFormatter instance
-
-        Takes additional keyword arguments which can be used in the message
-        format string.
-
-        :keyword project: project name
-        :type project: string
-        :keyword version: project version
-        :type version: string
-
-        """
-
-        self.project = kwargs.pop('project', 'unknown')
-        self.version = kwargs.pop('version', 'unknown')
-        self.conf = kwargs.pop('config', _config)
-
-        logging.Formatter.__init__(self, *args, **kwargs)
-
-    def format(self, record):
-        """Uses contextstring if request_id is set, otherwise default."""
-
-        # NOTE(jecarey): If msg is not unicode, coerce it into unicode
-        #                before it can get to the python logging and
-        #                possibly cause string encoding trouble
-        if not isinstance(record.msg, six.text_type):
-            record.msg = six.text_type(record.msg)
-
-        # store project info
-        record.project = self.project
-        record.version = self.version
-
-        # store request info
-        context = getattr(_local.store, 'context', None)
-        if context:
-            d = _dictify_context(context)
-            for k, v in d.items():
-                setattr(record, k, v)
-
-        # NOTE(sdague): default the fancier formatting params
-        # to an empty string so we don't throw an exception if
-        # they get used
-        for key in ('instance', 'color', 'user_identity'):
-            if key not in record.__dict__:
-                record.__dict__[key] = ''
-
-        if record.__dict__.get('request_id'):
-            fmt = self.conf.logging_context_format_string
-        else:
-            fmt = self.conf.logging_default_format_string
-
-        if (record.levelno == logging.DEBUG and
-                self.conf.logging_debug_format_suffix):
-            fmt += " " + self.conf.logging_debug_format_suffix
-
-        if sys.version_info < (3, 2):
-            self._fmt = fmt
-        else:
-            self._style = logging.PercentStyle(fmt)
-            self._fmt = self._style._fmt
-        # Cache this on the record, Logger will respect our formatted copy
-        if record.exc_info:
-            record.exc_text = self.formatException(record.exc_info, record)
-        return logging.Formatter.format(self, record)
-
-    def formatException(self, exc_info, record=None):
-        """Format exception output with CONF.logging_exception_prefix."""
-        if not record:
-            return logging.Formatter.formatException(self, exc_info)
-
-        stringbuffer = moves.StringIO()
-        traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
-                                  None, stringbuffer)
-        lines = stringbuffer.getvalue().split('\n')
-        stringbuffer.close()
-
-        if self.conf.logging_exception_prefix.find('%(asctime)') != -1:
-            record.asctime = self.formatTime(record, self.datefmt)
-
-        formatted_lines = []
-        for line in lines:
-            pl = self.conf.logging_exception_prefix % record.__dict__
-            fl = '%s%s' % (pl, line)
-            formatted_lines.append(fl)
-        return '\n'.join(formatted_lines)
-
-
-class ColorHandler(logging.StreamHandler):
-    LEVEL_COLORS = {
-        logging.DEBUG: '\033[00;32m',  # GREEN
-        logging.INFO: '\033[00;36m',  # CYAN
-        logging.AUDIT: '\033[01;36m',  # BOLD CYAN
-        logging.WARN: '\033[01;33m',  # BOLD YELLOW
-        logging.ERROR: '\033[01;31m',  # BOLD RED
-        logging.CRITICAL: '\033[01;31m',  # BOLD RED
-    }
-
-    def format(self, record):
-        record.color = self.LEVEL_COLORS[record.levelno]
-        return logging.StreamHandler.format(self, record)
 
 
 class DeprecatedConfig(Exception):

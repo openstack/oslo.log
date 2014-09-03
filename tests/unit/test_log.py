@@ -28,6 +28,8 @@ import six
 from oslo.log import _local
 from oslo.log import _options
 from oslo.log import context
+from oslo.log import formatters
+from oslo.log import handlers
 from oslo.log import log
 from oslo.log.openstack.common import fileutils
 from oslo.log.openstack.common.fixture import config
@@ -61,13 +63,13 @@ class CommonLoggerTestsMixIn(object):
         log._setup_logging_from_conf(self.config_fixture.conf, 'test', 'test')
 
     def test_handlers_have_context_formatter(self):
-        formatters = []
+        formatters_list = []
         for h in self.log.logger.handlers:
             f = h.formatter
-            if isinstance(f, log.ContextFormatter):
-                formatters.append(f)
-        self.assertTrue(formatters)
-        self.assertEqual(len(formatters), len(self.log.logger.handlers))
+            if isinstance(f, formatters.ContextFormatter):
+                formatters_list.append(f)
+        self.assertTrue(formatters_list)
+        self.assertEqual(len(formatters_list), len(self.log.logger.handlers))
 
     def test_handles_context_kwarg(self):
         self.log.info("foo", context=_fake_context())
@@ -145,7 +147,7 @@ class LogTestBase(BaseTestCase):
             handler = logging.StreamHandler
         self.handler = handler(self.stream)
         if formatter is None:
-            formatter = log.ContextFormatter
+            formatter = formatters.ContextFormatter
         self.handler.setFormatter(formatter())
         log_instance.logger.addHandler(self.handler)
         self.addCleanup(log_instance.logger.removeHandler, self.handler)
@@ -195,7 +197,7 @@ class SysLogHandlersTestCase(BaseTestCase):
     def setUp(self):
         super(SysLogHandlersTestCase, self).setUp()
         self.facility = logging.handlers.SysLogHandler.LOG_USER
-        self.rfclogger = log.RFCSysLogHandler(facility=self.facility)
+        self.rfclogger = handlers.RFCSysLogHandler(facility=self.facility)
         self.rfclogger.binary_name = 'Foo_application'
         self.logger = logging.handlers.SysLogHandler(facility=self.facility)
         self.logger.binary_name = 'Foo_application'
@@ -291,7 +293,8 @@ class JSONFormatterTestCase(LogTestBase):
     def setUp(self):
         super(JSONFormatterTestCase, self).setUp()
         self.log = log.getLogger('test-json')
-        self._add_handler_with_cleanup(self.log, formatter=log.JSONFormatter)
+        self._add_handler_with_cleanup(self.log,
+                                       formatter=formatters.JSONFormatter)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
 
     def test_json(self):
@@ -486,7 +489,7 @@ class FancyRecordTestCase(LogTestBase):
                                                   "%(message)s",
                     logging_default_format_string="%(missing)s: %(message)s")
         self.colorlog = log.getLogger()
-        self._add_handler_with_cleanup(self.colorlog, log.ColorHandler)
+        self._add_handler_with_cleanup(self.colorlog, handlers.ColorHandler)
         self._set_log_level_with_cleanup(self.colorlog, logging.DEBUG)
 
     def test_unsupported_key_in_log_msg(self):
@@ -680,7 +683,8 @@ class LogConfigOptsTestCase(BaseTestCase):
         logger = log._loggers[None].logger
         for handler in logger.handlers:
             formatter = handler.formatter
-            self.assertTrue(isinstance(formatter, log.ContextFormatter))
+            self.assertTrue(isinstance(formatter,
+                                       formatters.ContextFormatter))
 
 
 class LogConfigTestCase(BaseTestCase):
