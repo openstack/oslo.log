@@ -18,7 +18,7 @@ import threading
 from oslotest import base as test_base
 from six import moves
 
-from oslo.log import local
+from oslo.log import _local
 
 
 class Dict(dict):
@@ -38,20 +38,20 @@ class LocalStoreTestCase(test_base.BaseTestCase):
         # testing in (eventlet vs normal python threading) so
         # we test the correct type of local store for the current
         # threading model
-        moves.reload_module(local)
+        moves.reload_module(_local)
 
     def test_thread_unique_storage(self):
         """Make sure local store holds thread specific values."""
         expected_set = []
-        local.store.a = self.v1
+        _local.store.a = self.v1
 
         def do_something():
-            local.store.a = self.v2
-            expected_set.append(getattr(local.store, 'a'))
+            _local.store.a = self.v2
+            expected_set.append(getattr(_local.store, 'a'))
 
         def do_something2():
-            local.store.a = self.v3
-            expected_set.append(getattr(local.store, 'a'))
+            _local.store.a = self.v3
+            expected_set.append(getattr(_local.store, 'a'))
 
         t1 = threading.Thread(target=do_something)
         t2 = threading.Thread(target=do_something2)
@@ -60,7 +60,7 @@ class LocalStoreTestCase(test_base.BaseTestCase):
         t1.join()
         t2.join()
 
-        expected_set.append(getattr(local.store, 'a'))
+        expected_set.append(getattr(_local.store, 'a'))
 
         self.assertTrue(self.v1 in expected_set)
         self.assertTrue(self.v2 in expected_set)
