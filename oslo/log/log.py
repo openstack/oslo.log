@@ -49,12 +49,6 @@ from oslo.log.openstack.common.gettextutils import _
 from oslo.log.openstack.common import importutils
 from oslo.log.openstack.common import jsonutils
 
-CONF = cfg.CONF
-CONF.register_cli_opts(_options.common_cli_opts)
-CONF.register_cli_opts(_options.logging_cli_opts)
-CONF.register_opts(_options.generic_log_opts)
-CONF.register_opts(_options.log_opts)
-
 # our new audit level
 # NOTE(jkoelker) Since we synthesized an audit level, make the logging
 #                module aware of it so it acts like other levels.
@@ -88,9 +82,9 @@ def _get_binary_name():
     return os.path.basename(inspect.stack()[-1][1])
 
 
-def _get_log_file_path(binary=None):
-    logfile = CONF.log_file
-    logdir = CONF.log_dir
+def _get_log_file_path(conf, binary=None):
+    logfile = conf.log_file
+    logdir = conf.log_dir
 
     if logfile and not logdir:
         return logfile
@@ -166,7 +160,7 @@ class ContextAdapter(BaseLoggerAdapter):
 
         """
         stdmsg = _("Deprecated: %s") % msg
-        if CONF.fatal_deprecations:
+        if _config.fatal_deprecations:
             self.critical(stdmsg, *args, **kwargs)
             raise DeprecatedConfig(msg=stdmsg)
 
@@ -202,9 +196,9 @@ class ContextAdapter(BaseLoggerAdapter):
                          kwargs.pop('instance_uuid', None))
         instance_extra = ''
         if instance:
-            instance_extra = CONF.instance_format % instance
+            instance_extra = _config.instance_format % instance
         elif instance_uuid:
-            instance_extra = (CONF.instance_uuid_format
+            instance_extra = (_config.instance_uuid_format
                               % {'uuid': instance_uuid})
         extra['instance'] = instance_extra
 
@@ -292,12 +286,27 @@ def _load_log_config(log_config_append):
         raise LogConfigError(log_config_append, six.text_type(exc))
 
 
-def setup(product_name, version='unknown'):
+_config = None
+
+
+def register_options(conf):
+    # NOTE(dims): We need this global variable until we
+    # deprecate ContextAdapter
+    global _config
+    _config = conf
+
+    conf.register_cli_opts(_options.common_cli_opts)
+    conf.register_cli_opts(_options.logging_cli_opts)
+    conf.register_opts(_options.generic_log_opts)
+    conf.register_opts(_options.log_opts)
+
+
+def setup(conf, product_name, version='unknown'):
     """Setup logging."""
-    if CONF.log_config_append:
-        _load_log_config(CONF.log_config_append)
+    if conf.log_config_append:
+        _load_log_config(conf.log_config_append)
     else:
-        _setup_logging_from_conf(product_name, version)
+        _setup_logging_from_conf(conf, product_name, version)
     sys.excepthook = _create_logging_excepthook(product_name)
 
 
@@ -317,14 +326,14 @@ def set_defaults(logging_context_format_string=None,
             logging_context_format_string=logging_context_format_string)
 
 
-def _find_facility_from_conf():
+def _find_facility_from_conf(conf):
     facility_names = logging.handlers.SysLogHandler.facility_names
     facility = getattr(logging.handlers.SysLogHandler,
-                       CONF.syslog_log_facility,
+                       conf.syslog_log_facility,
                        None)
 
-    if facility is None and CONF.syslog_log_facility in facility_names:
-        facility = facility_names.get(CONF.syslog_log_facility)
+    if facility is None and conf.syslog_log_facility in facility_names:
+        facility = facility_names.get(conf.syslog_log_facility)
 
     if facility is None:
         valid_facilities = facility_names.keys()
@@ -358,17 +367,17 @@ class RFCSysLogHandler(logging.handlers.SysLogHandler):
         return msg
 
 
-def _setup_logging_from_conf(project, version):
+def _setup_logging_from_conf(conf, project, version):
     log_root = getLogger(None).logger
     for handler in log_root.handlers:
         log_root.removeHandler(handler)
 
-    logpath = _get_log_file_path()
+    logpath = _get_log_file_path(conf)
     if logpath:
         filelog = logging.handlers.WatchedFileHandler(logpath)
         log_root.addHandler(filelog)
 
-    if CONF.use_stderr:
+    if conf.use_stderr:
         streamlog = ColorHandler()
         log_root.addHandler(streamlog)
 
@@ -378,7 +387,7 @@ def _setup_logging_from_conf(project, version):
         streamlog = logging.StreamHandler(sys.stdout)
         log_root.addHandler(streamlog)
 
-    if CONF.publish_errors:
+    if conf.publish_errors:
         try:
             handler = importutils.import_object(
                 "oslo.log.openstack.common.log_handler.PublishErrorsHandler",
@@ -389,28 +398,29 @@ def _setup_logging_from_conf(project, version):
                 logging.ERROR)
         log_root.addHandler(handler)
 
-    datefmt = CONF.log_date_format
+    datefmt = conf.log_date_format
     for handler in log_root.handlers:
         # NOTE(alaski): CONF.log_format overrides everything currently.  This
         # should be deprecated in favor of context aware formatting.
-        if CONF.log_format:
-            handler.setFormatter(logging.Formatter(fmt=CONF.log_format,
+        if conf.log_format:
+            handler.setFormatter(logging.Formatter(fmt=conf.log_format,
                                                    datefmt=datefmt))
             log_root.info('Deprecated: log_format is now deprecated and will '
                           'be removed in the next release')
         else:
             handler.setFormatter(ContextFormatter(project=project,
                                                   version=version,
-                                                  datefmt=datefmt))
+                                                  datefmt=datefmt,
+                                                  config=conf))
 
-    if CONF.debug:
+    if conf.debug:
         log_root.setLevel(logging.DEBUG)
-    elif CONF.verbose:
+    elif conf.verbose:
         log_root.setLevel(logging.INFO)
     else:
         log_root.setLevel(logging.WARNING)
 
-    for pair in CONF.default_log_levels:
+    for pair in conf.default_log_levels:
         mod, _sep, level_name = pair.partition('=')
         logger = logging.getLogger(mod)
         # NOTE(AAzza) in python2.6 Logger.setLevel doesn't convert string name
@@ -421,12 +431,12 @@ def _setup_logging_from_conf(project, version):
         else:
             logger.setLevel(level_name)
 
-    if CONF.use_syslog:
+    if conf.use_syslog:
         try:
-            facility = _find_facility_from_conf()
+            facility = _find_facility_from_conf(conf)
             # TODO(bogdando) use the format provided by RFCSysLogHandler
             #   after existing syslog format deprecation in J
-            if CONF.use_syslog_rfc_format:
+            if conf.use_syslog_rfc_format:
                 syslog = RFCSysLogHandler(facility=facility)
             else:
                 syslog = logging.handlers.SysLogHandler(facility=facility)
@@ -498,6 +508,7 @@ class ContextFormatter(logging.Formatter):
 
         self.project = kwargs.pop('project', 'unknown')
         self.version = kwargs.pop('version', 'unknown')
+        self.conf = kwargs.pop('config', _config)
 
         logging.Formatter.__init__(self, *args, **kwargs)
 
@@ -529,13 +540,13 @@ class ContextFormatter(logging.Formatter):
                 record.__dict__[key] = ''
 
         if record.__dict__.get('request_id'):
-            fmt = CONF.logging_context_format_string
+            fmt = self.conf.logging_context_format_string
         else:
-            fmt = CONF.logging_default_format_string
+            fmt = self.conf.logging_default_format_string
 
         if (record.levelno == logging.DEBUG and
-                CONF.logging_debug_format_suffix):
-            fmt += " " + CONF.logging_debug_format_suffix
+                self.conf.logging_debug_format_suffix):
+            fmt += " " + self.conf.logging_debug_format_suffix
 
         if sys.version_info < (3, 2):
             self._fmt = fmt
@@ -558,12 +569,12 @@ class ContextFormatter(logging.Formatter):
         lines = stringbuffer.getvalue().split('\n')
         stringbuffer.close()
 
-        if CONF.logging_exception_prefix.find('%(asctime)') != -1:
+        if self.conf.logging_exception_prefix.find('%(asctime)') != -1:
             record.asctime = self.formatTime(record, self.datefmt)
 
         formatted_lines = []
         for line in lines:
-            pl = CONF.logging_exception_prefix % record.__dict__
+            pl = self.conf.logging_exception_prefix % record.__dict__
             fl = '%s%s' % (pl, line)
             formatted_lines.append(fl)
         return '\n'.join(formatted_lines)
