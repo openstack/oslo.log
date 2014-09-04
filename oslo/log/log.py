@@ -41,12 +41,12 @@ from six import moves
 
 _PY26 = sys.version_info[0:2] == (2, 6)
 
+from oslo.log._i18n import _
 from oslo.log import _local
 from oslo.log import _options
 from oslo.log import context as ctx
 from oslo.log import formatters
 from oslo.log import handlers
-from oslo.log.openstack.common.gettextutils import _
 from oslo.log.openstack.common import importutils
 
 # our new audit level

@@ -21,6 +21,8 @@ import tempfile
 
 import mock
 from oslo.config import cfg
+from oslo.config import fixture as fixture_config  # noqa
+from oslo.i18n import fixture as fixture_trans
 from oslotest import base as test_base
 from oslotest import moxstubout
 import six
@@ -32,8 +34,6 @@ from oslo.log import formatters
 from oslo.log import handlers
 from oslo.log import log
 from oslo.log.openstack.common import fileutils
-from oslo.log.openstack.common.fixture import config
-from oslo.log.openstack.common import gettextutils
 from oslo.log.openstack.common import jsonutils
 from oslo.log.openstack.common import log_handler
 from oslo.log.openstack.common.notifier import api as notifier
@@ -51,7 +51,8 @@ class CommonLoggerTestsMixIn(object):
     def setUp(self):
         super(CommonLoggerTestsMixIn, self).setUp()
         # common context has different fields to the defaults in log.py
-        self.config_fixture = self.useFixture(config.Config(cfg.ConfigOpts()))
+        self.config_fixture = self.useFixture(
+            fixture_config.Config(cfg.ConfigOpts()))
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.config_fixture.conf)
@@ -118,7 +119,8 @@ class LazyLoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
 class BaseTestCase(test_base.BaseTestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
-        self.config_fixture = self.useFixture(config.Config(cfg.ConfigOpts()))
+        self.config_fixture = self.useFixture(
+            fixture_config.Config(cfg.ConfigOpts()))
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.CONF)
@@ -225,7 +227,7 @@ class PublishErrorsHandlerTestCase(test_base.BaseTestCase):
     def setUp(self):
         super(PublishErrorsHandlerTestCase, self).setUp()
         self.stubs = self.useFixture(moxstubout.MoxStubout()).stubs
-        self.config_fixture = self.useFixture(config.Config())
+        self.config_fixture = self.useFixture(fixture_config.Config())
         self.config = self.config_fixture.config
         log.register_options(self.config_fixture.conf)
         self.publiserrorshandler = log_handler.\
@@ -351,6 +353,7 @@ class ContextFormatterTestCase(LogTestBase):
         self.log = log.getLogger('')  # obtain root logger instead of 'unknown'
         self._add_handler_with_cleanup(self.log)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
+        self.trans_fixture = self.useFixture(fixture_trans.Translation())
 
     def test_uncontextualized_log(self):
         self.log.info("foo")
@@ -393,7 +396,7 @@ class ContextFormatterTestCase(LogTestBase):
         try:
             sa_log = logging.getLogger('sqlalchemy.engine')
             sa_log.setLevel(logging.INFO)
-            message = gettextutils.Message('test ' + six.unichr(128))
+            message = self.trans_fixture.lazy('test ' + six.unichr(128))
             sa_log.info(message)
 
             expected = ("HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
@@ -413,7 +416,7 @@ class ContextFormatterTestCase(LogTestBase):
         # tests that problem does not occur.
         ctxt = _fake_context()
         ctxt.request_id = six.text_type('99')
-        message = gettextutils.Message('test ' + six.unichr(128))
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
         self.log.info(message, context=ctxt)
         expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
                                                six.text_type(message))
@@ -423,7 +426,7 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt = _fake_context()
         ctxt.request_id = six.text_type('99')
         message = "Exception is (%s)"
-        ex = Exception(gettextutils.Message('test' + six.unichr(128)))
+        ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
         self.log.debug(message, ex, context=ctxt)
         message = six.text_type(message) % ex
         expected = "HAS CONTEXT [%s]: %s --DBG\n" % (ctxt.request_id,
@@ -438,7 +441,7 @@ class ContextFormatterTestCase(LogTestBase):
             no_adapt_log = logging.getLogger('no_adapt')
             no_adapt_log.setLevel(logging.INFO)
             message = "Exception is (%s)"
-            ex = Exception(gettextutils.Message('test' + six.unichr(128)))
+            ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
             no_adapt_log.info(message, ex)
             message = six.text_type(message) % ex
             expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
