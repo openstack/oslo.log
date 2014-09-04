@@ -1,6 +1,6 @@
-========
-Usage
-========
+=======
+ Usage
+=======
 
 To use oslo.log in a project::
 

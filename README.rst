@@ -1,8 +1,8 @@
-===================================
-oslo.log
-===================================
+==========
+ oslo.log
+==========
 
-oslo.log library
+OpenStack logging configuration library
 
 * Free software: Apache license
 * Documentation: http://docs.openstack.org/developer/oslo.log
