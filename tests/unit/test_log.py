@@ -25,9 +25,9 @@ from oslotest import base as test_base
 from oslotest import moxstubout
 import six
 
+from oslo.log import _local
 from oslo.log import _options
 from oslo.log import context
-from oslo.log import local
 from oslo.log import log
 from oslo.log.openstack.common import fileutils
 from oslo.log.openstack.common.fixture import config
@@ -352,17 +352,17 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_context_is_taken_from_tls_variable(self):
         ctxt = _fake_context()
-        local.store.context = ctxt
+        _local.store.context = ctxt
         try:
             self.log.info("bar")
             expected = "HAS CONTEXT [%s]: bar\n" % ctxt.request_id
             self.assertEqual(expected, self.stream.getvalue())
         finally:
-            del local.store.context
+            del _local.store.context
 
     def test_contextual_information_is_imparted_to_3rd_party_log_records(self):
         ctxt = _fake_context()
-        local.store.context = ctxt
+        _local.store.context = ctxt
         try:
             sa_log = logging.getLogger('sqlalchemy.engine')
             sa_log.setLevel(logging.INFO)
@@ -372,12 +372,12 @@ class ContextFormatterTestCase(LogTestBase):
                         "sqlalchemy\n" % ctxt.request_id)
             self.assertEqual(expected, self.stream.getvalue())
         finally:
-            del local.store.context
+            del _local.store.context
 
     def test_message_logging_3rd_party_log_records(self):
         ctxt = _fake_context()
-        local.store.context = ctxt
-        local.store.context.request_id = six.text_type('99')
+        _local.store.context = ctxt
+        _local.store.context.request_id = six.text_type('99')
         try:
             sa_log = logging.getLogger('sqlalchemy.engine')
             sa_log.setLevel(logging.INFO)
@@ -388,7 +388,7 @@ class ContextFormatterTestCase(LogTestBase):
                                                     six.text_type(message)))
             self.assertEqual(expected, self.stream.getvalue())
         finally:
-            del local.store.context
+            del _local.store.context
 
     def test_debugging_log(self):
         self.log.debug("baz")
@@ -420,7 +420,7 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_unicode_conversion_in_formatter(self):
         ctxt = _fake_context()
-        local.store.context = ctxt
+        _local.store.context = ctxt
         ctxt.request_id = six.text_type('99')
         try:
             no_adapt_log = logging.getLogger('no_adapt')
@@ -433,7 +433,7 @@ class ContextFormatterTestCase(LogTestBase):
                                                    message)
             self.assertEqual(expected, self.stream.getvalue())
         finally:
-            del local.store.context
+            del _local.store.context
 
 
 class ExceptionLoggingTestCase(LogTestBase):

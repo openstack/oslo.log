@@ -43,8 +43,8 @@ from six import moves
 
 _PY26 = sys.version_info[0:2] == (2, 6)
 
+from oslo.log import _local
 from oslo.log import _options
-from oslo.log import local
 from oslo.log.openstack.common.gettextutils import _
 from oslo.log.openstack.common import importutils
 from oslo.log.openstack.common import jsonutils
@@ -193,7 +193,7 @@ class ContextAdapter(BaseLoggerAdapter):
 
         context = kwargs.pop('context', None)
         if not context:
-            context = getattr(local.store, 'context', None)
+            context = getattr(_local.store, 'context', None)
         if context:
             extra.update(_dictify_context(context))
 
@@ -515,7 +515,7 @@ class ContextFormatter(logging.Formatter):
         record.version = self.version
 
         # store request info
-        context = getattr(local.store, 'context', None)
+        context = getattr(_local.store, 'context', None)
         if context:
             d = _dictify_context(context)
             for k, v in d.items():
