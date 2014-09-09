@@ -25,6 +25,7 @@ from oslotest import base as test_base
 from oslotest import moxstubout
 import six
 
+from oslo.log import _options
 from oslo.log import context
 from oslo.log import local
 from oslo.log import log
@@ -563,21 +564,22 @@ class SetDefaultsTestCase(test_base.BaseTestCase):
     def setUp(self):
         super(SetDefaultsTestCase, self).setUp()
         self.conf = self.TestConfigOpts()
-        self.conf.register_opts(log.log_opts)
+        self.conf.register_opts(_options.log_opts)
 
         self._orig_defaults = dict([(o.dest, o.default)
-                                    for o in log.log_opts])
+                                    for o in _options.log_opts])
         self.addCleanup(self._restore_log_defaults)
 
     def _restore_log_defaults(self):
-        for opt in log.log_opts:
+        for opt in _options.log_opts:
             opt.default = self._orig_defaults[opt.dest]
 
     def test_default_log_level_to_none(self):
         log.set_defaults(logging_context_format_string=None,
                          default_log_levels=None)
         self.conf([])
-        self.assertEqual(log.DEFAULT_LOG_LEVELS, self.conf.default_log_levels)
+        self.assertEqual(_options.DEFAULT_LOG_LEVELS,
+                         self.conf.default_log_levels)
 
     def test_change_default(self):
         my_default = '%(asctime)s %(levelname)s %(name)s [%(request_id)s '\
@@ -624,7 +626,7 @@ class LogConfigOptsTestCase(test_base.BaseTestCase):
         self.assertIsNone(self.CONF.log_format)
 
         self.assertEqual(self.CONF.log_date_format,
-                         log._DEFAULT_LOG_DATE_FORMAT)
+                         _options._DEFAULT_LOG_DATE_FORMAT)
 
         self.assertEqual(self.CONF.use_syslog, False)
         self.assertEqual(self.CONF.use_syslog_rfc_format, False)
