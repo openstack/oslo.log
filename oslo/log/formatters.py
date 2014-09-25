@@ -22,7 +22,7 @@ from six import moves
 
 from oslo.log import _local
 from oslo.log import context as ctx
-from oslo.log.openstack.common import jsonutils
+from oslo.serialization import jsonutils
 
 
 def _dictify_context(context):
