@@ -349,7 +349,7 @@ def _setup_logging_from_conf(conf, project, version):
                 syslog = logging.handlers.SysLogHandler(facility=facility)
             log_root.addHandler(syslog)
         except socket.error:
-            log_root.error('Unable to add syslog handler. Verify that syslog'
+            log_root.error('Unable to add syslog handler. Verify that syslog '
                            'is running.')
 
 
