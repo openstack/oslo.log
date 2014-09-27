@@ -36,6 +36,7 @@ import sys
 import traceback
 
 from oslo.config import cfg
+from oslo.utils import importutils
 import six
 from six import moves
 
@@ -47,7 +48,6 @@ from oslo.log import _options
 from oslo.log import context as ctx
 from oslo.log import formatters
 from oslo.log import handlers
-from oslo.log.openstack.common import importutils
 
 # our new audit level
 # NOTE(jkoelker) Since we synthesized an audit level, make the logging
@@ -295,14 +295,9 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(streamlog)
 
     if conf.publish_errors:
-        try:
-            handler = importutils.import_object(
-                "oslo.log.openstack.common.log_handler.PublishErrorsHandler",
-                logging.ERROR)
-        except ImportError:
-            handler = importutils.import_object(
-                "oslo.messaging.notify.log_handler.PublishErrorsHandler",
-                logging.ERROR)
+        handler = importutils.import_object(
+            "oslo.messaging.notify.log_handler.PublishErrorsHandler",
+            logging.ERROR)
         log_root.addHandler(handler)
 
     datefmt = conf.log_date_format

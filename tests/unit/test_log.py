@@ -23,6 +23,7 @@ import mock
 from oslo.config import cfg
 from oslo.config import fixture as fixture_config  # noqa
 from oslo.i18n import fixture as fixture_trans
+from oslo.serialization import jsonutils
 from oslotest import base as test_base
 import six
 
@@ -32,8 +33,6 @@ from oslo.log import context
 from oslo.log import formatters
 from oslo.log import handlers
 from oslo.log import log
-from oslo.log.openstack.common import fileutils
-from oslo.log.openstack.common import jsonutils
 
 
 def _fake_context():
@@ -659,11 +658,8 @@ handlers=
 
     def setUp(self):
         super(LogConfigTestCase, self).setUp()
-        self.log_config_append = \
-            fileutils.write_to_tempfile(content=self.minimal_config,
-                                        prefix='logging',
-                                        suffix='.conf'
-                                        )
+        names = self.create_tempfiles([('logging', self.minimal_config)])
+        self.log_config_append = names[0]
 
     def test_log_config_append_ok(self):
         self.config(log_config_append=self.log_config_append)
@@ -677,11 +673,8 @@ handlers=
                           'test_log_config_append')
 
     def test_log_config_append_invalid(self):
-        self.log_config_append = \
-            fileutils.write_to_tempfile(content=self.minimal_config[5:],
-                                        prefix='logging',
-                                        suffix='.conf'
-                                        )
+        names = self.create_tempfiles([('logging', self.minimal_config[5:])])
+        self.log_config_append = names[0]
         self.config(log_config_append=self.log_config_append)
         self.assertRaises(log.LogConfigError, log.setup,
                           self.CONF,
