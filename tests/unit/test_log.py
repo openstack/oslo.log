@@ -72,10 +72,6 @@ class CommonLoggerTestsMixIn(object):
         self.log.info("foo", context=_fake_context())
         self.assertTrue(True)  # didn't raise exception
 
-    def test_audit_handles_context_arg(self):
-        self.log.audit("foo", context=_fake_context())
-        self.assertTrue(True)  # didn't raise exception
-
     def test_will_be_verbose_if_verbose_flag_set(self):
         self.config(verbose=True)
         log.setup(self.CONF, "test_is_verbose")
@@ -96,7 +92,7 @@ class CommonLoggerTestsMixIn(object):
 
     def test_no_logging_via_module(self):
         for func in ('critical', 'error', 'exception', 'warning', 'warn',
-                     'info', 'debug', 'log', 'audit'):
+                     'info', 'debug', 'log'):
             self.assertRaises(AttributeError, getattr, log, func)
 
 
@@ -216,7 +212,7 @@ class LogLevelTestCase(BaseTestCase):
     def setUp(self):
         super(LogLevelTestCase, self).setUp()
         levels = self.CONF.default_log_levels
-        levels.append("nova-test=AUDIT")
+        levels.append("nova-test=INFO")
         levels.append("nova-not-debug=WARN")
         self.config(default_log_levels=levels,
                     verbose=True)
@@ -225,15 +221,15 @@ class LogLevelTestCase(BaseTestCase):
         self.log_no_debug = log.getLogger('nova-not-debug')
 
     def test_is_enabled_for(self):
-        self.assertTrue(self.log.isEnabledFor(logging.AUDIT))
+        self.assertTrue(self.log.isEnabledFor(logging.INFO))
         self.assertFalse(self.log_no_debug.isEnabledFor(logging.DEBUG))
 
     def test_has_level_from_flags(self):
-        self.assertEqual(logging.AUDIT, self.log.logger.getEffectiveLevel())
+        self.assertEqual(logging.INFO, self.log.logger.getEffectiveLevel())
 
     def test_child_log_has_level_of_parent_flag(self):
         l = log.getLogger('nova-test.foo')
-        self.assertEqual(logging.AUDIT, l.logger.getEffectiveLevel())
+        self.assertEqual(logging.INFO, l.logger.getEffectiveLevel())
 
 
 class JSONFormatterTestCase(LogTestBase):
