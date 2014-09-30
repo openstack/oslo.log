@@ -75,6 +75,12 @@ def _get_log_file_path(conf, binary=None):
 
 class BaseLoggerAdapter(logging.LoggerAdapter):
 
+    warn = logging.LoggerAdapter.warning
+
+    @property
+    def handlers(self):
+        return self.logger.handlers
+
     def audit(self, msg, *args, **kwargs):
         self.log(logging.AUDIT, msg, *args, **kwargs)
 
@@ -110,7 +116,6 @@ class LazyAdapter(BaseLoggerAdapter):
 class KeywordArgumentAdapter(BaseLoggerAdapter):
     """Logger adapter to add keyword arguments to log record's extra data
     """
-    warn = logging.LoggerAdapter.warning
 
     def process(self, msg, kwargs):
         # Make a new extra dictionary combining the values we were
