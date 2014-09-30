@@ -27,9 +27,28 @@ from oslo.serialization import jsonutils
 
 def _dictify_context(context):
     if context is None:
-        return None
+        return {}
     if not isinstance(context, dict) and getattr(context, 'to_dict', None):
         context = context.to_dict()
+    return context
+
+
+def _update_record_with_context(record):
+    """Given a log record, update it with context information.
+
+    The request context, if there is one, will either be in the
+    extra values for the incoming record or in the global
+    thread-local store.
+    """
+    context = record.__dict__.get(
+        'context',
+        getattr(_local.store, 'context', None)
+    )
+    d = _dictify_context(context)
+    # Copy the context values directly onto the record so they can be
+    # used by the formatting strings.
+    for k, v in d.items():
+        setattr(record, k, v)
     return context
 
 
@@ -70,8 +89,23 @@ class JSONFormatter(logging.Formatter):
                    'process': record.process,
                    'traceback': None}
 
+        # Build the extra values that were given to us, including
+        # the context.
+        context = _update_record_with_context(record)
         if hasattr(record, 'extra'):
-            message['extra'] = record.extra
+            extra = record.extra.copy()
+        else:
+            extra = {}
+        for key in getattr(record, 'extra_keys', []):
+            if key not in extra:
+                extra[key] = getattr(record, key)
+        # If we saved a context object, explode it into the extra
+        # dictionary because the values are more useful than the
+        # object reference.
+        if 'context' in extra:
+            extra.update(_dictify_context(context))
+            del extra['context']
+        message['extra'] = extra
 
         if record.exc_info:
             message['traceback'] = self.formatException(record.exc_info)
@@ -126,12 +160,22 @@ class ContextFormatter(logging.Formatter):
         record.project = self.project
         record.version = self.version
 
-        # store request info
-        context = getattr(_local.store, 'context', None)
+        context = _update_record_with_context(record)
+
         if context:
-            d = _dictify_context(context)
-            for k, v in d.items():
-                setattr(record, k, v)
+            # FIXME(dhellmann): We should replace these nova-isms with
+            # more generic handling in the Context class.  See the
+            # app-agnostic-logging-parameters blueprint.
+            instance = getattr(context, 'instance', None)
+            instance_uuid = getattr(context, 'instance_uuid', None)
+            instance_extra = ''
+            if instance:
+                instance_extra = (self.conf.instance_format
+                                  % {'uuid': instance})
+            elif instance_uuid:
+                instance_extra = (self.conf.instance_uuid_format
+                                  % {'uuid': instance_uuid})
+            record.instance = instance_extra
 
         # NOTE(sdague): default the fancier formatting params
         # to an empty string so we don't throw an exception if

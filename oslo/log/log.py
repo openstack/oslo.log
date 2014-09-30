@@ -43,7 +43,6 @@ from six import moves
 _PY26 = sys.version_info[0:2] == (2, 6)
 
 from oslo.log._i18n import _
-from oslo.log import _local
 from oslo.log import _options
 from oslo.log import context as ctx
 from oslo.log import formatters
@@ -94,25 +93,6 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
             return super(BaseLoggerAdapter, self).isEnabledFor(level)
 
 
-class LazyAdapter(BaseLoggerAdapter):
-    def __init__(self, name='unknown', version='unknown'):
-        self._logger = None
-        self.extra = {}
-        self.name = name
-        self.version = version
-
-    @property
-    def logger(self):
-        if not self._logger:
-            self._logger = getLogger(self.name, self.version)
-            if six.PY3:
-                # In Python 3, the code fails because the 'manager' attribute
-                # cannot be found when using a LoggerAdapter as the
-                # underlying logger. Work around this issue.
-                self._logger.manager = self._logger.logger.manager
-        return self._logger
-
-
 class KeywordArgumentAdapter(BaseLoggerAdapter):
     """Logger adapter to add keyword arguments to log record's extra data
     """
@@ -130,86 +110,20 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
             if name == 'exc_info':
                 continue
             extra[name] = kwargs.pop(name)
+        # NOTE(dhellmann): The gap between when the adapter is called
+        # and when the formatter needs to know what the extra values
+        # are is large enough that we can't get back to the original
+        # extra dictionary easily. We leave a hint to ourselves here
+        # in the form of a list of keys, which will eventually be
+        # attributes of the LogRecord processed by the formatter. That
+        # allows the formatter to know which values were original and
+        # which were extra, so it can treat them differently (see
+        # JSONFormatter for an example of this). We sort the keys so
+        # it is possible to write sane unit tests.
+        extra['extra_keys'] = list(sorted(extra.keys()))
         # Place the updated extra values back into the keyword
         # arguments.
         kwargs['extra'] = extra
-        return msg, kwargs
-
-
-class ContextAdapter(BaseLoggerAdapter):
-    warn = logging.LoggerAdapter.warning
-
-    def __init__(self, logger, project_name, version_string):
-        self.logger = logger
-        self.project = project_name
-        self.version = version_string
-        self._deprecated_messages_sent = dict()
-
-    @property
-    def handlers(self):
-        return self.logger.handlers
-
-    def deprecated(self, msg, *args, **kwargs):
-        """Call this method when a deprecated feature is used.
-
-        If the system is configured for fatal deprecations then the message
-        is logged at the 'critical' level and :class:`DeprecatedConfig` will
-        be raised.
-
-        Otherwise, the message will be logged (once) at the 'warn' level.
-
-        :raises: :class:`DeprecatedConfig` if the system is configured for
-                 fatal deprecations.
-
-        """
-        stdmsg = _("Deprecated: %s") % msg
-        if ctx._config.fatal_deprecations:
-            self.critical(stdmsg, *args, **kwargs)
-            raise DeprecatedConfig(msg=stdmsg)
-
-        # Using a list because a tuple with dict can't be stored in a set.
-        sent_args = self._deprecated_messages_sent.setdefault(msg, list())
-
-        if args in sent_args:
-            # Already logged this message, so don't log it again.
-            return
-
-        sent_args.append(args)
-        self.warn(stdmsg, *args, **kwargs)
-
-    def process(self, msg, kwargs):
-        # NOTE(jecarey): If msg is not unicode, coerce it into unicode
-        #                before it can get to the python logging and
-        #                possibly cause string encoding trouble
-        if not isinstance(msg, six.text_type):
-            msg = six.text_type(msg)
-
-        if 'extra' not in kwargs:
-            kwargs['extra'] = {}
-        extra = kwargs['extra']
-
-        context = kwargs.pop('context', None)
-        if not context:
-            context = getattr(_local.store, 'context', None)
-        if context:
-            extra.update(formatters._dictify_context(context))
-
-        instance = kwargs.pop('instance', None)
-        instance_uuid = (extra.get('instance_uuid') or
-                         kwargs.pop('instance_uuid', None))
-        instance_extra = ''
-        if instance:
-            instance_extra = ctx._config.instance_format % instance
-        elif instance_uuid:
-            instance_extra = (ctx._config.instance_uuid_format
-                              % {'uuid': instance_uuid})
-        extra['instance'] = instance_extra
-
-        extra.setdefault('user_identity', kwargs.pop('user_identity', None))
-
-        extra['project'] = self.project
-        extra['version'] = self.version
-        extra['extra'] = extra.copy()
         return msg, kwargs
 
 
@@ -380,26 +294,21 @@ def _setup_logging_from_conf(conf, project, version):
 _loggers = {}
 
 
-def getLogger(name='unknown', version='unknown'):
-    if name not in _loggers:
-        _loggers[name] = ContextAdapter(logging.getLogger(name),
-                                        name,
-                                        version)
-    return _loggers[name]
+def getLogger(name=None, project='unknown', version='unknown'):
+    """Build a logger with the given name.
 
-
-def getLazyLogger(name='unknown', version='unknown'):
-    """Returns lazy logger.
-
-    Creates a pass-through logger that does not create the real logger
-    until it is really needed and delegates all calls to the real logger
-    once it is created.
+    :param name: The name for the logger. This is usually the module
+                 name, ``__name__``.
+    :type name: string
+    :param project: The name of the project, to be injected into log
+                    messages. For example, ``'nova'``.
+    :type project: string
+    :param version: The version of the project, to be injected into log
+                    messages. For example, ``'2014.2'``.
+    :type version: string
     """
-    return LazyAdapter(name, version)
-
-
-class DeprecatedConfig(Exception):
-    message = _("Fatal call to deprecated config: %(msg)s")
-
-    def __init__(self, msg):
-        super(Exception, self).__init__(self.message % dict(msg=msg))
+    if name not in _loggers:
+        _loggers[name] = KeywordArgumentAdapter(logging.getLogger(name),
+                                                {'project': project,
+                                                 'version': version})
+    return _loggers[name]
