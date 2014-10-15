@@ -694,3 +694,90 @@ handlers=
 
         fileConfig.assert_called_once_with(self.log_config_append,
                                            disable_existing_loggers=False)
+
+
+class KeywordArgumentAdapterTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(KeywordArgumentAdapterTestCase, self).setUp()
+        # Construct a mock that will look like a Logger configured to
+        # emit messages at DEBUG or higher.
+        self.mock_log = mock.Mock()
+        self.mock_log.manager.disable = logging.NOTSET
+        self.mock_log.isEnabledFor.return_value = True
+        self.mock_log.getEffectiveLevel.return_value = logging.DEBUG
+
+    def test_empty_kwargs(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        msg, kwargs = a.process('message', {})
+        self.assertEqual(kwargs, {'extra': {}})
+
+    def test_include_constructor_extras(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {'foo': 'blah'})
+        msg, kwargs = a.process('message', {})
+        self.assertEqual(kwargs, {'extra': {'foo': 'blah'}})
+
+    def test_pass_through_exc_info(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        msg, kwargs = a.process('message', {'exc_info': 'the info'})
+        self.assertEqual(
+            kwargs,
+            {'extra': {},
+             'exc_info': 'the info'},
+        )
+
+    def test_update_extras(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        msg, kwargs = a.process(
+            'message', {'context': 'some context object',
+                        'instance': 'instance identifier',
+                        'instance_uuid': 'UUID for instance',
+                        'anything': 'goes'}
+        )
+        self.assertEqual(
+            kwargs,
+            {'extra': {'context': 'some context object',
+                       'instance': 'instance identifier',
+                       'instance_uuid': 'UUID for instance',
+                       'anything': 'goes'}},
+        )
+
+    def test_pass_args_to_log(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        a.log(logging.DEBUG, 'message', name='value', exc_info='exception')
+        if six.PY3:
+            self.mock_log._log.assert_called_once_with(
+                logging.DEBUG,
+                'message',
+                (),
+                extra={'name': 'value'},
+                exc_info='exception',
+            )
+        else:
+            self.mock_log.log.assert_called_once_with(
+                logging.DEBUG,
+                'message',
+                extra={'name': 'value'},
+                exc_info='exception',
+            )
+
+    def test_pass_args_via_debug(self):
+        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        a.debug('message', name='value', exc_info='exception')
+        # The adapter implementation for debug() is different for
+        # python 3, so we expect a different method to be called
+        # internally.
+        if six.PY3:
+            self.mock_log._log.assert_called_once_with(
+                logging.DEBUG,
+                'message',
+                (),
+                extra={'name': 'value'},
+                exc_info='exception',
+            )
+        else:
+            self.mock_log.debug.assert_called_once_with(
+                'message',
+                extra={'name': 'value'},
+                exc_info='exception',
+            )

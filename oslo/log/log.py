@@ -107,6 +107,30 @@ class LazyAdapter(BaseLoggerAdapter):
         return self._logger
 
 
+class KeywordArgumentAdapter(BaseLoggerAdapter):
+    """Logger adapter to add keyword arguments to log record's extra data
+    """
+    warn = logging.LoggerAdapter.warning
+
+    def process(self, msg, kwargs):
+        # Make a new extra dictionary combining the values we were
+        # given when we were constructed and anything from kwargs.
+        extra = {}
+        extra.update(self.extra)
+        if 'extra' in kwargs:
+            extra.update(kwargs.pop('extra'))
+        # Move any unknown keyword arguments into the extra
+        # dictionary.
+        for name in list(kwargs.keys()):
+            if name == 'exc_info':
+                continue
+            extra[name] = kwargs.pop(name)
+        # Place the updated extra values back into the keyword
+        # arguments.
+        kwargs['extra'] = extra
+        return msg, kwargs
+
+
 class ContextAdapter(BaseLoggerAdapter):
     warn = logging.LoggerAdapter.warning
 
