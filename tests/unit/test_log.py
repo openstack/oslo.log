@@ -106,12 +106,6 @@ class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
         self.log = log.getLogger(None)
 
 
-class LazyLoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
-    def setUp(self):
-        super(LazyLoggerTestCase, self).setUp()
-        self.log = log.getLazyLogger(None)
-
-
 class BaseTestCase(test_base.BaseTestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
@@ -253,11 +247,16 @@ class JSONFormatterTestCase(LogTestBase):
     def test_json(self):
         test_msg = 'This is a %(test)s line'
         test_data = {'test': 'log'}
-        self.log.debug(test_msg, test_data)
+        local_context = _fake_context()
+        self.log.debug(test_msg, test_data, key='value', context=local_context)
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
         self.assertTrue('extra' in data)
+        extra = data['extra']
+        self.assertEqual('value', extra['key'])
+        self.assertEqual(local_context.auth_token, extra['auth_token'])
+        self.assertEqual(local_context.user, extra['user'])
         self.assertEqual('test-json', data['name'])
 
         self.assertEqual(test_msg % test_data, data['message'])
@@ -710,19 +709,20 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
     def test_empty_kwargs(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
         msg, kwargs = a.process('message', {})
-        self.assertEqual(kwargs, {'extra': {}})
+        self.assertEqual(kwargs, {'extra': {'extra_keys': []}})
 
     def test_include_constructor_extras(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {'foo': 'blah'})
         msg, kwargs = a.process('message', {})
-        self.assertEqual(kwargs, {'extra': {'foo': 'blah'}})
+        self.assertEqual(kwargs,
+                         {'extra': {'foo': 'blah', 'extra_keys': ['foo']}})
 
     def test_pass_through_exc_info(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
         msg, kwargs = a.process('message', {'exc_info': 'the info'})
         self.assertEqual(
             kwargs,
-            {'extra': {},
+            {'extra': {'extra_keys': []},
              'exc_info': 'the info'},
         )
 
@@ -736,7 +736,10 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         )
         self.assertEqual(
             kwargs,
-            {'extra': {'context': 'some context object',
+            {'extra': {'anything': 'goes',
+                       'context': 'some context object',
+                       'extra_keys': ['anything', 'context',
+                                      'instance', 'instance_uuid'],
                        'instance': 'instance identifier',
                        'instance_uuid': 'UUID for instance',
                        'anything': 'goes'}},
@@ -750,14 +753,16 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
                 logging.DEBUG,
                 'message',
                 (),
-                extra={'name': 'value'},
+                extra={'name': 'value',
+                       'extra_keys': ['name']},
                 exc_info='exception',
             )
         else:
             self.mock_log.log.assert_called_once_with(
                 logging.DEBUG,
                 'message',
-                extra={'name': 'value'},
+                extra={'name': 'value',
+                       'extra_keys': ['name']},
                 exc_info='exception',
             )
 
@@ -772,12 +777,14 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
                 logging.DEBUG,
                 'message',
                 (),
-                extra={'name': 'value'},
+                extra={'name': 'value',
+                       'extra_keys': ['name']},
                 exc_info='exception',
             )
         else:
             self.mock_log.debug.assert_called_once_with(
                 'message',
-                extra={'name': 'value'},
+                extra={'name': 'value',
+                       'extra_keys': ['name']},
                 exc_info='exception',
             )
