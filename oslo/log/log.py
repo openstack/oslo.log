@@ -48,12 +48,6 @@ from oslo.log import context as ctx
 from oslo.log import formatters
 from oslo.log import handlers
 
-# our new audit level
-# NOTE(jkoelker) Since we synthesized an audit level, make the logging
-#                module aware of it so it acts like other levels.
-logging.AUDIT = logging.INFO + 1
-logging.addLevelName(logging.AUDIT, 'AUDIT')
-
 
 def _get_log_file_path(conf, binary=None):
     logfile = conf.log_file
@@ -79,9 +73,6 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
     @property
     def handlers(self):
         return self.logger.handlers
-
-    def audit(self, msg, *args, **kwargs):
-        self.log(logging.AUDIT, msg, *args, **kwargs)
 
     def isEnabledFor(self, level):
         if _PY26:
