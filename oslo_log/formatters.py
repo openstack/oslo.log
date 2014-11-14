@@ -20,9 +20,9 @@ import traceback
 import six
 from six import moves
 
-from oslo.log import _local
-from oslo.log import context as ctx
 from oslo.serialization import jsonutils
+from oslo_log import _local
+from oslo_log import context as ctx
 
 
 def _dictify_context(context):

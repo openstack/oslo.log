@@ -27,12 +27,12 @@ from oslo.serialization import jsonutils
 from oslotest import base as test_base
 import six
 
-from oslo.log import _local
-from oslo.log import _options
-from oslo.log import context
-from oslo.log import formatters
-from oslo.log import handlers
-from oslo.log import log
+from oslo_log import _local
+from oslo_log import _options
+from oslo_log import context
+from oslo_log import formatters
+from oslo_log import handlers
+from oslo_log import log
 
 
 def _fake_context():

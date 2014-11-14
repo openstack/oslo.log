@@ -11,7 +11,7 @@
 #    under the License.
 
 import mock
-from oslo.log import helpers
+from oslo_log import helpers
 from oslotest import base as test_base
 
 

@@ -42,11 +42,11 @@ from six import moves
 
 _PY26 = sys.version_info[0:2] == (2, 6)
 
-from oslo.log._i18n import _
-from oslo.log import _options
-from oslo.log import context as ctx
-from oslo.log import formatters
-from oslo.log import handlers
+from oslo_log._i18n import _
+from oslo_log import _options
+from oslo_log import context as ctx
+from oslo_log import formatters
+from oslo_log import handlers
 
 
 def _get_log_file_path(conf, binary=None):

@@ -15,7 +15,7 @@
 
 from oslotest import base as test_base
 
-from oslo.log import context
+from oslo_log import context
 
 
 class ContextTest(test_base.BaseTestCase):

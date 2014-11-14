@@ -11,8 +11,8 @@
 #    under the License.
 
 
-from oslo.log.fixture import logging as logging_fixture
-from oslo.log import log as logging
+from oslo_log.fixture import logging as logging_fixture
+from oslo_log import log as logging
 from oslotest import base as test_base
 
 LOG = logging.getLogger(__name__)
