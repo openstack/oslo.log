@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from oslo.config import cfg
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -130,3 +132,23 @@ log_opts = [
                help='The format for an instance UUID that is passed with the '
                     'log message.'),
 ]
+
+
+def list_opts():
+    """Returns a list of oslo.config options available in the library.
+
+    The returned list includes all oslo.config options which may be registered
+    at runtime by the library.
+
+    Each element of the list is a tuple. The first element is the name of the
+    group under which the list of elements in the second element will be
+    registered. A group name of None corresponds to the [DEFAULT] group in
+    config files.
+
+    The purpose of this is to allow tools like the Oslo sample config file
+    generator to discover the options exposed to users by this library.
+
+    :returns: a list of (group_name, opts) tuples
+    """
+    return [(None, copy.deepcopy(common_cli_opts + logging_cli_opts +
+                                 generic_log_opts + log_opts))]
