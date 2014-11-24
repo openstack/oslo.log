@@ -17,6 +17,7 @@
 import logging
 import os
 import sys
+import syslog
 import tempfile
 
 import mock
@@ -208,6 +209,26 @@ class SysLogHandlersTestCase(BaseTestCase):
         expected = logrecord
         self.assertEqual(self.logger.format(logrecord),
                          expected.getMessage())
+
+
+class OSSysLogHandlerTestCase(BaseTestCase):
+    def tests_handler(self):
+        handler = handlers.OSSysLogHandler()
+        syslog.syslog = mock.Mock()
+        handler.emit(
+            logging.LogRecord("foo", logging.INFO,
+                              "path", 123, "hey!",
+                              None, None))
+        self.assertTrue(syslog.syslog.called)
+
+    def test_find_facility(self):
+        self.assertEqual(syslog.LOG_USER, log._find_facility("user"))
+        self.assertEqual(syslog.LOG_LPR, log._find_facility("LPR"))
+        self.assertEqual(syslog.LOG_LOCAL3, log._find_facility("log_local3"))
+        self.assertEqual(syslog.LOG_UUCP, log._find_facility("LOG_UUCP"))
+        self.assertRaises(TypeError,
+                          log._find_facility,
+                          "fougere")
 
 
 class LogLevelTestCase(BaseTestCase):
