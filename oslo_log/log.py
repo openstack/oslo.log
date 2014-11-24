@@ -31,8 +31,8 @@ import logging
 import logging.config
 import logging.handlers
 import os
-import socket
 import sys
+import syslog
 import traceback
 
 from oslo_config import cfg
@@ -229,28 +229,30 @@ def set_defaults(logging_context_format_string=None,
             logging_context_format_string=logging_context_format_string)
 
 
-def _find_facility_from_conf(conf):
-    facility_names = logging.handlers.SysLogHandler.facility_names
-    facility = getattr(logging.handlers.SysLogHandler,
-                       conf.syslog_log_facility,
-                       None)
+def _find_facility(facility):
+    # NOTE(jd): Check the validity of facilities at run time as they differ
+    # depending on the OS and Python version being used.
+    valid_facilities = [f for f in
+                        ["LOG_KERN", "LOG_USER", "LOG_MAIL",
+                         "LOG_DAEMON", "LOG_AUTH", "LOG_SYSLOG",
+                         "LOG_LPR", "LOG_NEWS", "LOG_UUCP",
+                         "LOG_CRON", "LOG_AUTHPRIV", "LOG_FTP",
+                         "LOG_LOCAL0", "LOG_LOCAL1", "LOG_LOCAL2",
+                         "LOG_LOCAL3", "LOG_LOCAL4", "LOG_LOCAL5",
+                         "LOG_LOCAL6", "LOG_LOCAL7"]
+                        if getattr(syslog, f, None)]
 
-    if facility is None and conf.syslog_log_facility in facility_names:
-        facility = facility_names.get(conf.syslog_log_facility)
+    facility = facility.upper()
 
-    if facility is None:
-        valid_facilities = facility_names.keys()
-        consts = ['LOG_AUTH', 'LOG_AUTHPRIV', 'LOG_CRON', 'LOG_DAEMON',
-                  'LOG_FTP', 'LOG_KERN', 'LOG_LPR', 'LOG_MAIL', 'LOG_NEWS',
-                  'LOG_AUTH', 'LOG_SYSLOG', 'LOG_USER', 'LOG_UUCP',
-                  'LOG_LOCAL0', 'LOG_LOCAL1', 'LOG_LOCAL2', 'LOG_LOCAL3',
-                  'LOG_LOCAL4', 'LOG_LOCAL5', 'LOG_LOCAL6', 'LOG_LOCAL7']
-        valid_facilities.extend(consts)
+    if not facility.startswith("LOG_"):
+        facility = "LOG_" + facility
+
+    if facility not in valid_facilities:
         raise TypeError(_('syslog facility must be one of: %s') %
                         ', '.join("'%s'" % fac
                                   for fac in valid_facilities))
 
-    return facility
+    return getattr(syslog, facility)
 
 
 def _setup_logging_from_conf(conf, project, version):
@@ -280,20 +282,13 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(handler)
 
     if conf.use_syslog:
-        try:
-            facility = _find_facility_from_conf(conf)
-            # TODO(bogdando) use the format provided by RFCSysLogHandler
-            #   after existing syslog format deprecation in J
-            if conf.use_syslog_rfc_format:
-                syslog = handlers.RFCSysLogHandler(address='/dev/log',
-                                                   facility=facility)
-            else:
-                syslog = logging.handlers.SysLogHandler(address='/dev/log',
-                                                        facility=facility)
-            log_root.addHandler(syslog)
-        except socket.error:
-            log_root.error('Unable to add syslog handler. Verify that syslog '
-                           'is running.')
+        facility = _find_facility(conf.syslog_log_facility)
+        # TODO(bogdando) use the format provided by RFCSysLogHandler after
+        # existing syslog format deprecation in J
+        syslog = handlers.OSSysLogHandler(
+            facility=facility,
+            use_syslog_rfc_format=conf.use_syslog_rfc_format)
+        log_root.addHandler(syslog)
 
     datefmt = conf.log_date_format
     for handler in log_root.handlers:
