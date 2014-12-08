@@ -44,7 +44,6 @@ _PY26 = sys.version_info[0:2] == (2, 6)
 
 from oslo_log._i18n import _
 from oslo_log import _options
-from oslo_log import context as ctx
 from oslo_log import formatters
 from oslo_log import handlers
 
@@ -149,14 +148,11 @@ def _load_log_config(log_config_append):
 
 
 def register_options(conf):
-    # NOTE(dims): We need this global variable until we
-    # deprecate ContextAdapter and ContextFormatter
-    ctx._config = conf
-
     conf.register_cli_opts(_options.common_cli_opts)
     conf.register_cli_opts(_options.logging_cli_opts)
     conf.register_opts(_options.generic_log_opts)
     conf.register_opts(_options.log_opts)
+    formatters._store_global_conf(conf)
 
 
 def setup(conf, product_name, version='unknown'):

@@ -24,12 +24,12 @@ from oslo.config import cfg
 from oslo.config import fixture as fixture_config  # noqa
 from oslo.i18n import fixture as fixture_trans
 from oslo.serialization import jsonutils
+from oslo_context import context
 from oslotest import base as test_base
 import six
 
 from oslo_log import _local
 from oslo_log import _options
-from oslo_log import context
 from oslo_log import formatters
 from oslo_log import handlers
 from oslo_log import log

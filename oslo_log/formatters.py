@@ -22,7 +22,6 @@ from six import moves
 
 from oslo.serialization import jsonutils
 from oslo_log import _local
-from oslo_log import context as ctx
 
 
 def _dictify_context(context):
@@ -31,6 +30,16 @@ def _dictify_context(context):
     if not isinstance(context, dict) and getattr(context, 'to_dict', None):
         context = context.to_dict()
     return context
+
+
+# A configuration object is given to us when the application registers
+# the logging options.
+_CONF = None
+
+
+def _store_global_conf(conf):
+    global _CONF
+    _CONF = conf
 
 
 def _update_record_with_context(record):
@@ -143,7 +152,7 @@ class ContextFormatter(logging.Formatter):
 
         self.project = kwargs.pop('project', 'unknown')
         self.version = kwargs.pop('version', 'unknown')
-        self.conf = kwargs.pop('config', ctx._config)
+        self.conf = kwargs.pop('config', _CONF)
 
         logging.Formatter.__init__(self, *args, **kwargs)
 
