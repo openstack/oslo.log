@@ -25,10 +25,10 @@ from oslo.config import fixture as fixture_config  # noqa
 from oslo.i18n import fixture as fixture_trans
 from oslo.serialization import jsonutils
 from oslo_context import context
+from oslo_context import fixture as fixture_context
 from oslotest import base as test_base
 import six
 
-from oslo_log import _local
 from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
@@ -36,7 +36,7 @@ from oslo_log import log
 
 
 def _fake_context():
-    return context.RequestContext(1, 1)
+    return context.RequestContext(1, 1, overwrite=True)
 
 
 class CommonLoggerTestsMixIn(object):
@@ -105,6 +105,8 @@ class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
 class BaseTestCase(test_base.BaseTestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
+        self.context_fixture = self.useFixture(
+            fixture_context.ClearRequestContext())
         self.config_fixture = self.useFixture(
             fixture_config.Config(cfg.ConfigOpts()))
         self.config = self.config_fixture.config
@@ -313,43 +315,31 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_context_is_taken_from_tls_variable(self):
         ctxt = _fake_context()
-        _local.store.context = ctxt
-        try:
-            self.log.info("bar")
-            expected = "HAS CONTEXT [%s]: bar\n" % ctxt.request_id
-            self.assertEqual(expected, self.stream.getvalue())
-        finally:
-            del _local.store.context
+        self.log.info("bar")
+        expected = "HAS CONTEXT [%s]: bar\n" % ctxt.request_id
+        self.assertEqual(expected, self.stream.getvalue())
 
     def test_contextual_information_is_imparted_to_3rd_party_log_records(self):
         ctxt = _fake_context()
-        _local.store.context = ctxt
-        try:
-            sa_log = logging.getLogger('sqlalchemy.engine')
-            sa_log.setLevel(logging.INFO)
-            sa_log.info('emulate logging within sqlalchemy')
+        sa_log = logging.getLogger('sqlalchemy.engine')
+        sa_log.setLevel(logging.INFO)
+        sa_log.info('emulate logging within sqlalchemy')
 
-            expected = ("HAS CONTEXT [%s]: emulate logging within "
-                        "sqlalchemy\n" % ctxt.request_id)
-            self.assertEqual(expected, self.stream.getvalue())
-        finally:
-            del _local.store.context
+        expected = ("HAS CONTEXT [%s]: emulate logging within "
+                    "sqlalchemy\n" % ctxt.request_id)
+        self.assertEqual(expected, self.stream.getvalue())
 
     def test_message_logging_3rd_party_log_records(self):
         ctxt = _fake_context()
-        _local.store.context = ctxt
-        _local.store.context.request_id = six.text_type('99')
-        try:
-            sa_log = logging.getLogger('sqlalchemy.engine')
-            sa_log.setLevel(logging.INFO)
-            message = self.trans_fixture.lazy('test ' + six.unichr(128))
-            sa_log.info(message)
+        ctxt.request_id = six.text_type('99')
+        sa_log = logging.getLogger('sqlalchemy.engine')
+        sa_log.setLevel(logging.INFO)
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        sa_log.info(message)
 
-            expected = ("HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
-                                                    six.text_type(message)))
-            self.assertEqual(expected, self.stream.getvalue())
-        finally:
-            del _local.store.context
+        expected = ("HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
+                                                six.text_type(message)))
+        self.assertEqual(expected, self.stream.getvalue())
 
     def test_debugging_log(self):
         self.log.debug("baz")
@@ -381,20 +371,16 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_unicode_conversion_in_formatter(self):
         ctxt = _fake_context()
-        _local.store.context = ctxt
         ctxt.request_id = six.text_type('99')
-        try:
-            no_adapt_log = logging.getLogger('no_adapt')
-            no_adapt_log.setLevel(logging.INFO)
-            message = "Exception is (%s)"
-            ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
-            no_adapt_log.info(message, ex)
-            message = six.text_type(message) % ex
-            expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
-                                                   message)
-            self.assertEqual(expected, self.stream.getvalue())
-        finally:
-            del _local.store.context
+        no_adapt_log = logging.getLogger('no_adapt')
+        no_adapt_log.setLevel(logging.INFO)
+        message = "Exception is (%s)"
+        ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
+        no_adapt_log.info(message, ex)
+        message = six.text_type(message) % ex
+        expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
+                                               message)
+        self.assertEqual(expected, self.stream.getvalue())
 
 
 class ExceptionLoggingTestCase(LogTestBase):
@@ -472,9 +458,9 @@ class FancyRecordTestCase(LogTestBase):
 
     def test_instance_key_in_log_msg(self):
         ctxt = _fake_context()
-        ctxt.instance_uuid = '1234'
+        ctxt.resource_uuid = '1234'
         self._validate_keys(ctxt, ('[%s]: [instance: %s]' %
-                                   (ctxt.request_id, ctxt.instance_uuid)))
+                                   (ctxt.request_id, ctxt.resource_uuid)))
 
 
 class DomainTestCase(LogTestBase):
@@ -727,7 +713,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         msg, kwargs = a.process(
             'message', {'context': 'some context object',
                         'instance': 'instance identifier',
-                        'instance_uuid': 'UUID for instance',
+                        'resource_uuid': 'UUID for instance',
                         'anything': 'goes'}
         )
         self.assertEqual(
@@ -735,9 +721,9 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
             {'extra': {'anything': 'goes',
                        'context': 'some context object',
                        'extra_keys': ['anything', 'context',
-                                      'instance', 'instance_uuid'],
+                                      'instance', 'resource_uuid'],
                        'instance': 'instance identifier',
-                       'instance_uuid': 'UUID for instance',
+                       'resource_uuid': 'UUID for instance',
                        'anything': 'goes'}},
         )
 

@@ -21,7 +21,7 @@ import six
 from six import moves
 
 from oslo.serialization import jsonutils
-from oslo_log import _local
+from oslo_context import context as context_utils
 
 
 def _dictify_context(context):
@@ -51,7 +51,7 @@ def _update_record_with_context(record):
     """
     context = record.__dict__.get(
         'context',
-        getattr(_local.store, 'context', None)
+        context_utils.get_current()
     )
     d = _dictify_context(context)
     # Copy the context values directly onto the record so they can be
@@ -177,6 +177,11 @@ class ContextFormatter(logging.Formatter):
             # app-agnostic-logging-parameters blueprint.
             instance = getattr(context, 'instance', None)
             instance_uuid = getattr(context, 'instance_uuid', None)
+
+            # resource_uuid was introduced in oslo_context's
+            # RequestContext
+            resource_uuid = getattr(context, 'resource_uuid', None)
+
             instance_extra = ''
             if instance:
                 instance_extra = (self.conf.instance_format
@@ -184,6 +189,9 @@ class ContextFormatter(logging.Formatter):
             elif instance_uuid:
                 instance_extra = (self.conf.instance_uuid_format
                                   % {'uuid': instance_uuid})
+            elif resource_uuid:
+                instance_extra = (self.conf.instance_uuid_format
+                                  % {'uuid': resource_uuid})
             record.instance = instance_extra
 
         # NOTE(sdague): default the fancier formatting params
