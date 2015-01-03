@@ -114,6 +114,39 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
         # Place the updated extra values back into the keyword
         # arguments.
         kwargs['extra'] = extra
+
+        # NOTE(jdg): We would like an easy way to add resource info
+        # to logging, for example a header like 'volume-<uuid>'
+        # Turns out Nova implemented this but it's Nova specific with
+        # instance.  Also there's resource_uuid that's been added to
+        # context, but again that only works for Instances, and it
+        # only works for contexts that have the resource id set.
+        resource = kwargs['extra'].get('resource', None)
+        if resource:
+
+            # Many OpenStack resources have a name entry in their db ref
+            # of the form <resource_type>-<uuid>, let's just use that if
+            # it's passed in
+            if not resource.get('name', None):
+
+                # For resources that don't have the name of the format we wish
+                # to use (or places where the LOG call may not have the full
+                # object ref, allow them to pass in a dict:
+                # resource={resource_type: volume, resource_id: uuid}
+
+                resource_type = resource.get('type', None)
+                resource_id = resource.get('id', None)
+
+                if resource_type and resource_id:
+                    kwargs['extra']['resource'] = ('[' + resource_type +
+                                                   '-' + resource_id + '] ')
+            else:
+                # FIXME(jdg): Since the name format can be specified via conf
+                # entry, we may want to consider allowing this to be configured
+                # here as well
+                kwargs['extra']['resource'] = ('[' + resource.get('name', '')
+                                               + '] ')
+
         return msg, kwargs
 
 
