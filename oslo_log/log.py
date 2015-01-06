@@ -148,6 +148,7 @@ def _load_log_config(log_config_append):
 
 
 def register_options(conf):
+    """Register the command line and configuration options used by oslo.log."""
     conf.register_cli_opts(_options.common_cli_opts)
     conf.register_cli_opts(_options.logging_cli_opts)
     conf.register_opts(_options.generic_log_opts)
@@ -156,7 +157,7 @@ def register_options(conf):
 
 
 def setup(conf, product_name, version='unknown'):
-    """Setup logging."""
+    """Setup logging for the current application."""
     if conf.log_config_append:
         _load_log_config(conf.log_config_append)
     else:
@@ -166,6 +167,7 @@ def setup(conf, product_name, version='unknown'):
 
 def set_defaults(logging_context_format_string=None,
                  default_log_levels=None):
+    """Set default values for the configuration options used by oslo.log."""
     # Just in case the caller is not setting the
     # default_log_level. This is insurance because
     # we introduced the default_log_level parameter
