@@ -197,7 +197,7 @@ class ContextFormatter(logging.Formatter):
         # NOTE(sdague): default the fancier formatting params
         # to an empty string so we don't throw an exception if
         # they get used
-        for key in ('instance', 'color', 'user_identity'):
+        for key in ('instance', 'color', 'user_identity', 'resource'):
             if key not in record.__dict__:
                 record.__dict__[key] = ''
 
