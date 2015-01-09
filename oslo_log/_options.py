@@ -65,8 +65,8 @@ logging_cli_opts = [
     cfg.BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging. '
-                     'Existing syslog format is DEPRECATED during I, '
-                     'and changed in J to honor RFC5424.'),
+                     'Existing syslog format is DEPRECATED '
+                     'and will be changed later to honor RFC5424.'),
     cfg.BoolOpt('use-syslog-rfc-format',
                 default=True,
                 deprecated_for_removal=True,
