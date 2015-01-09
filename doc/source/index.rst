@@ -11,6 +11,7 @@ Contents
    :maxdepth: 2
 
    installation
+   api/index
    usage
    contributing
    history
