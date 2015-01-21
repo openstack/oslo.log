@@ -20,8 +20,8 @@ import traceback
 import six
 from six import moves
 
-from oslo.serialization import jsonutils
 from oslo_context import context as context_utils
+from oslo_serialization import jsonutils
 
 
 def _dictify_context(context):
