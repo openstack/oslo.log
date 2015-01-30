@@ -12,7 +12,7 @@
 
 import logging
 
-from oslo_log.fixture import setlevel
+from oslo_log import fixture
 from oslotest import base as test_base
 
 
@@ -21,7 +21,7 @@ class TestSetLevelFixture(test_base.BaseTestCase):
     def test_unset_before(self):
         logger = logging.getLogger('no-such-logger-unset')
         self.assertEqual(logging.NOTSET, logger.level)
-        fix = setlevel.SetLogLevel(['no-such-logger-unset'], logging.DEBUG)
+        fix = fixture.SetLogLevel(['no-such-logger-unset'], logging.DEBUG)
         with fix:
             self.assertEqual(logging.DEBUG, logger.level)
         self.assertEqual(logging.NOTSET, logger.level)
@@ -30,7 +30,7 @@ class TestSetLevelFixture(test_base.BaseTestCase):
         logger = logging.getLogger('no-such-logger-set')
         logger.setLevel(logging.ERROR)
         self.assertEqual(logging.ERROR, logger.level)
-        fix = setlevel.SetLogLevel(['no-such-logger-set'], logging.DEBUG)
+        fix = fixture.SetLogLevel(['no-such-logger-set'], logging.DEBUG)
         with fix:
             self.assertEqual(logging.DEBUG, logger.level)
         self.assertEqual(logging.ERROR, logger.level)
