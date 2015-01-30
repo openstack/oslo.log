@@ -85,6 +85,20 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
 
 class KeywordArgumentAdapter(BaseLoggerAdapter):
     """Logger adapter to add keyword arguments to log record's extra data
+
+    Keywords passed to the log call are added to the "extra"
+    dictionary passed to the underlying logger so they are emitted
+    with the log message and available to the format string.
+
+    Special keywords:
+
+    extra
+      An existing dictionary of extra values to be passed to the
+      logger. If present, the dictionary is copied and extended.
+    resource
+      A dictionary-like object containing a ``name`` key or ``type``
+       and ``id`` keys.
+
     """
 
     def process(self, msg, kwargs):
@@ -132,7 +146,7 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
                 # For resources that don't have the name of the format we wish
                 # to use (or places where the LOG call may not have the full
                 # object ref, allow them to pass in a dict:
-                # resource={resource_type: volume, resource_id: uuid}
+                # resource={'type': volume, 'id': uuid}
 
                 resource_type = resource.get('type', None)
                 resource_id = resource.get('id', None)
