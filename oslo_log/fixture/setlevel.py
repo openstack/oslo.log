@@ -23,7 +23,9 @@ class SetLogLevel(fixtures.Fixture):
 
     To use::
 
-      self.setFixture(['myapp.foo'], logging.DEBUG)
+      from oslo_log import fixture as log_fixture
+
+      self.useFixture(log_fixture.SetLogLevel(['myapp.foo'], logging.DEBUG))
 
     :param logger_names: Sequence of logger names, as would be passed
                          to getLogger().
