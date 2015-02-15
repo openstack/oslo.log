@@ -90,6 +90,8 @@ DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'oslo.messaging=INFO', 'iso8601=WARN',
                       'requests.packages.urllib3.connectionpool=WARN',
                       'urllib3.connectionpool=WARN', 'websocket=WARN',
+                      'requests.packages.urllib3.util.retry=WARN',
+                      'urllib3.util.retry=WARN',
                       "keystonemiddleware=WARN", "routes.middleware=WARN",
                       "stevedore=WARN"]
 
