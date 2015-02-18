@@ -12,7 +12,7 @@
 
 import copy
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
