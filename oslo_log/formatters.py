@@ -169,9 +169,23 @@ class ContextFormatter(logging.Formatter):
         record.project = self.project
         record.version = self.version
 
+        # FIXME(dims): We need a better way to pick up the instance
+        # or instance_uuid parameters from the kwargs from say
+        # LOG.info or LOG.warn
+        instance_extra = ''
+        instance = getattr(record, 'instance', None)
+        instance_uuid = getattr(record, 'instance_uuid', None)
         context = _update_record_with_context(record)
-
-        if context:
+        if instance:
+            try:
+                instance_extra = (self.conf.instance_format
+                                  % instance)
+            except TypeError:
+                instance_extra = instance
+        elif instance_uuid:
+            instance_extra = (self.conf.instance_uuid_format
+                              % {'uuid': instance_uuid})
+        elif context:
             # FIXME(dhellmann): We should replace these nova-isms with
             # more generic handling in the Context class.  See the
             # app-agnostic-logging-parameters blueprint.
@@ -182,7 +196,6 @@ class ContextFormatter(logging.Formatter):
             # RequestContext
             resource_uuid = getattr(context, 'resource_uuid', None)
 
-            instance_extra = ''
             if instance:
                 instance_extra = (self.conf.instance_format
                                   % {'uuid': instance})
@@ -192,7 +205,8 @@ class ContextFormatter(logging.Formatter):
             elif resource_uuid:
                 instance_extra = (self.conf.instance_uuid_format
                                   % {'uuid': resource_uuid})
-            record.instance = instance_extra
+
+        record.instance = instance_extra
 
         # NOTE(sdague): default the fancier formatting params
         # to an empty string so we don't throw an exception if
