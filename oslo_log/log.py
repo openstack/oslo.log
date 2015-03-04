@@ -285,9 +285,11 @@ def _setup_logging_from_conf(conf, project, version):
             # TODO(bogdando) use the format provided by RFCSysLogHandler
             #   after existing syslog format deprecation in J
             if conf.use_syslog_rfc_format:
-                syslog = handlers.RFCSysLogHandler(facility=facility)
+                syslog = handlers.RFCSysLogHandler(address='/dev/log',
+                                                   facility=facility)
             else:
-                syslog = logging.handlers.SysLogHandler(facility=facility)
+                syslog = logging.handlers.SysLogHandler(address='/dev/log',
+                                                        facility=facility)
             log_root.addHandler(syslog)
         except socket.error:
             log_root.error('Unable to add syslog handler. Verify that syslog '
