@@ -107,7 +107,7 @@ log_opts = [
                default='%(funcName)s %(pathname)s:%(lineno)d',
                help='Data to append to log format when level is DEBUG.'),
     cfg.StrOpt('logging_exception_prefix',
-               default='%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s '
+               default='%(asctime)s.%(msecs)03d %(process)d ERROR %(name)s '
                '%(instance)s',
                help='Prefix each line of exception output with this format.'),
     cfg.ListOpt('default_log_levels',
