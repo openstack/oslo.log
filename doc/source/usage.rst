@@ -31,6 +31,15 @@ Call :func:`~oslo_log.log.set_defaults` before configuring logging.
 Call :func:`~oslo_log.log.setup` to configure logging for the
 application.
 
+General Logging Guidelines
+==========================
+
+The `OpenStack Logging Guidelines`_ in openstack-specs repository
+explain how to use different logging levels, and the desired logging
+patterns to be used in OpenStack applications.
+
+.. _OpenStack Logging Guidelines: http://specs.openstack.org/openstack/openstack-specs/specs/log-guidelines.html
+
 Migrating to oslo.log
 =====================
 
