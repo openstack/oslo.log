@@ -17,7 +17,7 @@ import mock
 from oslotest import base as test_base
 from testtools import matchers
 
-from openstack.common import versionutils
+from oslo_log import versionutils
 
 
 class DeprecatedTestCase(test_base.BaseTestCase):
@@ -44,7 +44,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                          expected_msg,
                                          expected_details)
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecating_a_function_returns_correct_value(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.ICEHOUSE)
@@ -56,7 +56,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         self.assertThat(retval, matchers.Equals(expected_rv))
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecating_a_method_returns_correct_value(self, mock_reporter):
 
         class C(object):
@@ -68,7 +68,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         self.assertThat(retval, matchers.Equals((1, 'of anything')))
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_unknown_future_release(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.BEXAR,
@@ -84,7 +84,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Bexar',
                                remove_in='D')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_known_future_release(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
@@ -100,7 +100,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Icehouse')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_without_replacement(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY)
@@ -114,7 +114,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Icehouse')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_custom_what(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
@@ -131,7 +131,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Icehouse')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_removed_next_release(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
@@ -146,7 +146,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Havana')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_removed_plus_3(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
@@ -161,7 +161,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Juno')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_removed_zero(self, mock_reporter):
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
                                  remove_in=0)
@@ -175,7 +175,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Grizzly',
                                remove_in='Grizzly')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_removed_zero_and_alternative(self, mock_reporter):
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
                                  in_favor_of='different_stuff()',
@@ -191,7 +191,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                in_favor_of='different_stuff()',
                                remove_in='Grizzly')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_class_without_init(self, mock_reporter):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.JUNO,
@@ -206,7 +206,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Juno',
                                remove_in='Kilo')
 
-    @mock.patch('openstack.common.versionutils.report_deprecated_feature')
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_class_with_init(self, mock_reporter):
         mock_arguments = mock.MagicMock()
         args = (1, 5, 7)
