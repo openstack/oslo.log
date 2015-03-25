@@ -17,7 +17,6 @@
 Helpers for comparing version strings.
 """
 
-import copy
 import functools
 import inspect
 import logging
@@ -39,12 +38,6 @@ deprecated_opts = [
                 default=False,
                 help='Enables or disables fatal status of deprecations.'),
 ]
-
-
-def list_opts():
-    """Entry point for oslo.config-generator.
-    """
-    return [(None, copy.deepcopy(deprecated_opts))]
 
 
 class deprecated(object):
