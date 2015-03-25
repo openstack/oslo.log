@@ -20,12 +20,9 @@ API Documentation
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
-   api/fixtures
-   api/formatters
-   api/handlers
-   api/helpers
-   api/log
+   api/*
 
 Indices and tables
 ==================

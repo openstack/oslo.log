@@ -75,10 +75,12 @@ class deprecated(object):
     ... def c(): pass
 
     4. Specifying the deprecated functionality will not be removed:
+
     >>> @deprecated(as_of=deprecated.ICEHOUSE, remove_in=0)
     ... def d(): pass
 
     5. Specifying a replacement, deprecated functionality will not be removed:
+
     >>> @deprecated(as_of=deprecated.ICEHOUSE, in_favor_of='f()', remove_in=0)
     ... def e(): pass
 

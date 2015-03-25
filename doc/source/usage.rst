@@ -71,15 +71,10 @@ Deprecation tools moved to ``versionutils``
 -------------------------------------------
 
 The :meth:`deprecated` decorator and :class:`DeprecatedConfig` have
-moved to the :mod:`versionutils` module, which is still in the
-oslo-incubator repository. Updating to use oslo.log may require
-syncing a new version of :mod:`versionutils` at the same time, and
-updating existing uses of those symbols.
-
-Replace ``LOG.deprecated()`` with
-``versionutils.report_deprecated_feature()``, passing a local logger
-object as the first argument so the log message includes the location
-information.
+moved to :mod:`oslo_log.versionutils`.  Replace ``LOG.deprecated()``
+with :mod:`oslo_log.versionutils.report_deprecated_feature`, passing a
+local logger object as the first argument so the log message includes
+the location information.
 
 No more implicit conversion to unicode/str
 ------------------------------------------
