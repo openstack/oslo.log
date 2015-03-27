@@ -69,12 +69,13 @@ class deprecated(object):
 
     4. Specifying the deprecated functionality will not be removed:
 
-    >>> @deprecated(as_of=deprecated.ICEHOUSE, remove_in=0)
+    >>> @deprecated(as_of=deprecated.ICEHOUSE, remove_in=None)
     ... def d(): pass
 
     5. Specifying a replacement, deprecated functionality will not be removed:
 
-    >>> @deprecated(as_of=deprecated.ICEHOUSE, in_favor_of='f()', remove_in=0)
+    >>> @deprecated(as_of=deprecated.ICEHOUSE, in_favor_of='f()',
+    ...             remove_in=None)
     ... def e(): pass
 
     """
@@ -177,7 +178,10 @@ class deprecated(object):
         # TODO(dstanek): this method will have to be reimplemented once
         #    when we get to the X release because once we get to the Y
         #    release, what is Y+2?
-        new_release = chr(ord(release) + self.remove_in)
+        remove_in = self.remove_in
+        if remove_in is None:
+            remove_in = 0
+        new_release = chr(ord(release) + remove_in)
         if new_release in self._RELEASES:
             return self._RELEASES[new_release]
         else:
@@ -190,14 +194,14 @@ class deprecated(object):
 
         if self.in_favor_of:
             details['in_favor_of'] = self.in_favor_of
-            if self.remove_in > 0:
+            if self.remove_in is not None and self.remove_in > 0:
                 msg = self._deprecated_msg_with_alternative
             else:
                 # There are no plans to remove this function, but it is
                 # now deprecated.
                 msg = self._deprecated_msg_with_alternative_no_removal
         else:
-            if self.remove_in > 0:
+            if self.remove_in is not None and self.remove_in > 0:
                 msg = self._deprecated_msg_no_alternative
             else:
                 # There are no plans to remove this function, but it is

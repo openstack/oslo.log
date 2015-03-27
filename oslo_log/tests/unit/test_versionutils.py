@@ -176,6 +176,20 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                remove_in='Grizzly')
 
     @mock.patch('oslo_log.versionutils.report_deprecated_feature')
+    def test_deprecated_with_removed_none(self, mock_reporter):
+        @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
+                                 remove_in=None)
+        def do_outdated_stuff():
+            return
+
+        do_outdated_stuff()
+        self.assert_deprecated(mock_reporter,
+                               no_removal=True,
+                               what='do_outdated_stuff()',
+                               as_of='Grizzly',
+                               remove_in='Grizzly')
+
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecated_with_removed_zero_and_alternative(self, mock_reporter):
         @versionutils.deprecated(as_of=versionutils.deprecated.GRIZZLY,
                                  in_favor_of='different_stuff()',
