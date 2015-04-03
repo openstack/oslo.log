@@ -823,3 +823,26 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
                        'extra_keys': ['name']},
                 exc_info='exception',
             )
+
+
+class UnicodeConversionTestCase(BaseTestCase):
+
+    def test_ascii_to_unicode(self):
+        msg = u'Message with unicode char \ua000 in the middle'
+        enc_msg = msg.encode('utf-8')
+        result = log._ensure_unicode(enc_msg)
+        self.assertEqual(msg, result)
+        self.assertIsInstance(result, six.text_type)
+
+    def test_unicode_to_unicode(self):
+        msg = u'Message with unicode char \ua000 in the middle'
+        result = log._ensure_unicode(msg)
+        self.assertEqual(msg, result)
+        self.assertIsInstance(result, six.text_type)
+
+    def test_exception_to_unicode(self):
+        msg = u'Message with unicode char \ua000 in the middle'
+        exc = Exception(msg)
+        result = log._ensure_unicode(exc)
+        self.assertEqual(msg, result)
+        self.assertIsInstance(result, six.text_type)
