@@ -22,7 +22,6 @@ import inspect
 import logging
 
 from oslo_config import cfg
-import pkg_resources
 import six
 
 from oslo_log._i18n import _
@@ -204,29 +203,6 @@ class deprecated(object):
                 # now deprecated.
                 msg = self._deprecated_msg_with_no_alternative_no_removal
         return msg, details
-
-
-def is_compatible(requested_version, current_version, same_major=True):
-    """Determine whether `requested_version` is satisfied by
-    `current_version`; in other words, `current_version` is >=
-    `requested_version`.
-
-    :param requested_version: version to check for compatibility
-    :param current_version: version to check against
-    :param same_major: if True, the major version must be identical between
-        `requested_version` and `current_version`. This is used when a
-        major-version difference indicates incompatibility between the two
-        versions. Since this is the common-case in practice, the default is
-        True.
-    :returns: True if compatible, False if not
-    """
-    requested_parts = pkg_resources.parse_version(requested_version)
-    current_parts = pkg_resources.parse_version(current_version)
-
-    if same_major and (requested_parts[0] != current_parts[0]):
-        return False
-
-    return current_parts >= requested_parts
 
 
 # Track the messages we have sent already. See
