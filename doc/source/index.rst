@@ -1,20 +1,31 @@
-==========
- oslo.log
-==========
+====================================
+Welcome to oslo.log's documentation!
+====================================
 
-OpenStack logging configuration library
+The `oslo`_ log (logging) configuration library provides standardized
+configuration for all openstack projects. It also provides custom
+formatters, handlers and support for context specific
+logging (like resource id's etc).
 
-Contents
-========
+.. toctree::
+   :maxdepth: 1
+
+   installation
+   usage
+   contributing
+   history
+
+API Documentation
+=================
 
 .. toctree::
    :maxdepth: 2
 
-   installation
-   api/index
-   usage
-   contributing
-   history
+   api/fixtures
+   api/formatters
+   api/handlers
+   api/helpers
+   api/log
 
 Indices and tables
 ==================
@@ -22,3 +33,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _oslo: https://wiki.openstack.org/wiki/Oslo
