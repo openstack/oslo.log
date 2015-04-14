@@ -246,6 +246,20 @@ def set_defaults(logging_context_format_string=None,
             logging_context_format_string=logging_context_format_string)
 
 
+def tempest_set_log_file(filename):
+    """Provide an API for tempest to set the logging filename.
+
+    .. warning:: Only Tempest should use this function.
+
+    We don't want applications to set a default log file, so we don't
+    want this in set_defaults(). Because tempest doesn't use a
+    configuration file we don't have another convenient way to safely
+    set the log file default.
+
+    """
+    cfg.set_defaults(_options.logging_cli_opts, log_file=filename)
+
+
 def _find_facility_from_conf(conf):
     facility_names = logging.handlers.SysLogHandler.facility_names
     facility = getattr(logging.handlers.SysLogHandler,

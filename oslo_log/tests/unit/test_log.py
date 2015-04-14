@@ -563,6 +563,7 @@ class SetDefaultsTestCase(BaseTestCase):
         super(SetDefaultsTestCase, self).setUp()
         self.conf = self.TestConfigOpts()
         self.conf.register_opts(_options.log_opts)
+        self.conf.register_cli_opts(_options.logging_cli_opts)
 
         self._orig_defaults = dict([(o.dest, o.default)
                                     for o in _options.log_opts])
@@ -592,6 +593,17 @@ class SetDefaultsTestCase(BaseTestCase):
         self.conf([])
         self.assertEqual(['foo=bar'], self.conf.default_log_levels)
         self.assertIsNotNone(self.conf.logging_context_format_string)
+
+    def test_tempest_set_log_file(self):
+        log.tempest_set_log_file('foo.log')
+        log.set_defaults()
+        self.conf([])
+        self.assertEqual('foo.log', self.conf.log_file)
+
+    def test_log_file_defaults_to_none(self):
+        log.set_defaults()
+        self.conf([])
+        self.assertEqual(None, self.conf.log_file)
 
 
 class LogConfigOptsTestCase(BaseTestCase):
