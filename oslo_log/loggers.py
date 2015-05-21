@@ -12,7 +12,12 @@
 
 import logging
 
+from oslo_log import versionutils
 
+
+@versionutils.deprecated(
+    versionutils.deprecated.LIBERTY,
+    remove_in=+1)
 class WritableLogger(object):
     """A thin wrapper that responds to `write` and logs."""
 
