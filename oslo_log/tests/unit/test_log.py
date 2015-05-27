@@ -17,7 +17,10 @@
 import logging
 import os
 import sys
-import syslog
+try:
+    import syslog
+except ImportError:
+    syslog = None
 import tempfile
 
 import mock
@@ -29,6 +32,7 @@ from oslo_i18n import fixture as fixture_trans
 from oslo_serialization import jsonutils
 from oslotest import base as test_base
 import six
+import testtools
 
 from oslo_log import _options
 from oslo_log import formatters
@@ -211,6 +215,7 @@ class SysLogHandlersTestCase(BaseTestCase):
                          expected.getMessage())
 
 
+@testtools.skipUnless(syslog, "syslog is not available")
 class OSSysLogHandlerTestCase(BaseTestCase):
     def tests_handler(self):
         handler = handlers.OSSysLogHandler()

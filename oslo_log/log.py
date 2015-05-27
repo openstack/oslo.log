@@ -32,7 +32,10 @@ import logging.config
 import logging.handlers
 import os
 import sys
-import syslog
+try:
+    import syslog
+except ImportError:
+    syslog = None
 import traceback
 
 from oslo_config import cfg
@@ -313,6 +316,9 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(handler)
 
     if conf.use_syslog:
+        global syslog
+        if syslog is None:
+            raise RuntimeError("syslog is not available on this platform")
         facility = _find_facility(conf.syslog_log_facility)
         # TODO(bogdando) use the format provided by RFCSysLogHandler after
         # existing syslog format deprecation in J

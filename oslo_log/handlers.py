@@ -15,7 +15,10 @@ import logging
 import logging.config
 import logging.handlers
 import os
-import syslog
+try:
+    import syslog
+except ImportError:
+    syslog = None
 
 from debtcollector import removals
 
@@ -68,31 +71,33 @@ class RFCSysLogHandler(logging.handlers.SysLogHandler):
 _AUDIT = logging.INFO + 1
 
 
-class OSSysLogHandler(logging.Handler):
-    severity_map = {
-        "CRITICAL": syslog.LOG_CRIT,
-        "DEBUG": syslog.LOG_DEBUG,
-        "ERROR": syslog.LOG_ERR,
-        "INFO": syslog.LOG_INFO,
-        "WARNING": syslog.LOG_WARNING,
-        "WARN": syslog.LOG_WARNING,
-    }
+if syslog is not None:
+    class OSSysLogHandler(logging.Handler):
+        """Syslog based handler. Only available on UNIX-like platforms."""
+        severity_map = {
+            "CRITICAL": syslog.LOG_CRIT,
+            "DEBUG": syslog.LOG_DEBUG,
+            "ERROR": syslog.LOG_ERR,
+            "INFO": syslog.LOG_INFO,
+            "WARNING": syslog.LOG_WARNING,
+            "WARN": syslog.LOG_WARNING,
+        }
 
-    def __init__(self, facility=syslog.LOG_USER,
-                 use_syslog_rfc_format=True):
-        # Do not use super() unless type(logging.Handler) is 'type'
-        # (i.e. >= Python 2.7).
-        logging.Handler.__init__(self)
-        if use_syslog_rfc_format:
-            binary_name = _get_binary_name()
-        else:
-            binary_name = ""
-        syslog.openlog(binary_name, 0, facility)
+        def __init__(self, facility=syslog.LOG_USER,
+                     use_syslog_rfc_format=True):
+            # Do not use super() unless type(logging.Handler) is 'type'
+            # (i.e. >= Python 2.7).
+            logging.Handler.__init__(self)
+            if use_syslog_rfc_format:
+                binary_name = _get_binary_name()
+            else:
+                binary_name = ""
+            syslog.openlog(binary_name, 0, facility)
 
-    def emit(self, record):
-        syslog.syslog(self.severity_map.get(record.levelname,
-                                            syslog.LOG_DEBUG),
-                      record.getMessage())
+        def emit(self, record):
+            syslog.syslog(self.severity_map.get(record.levelname,
+                                                syslog.LOG_DEBUG),
+                          record.getMessage())
 
 
 class ColorHandler(logging.StreamHandler):
