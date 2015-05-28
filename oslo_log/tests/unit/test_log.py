@@ -242,15 +242,19 @@ class LogLevelTestCase(BaseTestCase):
         levels = self.CONF.default_log_levels
         levels.append("nova-test=INFO")
         levels.append("nova-not-debug=WARN")
+        levels.append("nova-below-debug=5")
         self.config(default_log_levels=levels,
                     verbose=True)
         log.setup(self.CONF, 'testing')
         self.log = log.getLogger('nova-test')
         self.log_no_debug = log.getLogger('nova-not-debug')
+        self.log_below_debug = log.getLogger('nova-below-debug')
 
     def test_is_enabled_for(self):
         self.assertTrue(self.log.isEnabledFor(logging.INFO))
         self.assertFalse(self.log_no_debug.isEnabledFor(logging.DEBUG))
+        self.assertTrue(self.log_below_debug.isEnabledFor(logging.DEBUG))
+        self.assertTrue(self.log_below_debug.isEnabledFor(5))
 
     def test_has_level_from_flags(self):
         self.assertEqual(logging.INFO, self.log.logger.getEffectiveLevel())

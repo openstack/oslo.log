@@ -352,13 +352,26 @@ def _setup_logging_from_conf(conf, project, version):
     for pair in conf.default_log_levels:
         mod, _sep, level_name = pair.partition('=')
         logger = logging.getLogger(mod)
+        numeric_level = None
+        try:
+            # NOTE(harlowja): integer's are valid level names, and for some
+            # libraries they have a lower level than DEBUG that is typically
+            # defined at level 5, so to make that accessible, try to convert
+            # this to a integer, and if not keep the original...
+            numeric_level = int(level_name)
+        except ValueError:
+            pass
         # NOTE(AAzza) in python2.6 Logger.setLevel doesn't convert string name
         # to integer code.
         if sys.version_info < (2, 7):
-            level = logging.getLevelName(level_name)
-            logger.setLevel(level)
+            if numeric_level is None:
+                numeric_level = logging.getLevelName(level_name)
+            logger.setLevel(numeric_level)
         else:
-            logger.setLevel(level_name)
+            if numeric_level is not None:
+                logger.setLevel(numeric_level)
+            else:
+                logger.setLevel(level_name)
 
 _loggers = {}
 
