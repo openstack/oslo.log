@@ -2,11 +2,11 @@
 oslo.log -- Oslo Logging Library
 ================================
 
-.. image:: https://pypip.in/version/oslo.log/badge.svg
+.. image:: https://img.shields.io/pypi/v/oslo.log.svg
     :target: https://pypi.python.org/pypi/oslo.log/
     :alt: Latest Version
 
-.. image:: https://pypip.in/download/oslo.log/badge.svg?period=month
+.. image:: https://img.shields.io/pypi/dm/oslo.log.svg
     :target: https://pypi.python.org/pypi/oslo.log/
     :alt: Downloads
 
