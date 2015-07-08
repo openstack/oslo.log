@@ -94,7 +94,7 @@ DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'requests.packages.urllib3.util.retry=WARN',
                       'urllib3.util.retry=WARN',
                       "keystonemiddleware=WARN", "routes.middleware=WARN",
-                      "stevedore=WARN"]
+                      "stevedore=WARN", "taskflow=WARN"]
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
