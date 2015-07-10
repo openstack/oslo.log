@@ -77,6 +77,12 @@ class deprecated(object):
     ...             remove_in=None)
     ... def e(): pass
 
+    .. warning::
+
+       The hook used to detect when a deprecated exception is being
+       *caught* does not work under Python 3. Deprecated exceptions
+       are still logged if they are thrown.
+
     """
 
     # NOTE(morganfainberg): Bexar is used for unit test purposes, it is
@@ -155,11 +161,23 @@ class deprecated(object):
             # and added to the oslo-incubator requrements
             @functools.wraps(orig_init, assigned=('__name__', '__doc__'))
             def new_init(self, *args, **kwargs):
-                report_deprecated_feature(LOG, msg, details)
+                if self.__class__ in _DEPRECATED_EXCEPTIONS:
+                    report_deprecated_feature(LOG, msg, details)
                 orig_init(self, *args, **kwargs)
             func_or_cls.__init__ = new_init
+            _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
             if issubclass(func_or_cls, Exception):
+                # NOTE(dhellmann): The subclasscheck is called,
+                # sometimes, to test whether a class matches the type
+                # being caught in an exception. This lets us warn
+                # folks that they are trying to catch an exception
+                # that has been deprecated. However, under Python 3
+                # the test for whether one class is a subclass of
+                # another has been optimized so that the abstract
+                # check is only invoked in some cases. (See
+                # PyObject_IsSubclass in cpython/Objects/abstract.c
+                # for the short-cut.)
                 class ExceptionMeta(type):
                     def __subclasscheck__(self, subclass):
                         if self in _DEPRECATED_EXCEPTIONS:
@@ -168,6 +186,7 @@ class deprecated(object):
                                      self).__subclasscheck__(subclass)
                 func_or_cls = six.add_metaclass(ExceptionMeta)(func_or_cls)
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
+
             return func_or_cls
         else:
             raise TypeError('deprecated can be used only with functions or '
