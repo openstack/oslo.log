@@ -69,6 +69,7 @@ class RFCSysLogHandler(logging.handlers.SysLogHandler):
         return msg
 
 _AUDIT = logging.INFO + 1
+_TRACE = 5
 
 
 if syslog is not None:
@@ -102,6 +103,7 @@ if syslog is not None:
 
 class ColorHandler(logging.StreamHandler):
     LEVEL_COLORS = {
+        _TRACE: '\033[00;35m',  # MAGENTA
         logging.DEBUG: '\033[00;32m',  # GREEN
         logging.INFO: '\033[00;36m',  # CYAN
         _AUDIT: '\033[01;36m',  # BOLD CYAN

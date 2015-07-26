@@ -242,26 +242,36 @@ class LogLevelTestCase(BaseTestCase):
         levels = self.CONF.default_log_levels
         levels.append("nova-test=INFO")
         levels.append("nova-not-debug=WARN")
-        levels.append("nova-below-debug=5")
+        levels.append("nova-below-debug=7")
+        levels.append("nova-trace=TRACE")
         self.config(default_log_levels=levels,
                     verbose=True)
         log.setup(self.CONF, 'testing')
         self.log = log.getLogger('nova-test')
         self.log_no_debug = log.getLogger('nova-not-debug')
         self.log_below_debug = log.getLogger('nova-below-debug')
+        self.log_trace = log.getLogger('nova-trace')
 
     def test_is_enabled_for(self):
         self.assertTrue(self.log.isEnabledFor(logging.INFO))
         self.assertFalse(self.log_no_debug.isEnabledFor(logging.DEBUG))
         self.assertTrue(self.log_below_debug.isEnabledFor(logging.DEBUG))
-        self.assertTrue(self.log_below_debug.isEnabledFor(5))
+        self.assertTrue(self.log_below_debug.isEnabledFor(7))
+        self.assertTrue(self.log_trace.isEnabledFor(log.TRACE))
 
     def test_has_level_from_flags(self):
         self.assertEqual(logging.INFO, self.log.logger.getEffectiveLevel())
 
+    def test_has_level_from_flags_for_trace(self):
+        self.assertEqual(log.TRACE, self.log_trace.logger.getEffectiveLevel())
+
     def test_child_log_has_level_of_parent_flag(self):
         l = log.getLogger('nova-test.foo')
         self.assertEqual(logging.INFO, l.logger.getEffectiveLevel())
+
+    def test_child_log_has_level_of_parent_flag_for_trace(self):
+        l = log.getLogger('nova-trace.foo')
+        self.assertEqual(log.TRACE, l.logger.getEffectiveLevel())
 
 
 class JSONFormatterTestCase(LogTestBase):
@@ -544,6 +554,20 @@ class InstanceRecordTestCase(LogTestBase):
         infoexpected = "[instance: C9B7CCC6-8A12-4C53-A736-" \
                        "D7A1C36A62F3] info\n"
         self.assertEqual(infoexpected, self.stream.getvalue())
+
+
+class TraceLevelTestCase(LogTestBase):
+    def setUp(self):
+        super(TraceLevelTestCase, self).setUp()
+        self.config(logging_context_format_string="%(message)s")
+        self.mylog = log.getLogger()
+        self._add_handler_with_cleanup(self.mylog)
+        self._set_log_level_with_cleanup(self.mylog, log.TRACE)
+
+    def test_trace_log_msg(self):
+        ctxt = _fake_context()
+        self.mylog.trace("my trace message", context=ctxt)
+        self.assertEqual('my trace message\n', self.stream.getvalue())
 
 
 class DomainTestCase(LogTestBase):

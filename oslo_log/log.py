@@ -51,6 +51,18 @@ from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
 
+CRITICAL = logging.CRITICAL
+FATAL = logging.FATAL
+ERROR = logging.ERROR
+WARNING = logging.WARNING
+WARN = logging.WARNING
+INFO = logging.INFO
+DEBUG = logging.DEBUG
+NOTSET = logging.NOTSET
+TRACE = handlers._TRACE
+
+logging.addLevelName(TRACE, 'TRACE')
+
 
 def _get_log_file_path(conf, binary=None):
     logfile = conf.log_file
@@ -76,6 +88,9 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
     @property
     def handlers(self):
         return self.logger.handlers
+
+    def trace(self, msg, *args, **kwargs):
+        self.log(TRACE, msg, *args, **kwargs)
 
     def isEnabledFor(self, level):
         if _PY26:
