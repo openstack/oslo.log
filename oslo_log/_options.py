@@ -24,12 +24,13 @@ common_cli_opts = [
                 short='d',
                 default=False,
                 help='Print debugging output (set logging level to '
-                     'DEBUG instead of default WARNING level).'),
+                     'DEBUG instead of default INFO level).'),
     cfg.BoolOpt('verbose',
                 short='v',
-                default=False,
-                help='Print more verbose output (set logging level to '
-                     'INFO instead of default WARNING level).'),
+                default=True,
+                help='If set to false, will disable INFO logging level, '
+                     'making WARNING the default.',
+                deprecated_for_removal=True),
 ]
 
 logging_cli_opts = [
