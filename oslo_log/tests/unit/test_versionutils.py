@@ -317,3 +317,12 @@ class DeprecatedTestCase(test_base.BaseTestCase):
             pass
 
         mock_log.assert_not_called()
+
+    @mock.patch.object(versionutils.CONF, 'register_opts')
+    def test_register_options(self, mock_register_opts):
+        # Calling register_options registers the config options.
+
+        versionutils.register_options()
+
+        mock_register_opts.assert_called_once_with(
+            versionutils.deprecated_opts)
