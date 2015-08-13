@@ -709,6 +709,24 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertIsInstance(logger.handlers[0],
                               logging.handlers.WatchedFileHandler)
 
+    def test_log_publish_errors_handlers(self):
+        fake_handler = mock.MagicMock()
+        with mock.patch('oslo_utils.importutils.import_object',
+                        return_value=fake_handler) as mock_import:
+            log_dir = tempfile.mkdtemp()
+            self.CONF(['--log-dir', log_dir])
+            self.CONF.set_default('use_stderr', False)
+            self.CONF.set_default('publish_errors', True)
+            log._setup_logging_from_conf(self.CONF, 'test', 'test')
+            logger = log._loggers[None].logger
+            self.assertEqual(2, len(logger.handlers))
+            self.assertIsInstance(logger.handlers[0],
+                                  logging.handlers.WatchedFileHandler)
+            self.assertEqual(logger.handlers[1], fake_handler)
+            mock_import.assert_called_once_with(
+                'oslo_messaging.notify.log_handler.PublishErrorsHandler',
+                logging.ERROR)
+
     def test_logfile_deprecated(self):
         logfile = '/some/other/path/foo-bar.log'
         self.CONF(['--logfile', logfile])
