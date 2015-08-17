@@ -74,8 +74,8 @@ logging_cli_opts = [
                 help='(Optional) Enables or disables syslog rfc5424 format '
                      'for logging. If enabled, prefixes the MSG part of the '
                      'syslog message with APP-NAME (RFC5424). The '
-                     'format without the APP-NAME is deprecated in K, '
-                     'and will be removed in M, along with this option.'),
+                     'format without the APP-NAME is deprecated in Kilo, '
+                     'and will be removed in Mitaka, along with this option.'),
     cfg.StrOpt('syslog-log-facility',
                default='LOG_USER',
                help='Syslog facility to receive log lines.')
