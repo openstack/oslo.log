@@ -842,8 +842,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
                        'extra_keys': ['anything', 'context',
                                       'instance', 'resource_uuid'],
                        'instance': 'instance identifier',
-                       'resource_uuid': 'UUID for instance',
-                       'anything': 'goes'}},
+                       'resource_uuid': 'UUID for instance'}},
         )
 
     def test_pass_args_to_log(self):
