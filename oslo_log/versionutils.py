@@ -105,6 +105,7 @@ class deprecated(object):
     JUNO = 'J'
     KILO = 'K'
     LIBERTY = 'L'
+    MITAKA = 'M'
 
     _RELEASES = {
         # NOTE(morganfainberg): Bexar is used for unit test purposes, it is
@@ -117,6 +118,7 @@ class deprecated(object):
         'J': 'Juno',
         'K': 'Kilo',
         'L': 'Liberty',
+        'M': 'Mitaka',
     }
 
     _deprecated_msg_with_alternative = _(
