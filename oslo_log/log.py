@@ -404,6 +404,13 @@ def getLogger(name=None, project='unknown', version='unknown'):
                     messages. For example, ``'2014.2'``.
     :type version: string
     """
+    # NOTE(dhellmann): To maintain backwards compatibility with the
+    # old oslo namespace package logger configurations, and to make it
+    # possible to control all oslo logging with one logger node, we
+    # replace "oslo_" with "oslo." so that modules under the new
+    # non-namespaced packages get loggers as though they are.
+    if name and name.startswith('oslo_'):
+        name = 'oslo.' + name[5:]
     if name not in _loggers:
         _loggers[name] = KeywordArgumentAdapter(logging.getLogger(name),
                                                 {'project': project,

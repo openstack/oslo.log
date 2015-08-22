@@ -911,3 +911,14 @@ class UnicodeConversionTestCase(BaseTestCase):
         result = log._ensure_unicode(exc)
         self.assertEqual(msg, result)
         self.assertIsInstance(result, six.text_type)
+
+
+class LoggerNameTestCase(LoggerTestCase):
+
+    def test_oslo_dot(self):
+        l = log.getLogger('oslo.subname')
+        self.assertEqual(l.logger.name, 'oslo.subname')
+
+    def test_oslo_underscore(self):
+        l = log.getLogger('oslo_subname')
+        self.assertEqual(l.logger.name, 'oslo.subname')
