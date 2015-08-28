@@ -87,7 +87,7 @@ format strings therefore need to be passed as unicode objects --
 that's strictly :class:`unicode`, not :class:`str`. If a message has
 no interpolation for extra parameters, a byte string can be used.
 
-The most common place to encounter this is where :meth:`Logger.exception`
+The most common place to encounter this is where :meth:`Logger.error`
 is used by passing an exception object as the first argument.
 
 ::
@@ -96,7 +96,7 @@ is used by passing an exception object as the first argument.
     try:
         do_something()
     except Exception as err:
-        LOG.exception(err)
+        LOG.error(err)
 
 Now, the error should be converted to unicode either by calling
 :func:`six.text_type` or by using a unicode formatting string to
@@ -117,14 +117,14 @@ produced by passing the exception with a useful message.
     try:
         do_something()
     except Exception as err:
-        LOG.exception(_LE(u"do_something couldn't do something: %s"), err)
+        LOG.error(_LE(u"do_something couldn't do something: %s"), err)
 
     # New style, alternate without context
     import six
     try:
         do_something()
     except Exception as err:
-        LOG.exception(six.text_type(err))
+        LOG.error(six.text_type(err))
 
 Failure to do this for exceptions or other objects containing
 translatable strings from ``oslo.i18n`` results in an exception when
