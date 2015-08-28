@@ -31,6 +31,7 @@ import logging
 import logging.config
 import logging.handlers
 import os
+import platform
 import sys
 try:
     import syslog
@@ -311,7 +312,12 @@ def _setup_logging_from_conf(conf, project, version):
 
     logpath = _get_log_file_path(conf)
     if logpath:
-        filelog = logging.handlers.WatchedFileHandler(logpath)
+        if conf.watch_log_file and platform.system() == 'Linux':
+            file_handler = handlers.FastWatchedFileHandler
+        else:
+            file_handler = logging.handlers.WatchedFileHandler
+
+        filelog = file_handler(logpath)
         log_root.addHandler(filelog)
 
     if conf.use_stderr:

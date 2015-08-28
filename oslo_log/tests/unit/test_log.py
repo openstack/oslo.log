@@ -16,12 +16,14 @@
 
 import logging
 import os
+import platform
 import sys
 try:
     import syslog
 except ImportError:
     syslog = None
 import tempfile
+import time
 
 import mock
 from oslo_config import cfg
@@ -117,6 +119,7 @@ class BaseTestCase(test_base.BaseTestCase):
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.CONF)
+        log.setup(self.CONF, 'base')
 
 
 class LogTestBase(BaseTestCase):
@@ -660,6 +663,53 @@ class SetDefaultsTestCase(BaseTestCase):
         self.assertEqual(None, self.conf.log_file)
 
 
+@testtools.skipIf(platform.system() != 'Linux',
+                  'pyinotify library works on Linux platform only.')
+class FastWatchedFileHandlerTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(FastWatchedFileHandlerTestCase, self).setUp()
+
+    def _config(self):
+        os_level, log_path = tempfile.mkstemp()
+        log_dir_path = os.path.dirname(log_path)
+        log_file_path = os.path.basename(log_path)
+        self.CONF(['--log-dir', log_dir_path, '--log-file', log_file_path])
+        self.config(use_stderr=False)
+        self.config(watch_log_file=True)
+        log.setup(self.CONF, 'test', 'test')
+        return log_path
+
+    def test_instantiate(self):
+        self._config()
+        logger = log._loggers[None].logger
+        self.assertEqual(1, len(logger.handlers))
+        self.assertIsInstance(logger.handlers[0],
+                              handlers.FastWatchedFileHandler)
+
+    def test_log(self):
+        log_path = self._config()
+        logger = log._loggers[None].logger
+        text = 'Hello World!'
+        logger.info(text)
+        with open(log_path, 'r') as f:
+            file_content = f.read()
+        self.assertTrue(text in file_content)
+
+    def test_move(self):
+        log_path = self._config()
+        os_level_dst, log_path_dst = tempfile.mkstemp()
+        os.rename(log_path, log_path_dst)
+        time.sleep(2)
+        self.assertTrue(os.path.exists(log_path))
+
+    def test_remove(self):
+        log_path = self._config()
+        os.remove(log_path)
+        time.sleep(2)
+        self.assertTrue(os.path.exists(log_path))
+
+
 class LogConfigOptsTestCase(BaseTestCase):
 
     def setUp(self):
@@ -673,6 +723,7 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertTrue('verbose' in f.getvalue())
         self.assertTrue('log-config' in f.getvalue())
         self.assertTrue('log-format' in f.getvalue())
+        self.assertTrue('watch-log-file' in f.getvalue())
 
     def test_debug_verbose(self):
         self.CONF(['--debug', '--verbose'])
