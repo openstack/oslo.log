@@ -132,6 +132,11 @@ log_opts = [
                default='[instance: %(uuid)s] ',
                help='The format for an instance UUID that is passed with the '
                     'log message.'),
+    cfg.StrOpt('logging_user_identity_format',
+               default='%(user)s %(tenant)s '
+                       '%(domain)s %(user_domain)s %(project_domain)s',
+               help='Format string for user_identity field of '
+                    'the logging_context_format_string'),
 ]
 
 

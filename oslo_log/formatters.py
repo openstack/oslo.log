@@ -61,6 +61,11 @@ def _update_record_with_context(record):
     return context
 
 
+class _ReplaceFalseValue(dict):
+    def __getitem__(self, key):
+        return dict.get(self, key, None) or '-'
+
+
 class JSONFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None):
         # NOTE(jkoelker) we ignore the fmt argument, but its still there
@@ -215,6 +220,15 @@ class ContextFormatter(logging.Formatter):
                     'user_name', 'project_name'):
             if key not in record.__dict__:
                 record.__dict__[key] = ''
+
+        # Set the "user_identity" value of "logging_context_format_string"
+        # by using "logging_user_identity_format" and
+        # "to_dict()" of oslo.context.
+        if context:
+            record.user_identity = (
+                self.conf.logging_user_identity_format %
+                _ReplaceFalseValue(context.__dict__)
+            )
 
         if record.__dict__.get('request_id'):
             fmt = self.conf.logging_context_format_string
