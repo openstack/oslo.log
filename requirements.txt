@@ -12,3 +12,4 @@ oslo.i18n>=1.5.0 # Apache-2.0
 oslo.utils>=2.0.0 # Apache-2.0
 oslo.serialization>=1.4.0 # Apache-2.0
 debtcollector>=0.3.0 # Apache-2.0
+pyinotify>=0.9.6 # MIT

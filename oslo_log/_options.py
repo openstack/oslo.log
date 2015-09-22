@@ -63,6 +63,13 @@ logging_cli_opts = [
                deprecated_name='logdir',
                help='(Optional) The base directory used for relative '
                     '--log-file paths.'),
+    cfg.BoolOpt('watch-log-file',
+                default=False,
+                help='(Optional) Uses logging handler designed to watch file '
+                     'system. When log file is moved or removed this handler '
+                     'will open a new log file with specified path '
+                     'instantaneously. It makes sense only if log-file option '
+                     'is specified and Linux platform is used.'),
     cfg.BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging. '
