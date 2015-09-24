@@ -1,8 +1,8 @@
-====================================
-Welcome to oslo.log's documentation!
-====================================
+================================
+oslo.log -- Oslo Logging Library
+================================
 
-The `oslo`_ log (logging) configuration library provides standardized
+The oslo.log (logging) configuration library provides standardized
 configuration for all openstack projects. It also provides custom
 formatters, handlers and support for context specific
 logging (like resource id's etc).
@@ -32,5 +32,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. _oslo: https://wiki.openstack.org/wiki/Oslo
