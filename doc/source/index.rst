@@ -13,6 +13,7 @@ logging (like resource id's etc).
    installation
    usage
    opts
+   configfiles/index
    contributing
    history
 
