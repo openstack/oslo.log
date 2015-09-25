@@ -12,6 +12,7 @@ logging (like resource id's etc).
 
    installation
    usage
+   opts
    contributing
    history
 
