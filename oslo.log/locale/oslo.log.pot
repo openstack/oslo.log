@@ -6,57 +6,57 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: oslo.log 1.7.1.dev1\n"
+"Project-Id-Version: oslo.log 1.11.1.dev17\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-29 06:31+0000\n"
+"POT-Creation-Date: 2015-09-26 06:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"Generated-By: Babel 2.1.1\n"
 
-#: oslo_log/log.py:198
+#: oslo_log/log.py:214
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 
-#: oslo_log/log.py:285
+#: oslo_log/log.py:301
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr ""
 
-#: oslo_log/versionutils.py:112
+#: oslo_log/versionutils.py:124
 #, python-format
 msgid ""
 "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s and "
 "may be removed in %(remove_in)s."
 msgstr ""
 
-#: oslo_log/versionutils.py:116
+#: oslo_log/versionutils.py:128
 #, python-format
 msgid ""
 "%(what)s is deprecated as of %(as_of)s and may be removed in "
 "%(remove_in)s. It will not be superseded."
 msgstr ""
 
-#: oslo_log/versionutils.py:120
+#: oslo_log/versionutils.py:132
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s."
 msgstr ""
 
-#: oslo_log/versionutils.py:123
+#: oslo_log/versionutils.py:135
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s. It will not be superseded."
 msgstr ""
 
-#: oslo_log/versionutils.py:248
+#: oslo_log/versionutils.py:260
 #, python-format
 msgid "Deprecated: %s"
 msgstr ""
 
-#: oslo_log/versionutils.py:266
+#: oslo_log/versionutils.py:278
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr ""
