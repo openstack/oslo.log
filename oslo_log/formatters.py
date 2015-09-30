@@ -14,6 +14,7 @@ import itertools
 import logging
 import logging.config
 import logging.handlers
+import socket
 import sys
 import traceback
 
@@ -66,6 +67,10 @@ class JSONFormatter(logging.Formatter):
         # NOTE(jkoelker) we ignore the fmt argument, but its still there
         #                since logging.config.fileConfig passes it.
         self.datefmt = datefmt
+        try:
+            self.hostname = socket.gethostname()
+        except socket.error:
+            self.hostname = None
 
     def formatException(self, ei, strip_newlines=True):
         lines = traceback.format_exception(*ei)
@@ -96,7 +101,8 @@ class JSONFormatter(logging.Formatter):
                    'thread_name': record.threadName,
                    'process_name': record.processName,
                    'process': record.process,
-                   'traceback': None}
+                   'traceback': None,
+                   'hostname': self.hostname}
 
         # Build the extra values that were given to us, including
         # the context.
