@@ -4,7 +4,7 @@
 *.so
 
 # Packages
-*.egg
+*.egg*
 *.egg-info
 dist
 build
@@ -23,6 +23,7 @@ pip-log.txt
 
 # Unit test / coverage reports
 .coverage
+cover
 .tox
 nosetests.xml
 .testrepository
