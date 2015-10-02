@@ -28,6 +28,9 @@ from oslo_context import context as context_utils
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 
+if six.PY3:
+    from functools import reduce
+
 
 def _dictify_context(context):
     if getattr(context, 'get_logging_values', None):
@@ -159,6 +162,68 @@ class JSONFormatter(logging.Formatter):
             message['traceback'] = self.formatException(record.exc_info)
 
         return jsonutils.dumps(message)
+
+
+class FluentFormatter(logging.Formatter):
+    """A formatter for fluentd.
+
+    format() returns dict, not string.
+    It expects to be used by fluent.handler.FluentHandler.
+    (included in fluent-logger-python)
+
+    .. versionadded:: 3.17
+    """
+
+    def __init__(self, fmt=None, datefmt=None):
+        # NOTE(masaki) we ignore the fmt argument because of the same reason
+        #              with JSONFormatter.
+        self.datefmt = datefmt
+        try:
+            self.hostname = socket.gethostname()
+        except socket.error:
+            self.hostname = None
+
+    def formatException(self, exc_info, strip_newlines=True):
+        lines = traceback.format_exception(*exc_info)
+        if strip_newlines:
+            lines = reduce(lambda a, line: a + line.rstrip().splitlines(),
+                           lines, [])
+        return lines
+
+    def format(self, record):
+        message = {'message': record.getMessage(),
+                   'time': self.formatTime(record, self.datefmt),
+                   'name': record.name,
+                   'level': record.levelname,
+                   'filename': record.filename,
+                   'module': record.module,
+                   'funcname': record.funcName,
+                   'process_name': record.processName,
+                   'hostname': self.hostname,
+                   'traceback': None}
+
+        # Build the extra values that were given to us, including
+        # the context.
+        context = _update_record_with_context(record)
+        if hasattr(record, 'extra'):
+            extra = record.extra.copy()
+        else:
+            extra = {}
+        for key in getattr(record, 'extra_keys', []):
+            if key not in extra:
+                extra[key] = getattr(record, key)
+        # If we saved a context object, explode it into the extra
+        # dictionary because the values are more useful than the
+        # object reference.
+        if 'context' in extra:
+            extra.update(_dictify_context(context))
+            del extra['context']
+        message['extra'] = extra
+
+        if record.exc_info:
+            message['traceback'] = self.formatException(record.exc_info)
+
+        return message
 
 
 class ContextFormatter(logging.Formatter):

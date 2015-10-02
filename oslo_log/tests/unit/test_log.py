@@ -441,6 +441,69 @@ def get_fake_datetime(retval):
     return FakeDateTime
 
 
+class DictStreamHandler(logging.StreamHandler):
+    """Serialize dict in order to avoid TypeError in python 3. It is needed for
+    FluentFormatterTestCase.
+    """
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            jsonutils.dump(msg, self.stream)
+            self.stream.flush()
+        except AttributeError:
+            self.handleError(record)
+
+
+class FluentFormatterTestCase(LogTestBase):
+    def setUp(self):
+        super(FluentFormatterTestCase, self).setUp()
+        self.log = log.getLogger('test-fluent')
+        self._add_handler_with_cleanup(self.log,
+                                       handler=DictStreamHandler,
+                                       formatter=formatters.FluentFormatter)
+        self._set_log_level_with_cleanup(self.log, logging.DEBUG)
+
+    def test_fluent(self):
+        test_msg = 'This is a %(test)s line'
+        test_data = {'test': 'log'}
+        local_context = _fake_context()
+        self.log.debug(test_msg, test_data, key='value', context=local_context)
+
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertTrue('extra' in data)
+        extra = data['extra']
+        self.assertEqual('value', extra['key'])
+        self.assertEqual(local_context.auth_token, extra['auth_token'])
+        self.assertEqual(local_context.user, extra['user'])
+        self.assertEqual('test-fluent', data['name'])
+
+        self.assertEqual(test_msg % test_data, data['message'])
+
+        self.assertEqual('test_log.py', data['filename'])
+        self.assertEqual('test_fluent', data['funcname'])
+
+        self.assertEqual('DEBUG', data['level'])
+        self.assertFalse(data['traceback'])
+
+    def test_json_exception(self):
+        test_msg = 'This is %s'
+        test_data = 'exceptional'
+        try:
+            raise Exception('This is exceptional')
+        except Exception:
+            self.log.exception(test_msg, test_data)
+
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertTrue(data)
+        self.assertTrue('extra' in data)
+        self.assertEqual('test-fluent', data['name'])
+
+        self.assertEqual(test_msg % test_data, data['message'])
+
+        self.assertEqual('ERROR', data['level'])
+        self.assertTrue(data['traceback'])
+
+
 class ContextFormatterTestCase(LogTestBase):
     def setUp(self):
         super(ContextFormatterTestCase, self).setUp()
