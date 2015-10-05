@@ -313,7 +313,8 @@ def _setup_logging_from_conf(conf, project, version):
     logpath = _get_log_file_path(conf)
     if logpath:
         if conf.watch_log_file and platform.system() == 'Linux':
-            file_handler = handlers.FastWatchedFileHandler
+            from oslo_log import watchers
+            file_handler = watchers.FastWatchedFileHandler
         else:
             file_handler = logging.handlers.WatchedFileHandler
 

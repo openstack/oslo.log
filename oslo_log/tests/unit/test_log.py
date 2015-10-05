@@ -684,8 +684,9 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         self._config()
         logger = log._loggers[None].logger
         self.assertEqual(1, len(logger.handlers))
+        from oslo_log import watchers
         self.assertIsInstance(logger.handlers[0],
-                              handlers.FastWatchedFileHandler)
+                              watchers.FastWatchedFileHandler)
 
     def test_log(self):
         log_path = self._config()
