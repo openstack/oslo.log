@@ -385,7 +385,7 @@ def _setup_logging_from_conf(conf, project, version):
             pass
         # NOTE(AAzza) in python2.6 Logger.setLevel doesn't convert string name
         # to integer code.
-        if sys.version_info < (2, 7):
+        if _PY26:
             if numeric_level is None:
                 numeric_level = logging.getLevelName(level_name)
             logger.setLevel(numeric_level)
