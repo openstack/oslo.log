@@ -43,7 +43,14 @@ from oslo_log import log
 
 
 def _fake_context():
-    return context.RequestContext(1, 1, overwrite=True)
+    ctxt = context.RequestContext(1, 1, overwrite=True)
+    ctxt.user = 'myuser'
+    ctxt.tenant = 'mytenant'
+    ctxt.domain = 'mydomain'
+    ctxt.project_domain = 'myprojectdomain'
+    ctxt.user_domain = 'myuserdomain'
+
+    return ctxt
 
 
 class CommonLoggerTestsMixIn(object):
@@ -425,6 +432,37 @@ class ContextFormatterTestCase(LogTestBase):
                                                message)
         self.assertEqual(expected, self.stream.getvalue())
 
+    def test_user_identity_logging(self):
+        self.config(logging_context_format_string="HAS CONTEXT "
+                                                  "[%(request_id)s "
+                                                  "%(user_identity)s]: "
+                                                  "%(message)s")
+        ctxt = _fake_context()
+        ctxt.request_id = u'99'
+        message = 'test'
+        self.log.info(message, context=ctxt)
+        expected = ("HAS CONTEXT [%s %s %s %s %s %s]: %s\n" %
+                    (ctxt.request_id, ctxt.user, ctxt.tenant, ctxt.domain,
+                     ctxt.user_domain, ctxt.project_domain,
+                     six.text_type(message)))
+        self.assertEqual(expected, self.stream.getvalue())
+
+    def test_user_identity_logging_set_format(self):
+        self.config(logging_context_format_string="HAS CONTEXT "
+                                                  "[%(request_id)s "
+                                                  "%(user_identity)s]: "
+                                                  "%(message)s",
+                    logging_user_identity_format="%(user)s "
+                                                 "%(tenant)s")
+        ctxt = _fake_context()
+        ctxt.request_id = u'99'
+        message = 'test'
+        self.log.info(message, context=ctxt)
+        expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
+                    (ctxt.request_id, ctxt.user, ctxt.tenant,
+                     six.text_type(message)))
+        self.assertEqual(expected, self.stream.getvalue())
+
 
 class ExceptionLoggingTestCase(LogTestBase):
     """Test that Exceptions are logged."""
@@ -595,9 +633,6 @@ class DomainTestCase(LogTestBase):
 
     def test_domain_in_log_msg(self):
         ctxt = _fake_context()
-        ctxt.domain = 'mydomain'
-        ctxt.project_domain = 'myprojectdomain'
-        ctxt.user_domain = 'myuserdomain'
         user_identity = ctxt.to_dict()['user_identity']
         self.assertTrue(ctxt.domain in user_identity)
         self.assertTrue(ctxt.project_domain in user_identity)
