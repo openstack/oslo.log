@@ -232,6 +232,13 @@ def _load_log_config(log_config_append):
 
 def register_options(conf):
     """Register the command line and configuration options used by oslo.log."""
+
+    # Sometimes logging occurs before logging is ready (e.g., oslo_config).
+    # To avoid "No handlers could be found," temporarily log to sys.stderr.
+    root_logger = logging.getLogger(None)
+    if not root_logger.handlers:
+        root_logger.addHandler(logging.StreamHandler())
+
     conf.register_cli_opts(_options.common_cli_opts)
     conf.register_cli_opts(_options.logging_cli_opts)
     conf.register_opts(_options.generic_log_opts)
