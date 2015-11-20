@@ -388,7 +388,7 @@ def _setup_logging_from_conf(conf, project, version):
             # defined at level 5, so to make that accessible, try to convert
             # this to a integer, and if not keep the original...
             numeric_level = int(level_name)
-        except ValueError:
+        except ValueError:  # nosec
             pass
         # NOTE(AAzza) in python2.6 Logger.setLevel doesn't convert string name
         # to integer code.
