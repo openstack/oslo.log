@@ -23,18 +23,7 @@ except ImportError:
 from debtcollector import removals
 
 
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:  # NOTE(jkoelker) NullHandler added in Python 2.7
-    class NullHandler(logging.Handler):
-        def handle(self, record):
-            pass
-
-        def emit(self, record):
-            pass
-
-        def createLock(self):
-            self.lock = None
+NullHandler = logging.NullHandler
 
 
 def _get_binary_name():
@@ -55,16 +44,10 @@ class RFCSysLogHandler(logging.handlers.SysLogHandler):
     )
     def __init__(self, *args, **kwargs):
         self.binary_name = _get_binary_name()
-        # Do not use super() unless type(logging.handlers.SysLogHandler)
-        #  is 'type' (Python 2.7).
-        # Use old style calls, if the type is 'classobj' (Python 2.6)
-        logging.handlers.SysLogHandler.__init__(self, *args, **kwargs)
+        super(RFCSysLogHandler, self).__init__(*args, **kwargs)
 
     def format(self, record):
-        # Do not use super() unless type(logging.handlers.SysLogHandler)
-        #  is 'type' (Python 2.7).
-        # Use old style calls, if the type is 'classobj' (Python 2.6)
-        msg = logging.handlers.SysLogHandler.format(self, record)
+        msg = super(RFCSysLogHandler, self).format(record)
         msg = self.binary_name + ' ' + msg
         return msg
 
