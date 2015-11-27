@@ -306,7 +306,9 @@ def _find_facility(facility):
 
 def _setup_logging_from_conf(conf, project, version):
     log_root = getLogger(None).logger
-    for handler in log_root.handlers:
+
+    # Remove all handlers
+    for handler in list(log_root.handlers):
         log_root.removeHandler(handler)
 
     logpath = _get_log_file_path(conf)

@@ -117,6 +117,7 @@ class BaseTestCase(test_base.BaseTestCase):
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.CONF)
+        log.setup(self.CONF, 'base')
 
 
 class LogTestBase(BaseTestCase):
@@ -757,6 +758,16 @@ class LogConfigOptsTestCase(BaseTestCase):
             formatter = handler.formatter
             self.assertTrue(isinstance(formatter,
                                        formatters.ContextFormatter))
+
+    def test_handlers_cleanup(self):
+        """Test that all old handlers get removed from log_root."""
+        old_handlers = [log.handlers.ColorHandler(),
+                        log.handlers.ColorHandler()]
+        log._loggers[None].logger.handlers = list(old_handlers)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handlers = log._loggers[None].logger.handlers
+        self.assertEqual(1, len(handlers))
+        self.assertNotIn(handlers[0], old_handlers)
 
 
 class LogConfigTestCase(BaseTestCase):
