@@ -219,6 +219,15 @@ def _load_log_config(log_config_append):
         raise LogConfigError(log_config_append, six.text_type(exc))
 
 
+def _mutate_hook(conf, fresh):
+    """Reconfigures oslo.log according to the mutated options."""
+
+    # verbose is deprecated, so I didn't make it mutable, so there's no need to
+    # test for it here.
+    if (None, 'debug') in fresh:
+        _refresh_root_level(conf.debug, conf.verbose)
+
+
 def register_options(conf):
     """Register the command line and configuration options used by oslo.log."""
 
@@ -233,6 +242,8 @@ def register_options(conf):
     conf.register_opts(_options.generic_log_opts)
     conf.register_opts(_options.log_opts)
     formatters._store_global_conf(conf)
+
+    conf.register_mutate_hook(_mutate_hook)
 
 
 def setup(conf, product_name, version='unknown'):
@@ -301,6 +312,27 @@ def _find_facility(facility):
     return getattr(syslog, facility)
 
 
+def _refresh_root_level(debug, verbose):
+    """Set the level of the root logger.
+
+    If 'debug' is True, the level will be DEBUG. Otherwise we look at 'verbose'
+    - if that is True, the level will be INFO. If neither are set, the level
+    will be WARNING.
+
+    Note the 'verbose' option is deprecated.
+
+    :param debug
+    :param verbose
+    """
+    log_root = getLogger(None).logger
+    if debug:
+        log_root.setLevel(logging.DEBUG)
+    elif verbose:
+        log_root.setLevel(logging.INFO)
+    else:
+        log_root.setLevel(logging.WARNING)
+
+
 def _setup_logging_from_conf(conf, project, version):
     log_root = getLogger(None).logger
 
@@ -349,13 +381,7 @@ def _setup_logging_from_conf(conf, project, version):
                                                          version=version,
                                                          datefmt=datefmt,
                                                          config=conf))
-
-    if conf.debug:
-        log_root.setLevel(logging.DEBUG)
-    elif conf.verbose:
-        log_root.setLevel(logging.INFO)
-    else:
-        log_root.setLevel(logging.WARNING)
+    _refresh_root_level(conf.debug, conf.verbose)
 
     for pair in conf.default_log_levels:
         mod, _sep, level_name = pair.partition('=')
