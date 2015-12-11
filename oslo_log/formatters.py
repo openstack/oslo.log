@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import itertools
 import logging
 import logging.config
@@ -18,6 +19,7 @@ import socket
 import sys
 import traceback
 
+from dateutil import tz
 import six
 from six import moves
 
@@ -141,11 +143,18 @@ class ContextFormatter(logging.Formatter):
     logging_debug_format_suffix to append extra formatting if the log level is
     debug.
 
-    For information about what variables are available for the formatter see:
+    The standard variables available to the formatter are listed at:
     http://docs.python.org/library/logging.html#formatter
 
-    If available, uses the context value stored in TLS - local.store.context
+    In addition to the standard variables, one custom variable is
+    available to both formatting string: `isotime` produces a
+    timestamp in ISO8601 format, suitable for producing
+    RFC5424-compliant log messages.
 
+    Furthermore, logging_context_format_string has access to all of
+    the data in a dict representation of the context.
+
+    If available, uses the context value stored in TLS - local.store.context
     """
 
     def __init__(self, *args, **kwargs):
@@ -244,6 +253,20 @@ class ContextFormatter(logging.Formatter):
         if (record.levelno == logging.DEBUG and
                 self.conf.logging_debug_format_suffix):
             fmt += " " + self.conf.logging_debug_format_suffix
+
+        # set iso8601 timestamp
+        localtz = tz.tzlocal()
+        record.isotime = datetime.datetime.fromtimestamp(
+            record.created).replace(tzinfo=localtz).isoformat()
+        if record.created == int(record.created):
+            # NOTE(stpierre): when the timestamp includes no
+            # microseconds -- e.g., 1450274066.000000 -- then the
+            # microseconds aren't included in the isoformat() time. As
+            # a result, in literally one in a million cases
+            # isoformat() looks different. This adds microseconds when
+            # that happens.
+            record.isotime = "%s.000000%s" % (record.isotime[:-6],
+                                              record.isotime[-6:])
 
         if sys.version_info < (3, 2):
             self._fmt = fmt
