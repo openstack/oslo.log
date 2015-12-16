@@ -81,7 +81,7 @@ if syslog is not None:
         def emit(self, record):
             syslog.syslog(self.severity_map.get(record.levelname,
                                                 syslog.LOG_DEBUG),
-                          record.getMessage())
+                          self.format(record))
 
 
 class ColorHandler(logging.StreamHandler):
