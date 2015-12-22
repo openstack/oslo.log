@@ -695,7 +695,7 @@ class SetDefaultsTestCase(BaseTestCase):
     def test_log_file_defaults_to_none(self):
         log.set_defaults()
         self.conf([])
-        self.assertEqual(None, self.conf.log_file)
+        self.assertIsNone(self.conf.log_file)
 
 
 @testtools.skipIf(platform.system() != 'Linux',
