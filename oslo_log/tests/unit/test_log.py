@@ -712,6 +712,10 @@ class SetDefaultsTestCase(BaseTestCase):
         self.assertEqual(_options.DEFAULT_LOG_LEVELS,
                          self.conf.default_log_levels)
 
+    def test_default_log_level_method(self):
+        self.assertEqual(_options.DEFAULT_LOG_LEVELS,
+                         log.get_default_log_levels())
+
     def test_change_default(self):
         my_default = '%(asctime)s %(levelname)s %(name)s [%(request_id)s '\
                      '%(user_id)s %(project)s] %(instance)s'\

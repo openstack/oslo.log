@@ -18,6 +18,17 @@ from oslo_log import versionutils
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
+                      'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
+                      'oslo.messaging=INFO', 'iso8601=WARN',
+                      'requests.packages.urllib3.connectionpool=WARN',
+                      'urllib3.connectionpool=WARN', 'websocket=WARN',
+                      'requests.packages.urllib3.util.retry=WARN',
+                      'urllib3.util.retry=WARN',
+                      'keystonemiddleware=WARN', 'routes.middleware=WARN',
+                      'stevedore=WARN', 'taskflow=WARN',
+                      'keystoneauth=WARN']
+
 
 common_cli_opts = [
     cfg.BoolOpt('debug',
@@ -106,17 +117,6 @@ generic_log_opts = [
                 help='Log output to standard error. This option is ignored if '
                      'log_config_append is set.')
 ]
-
-DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
-                      'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
-                      'oslo.messaging=INFO', 'iso8601=WARN',
-                      'requests.packages.urllib3.connectionpool=WARN',
-                      'urllib3.connectionpool=WARN', 'websocket=WARN',
-                      'requests.packages.urllib3.util.retry=WARN',
-                      'urllib3.util.retry=WARN',
-                      "keystonemiddleware=WARN", "routes.middleware=WARN",
-                      "stevedore=WARN", "taskflow=WARN",
-                      "keystoneauth=WARN"]
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
