@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import logging
 import os
 import platform
@@ -25,6 +26,7 @@ except ImportError:
 import tempfile
 import time
 
+from dateutil import tz
 import mock
 from oslo_config import cfg
 from oslo_config import fixture as fixture_config  # noqa
@@ -340,6 +342,15 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertTrue(data['traceback'])
 
 
+def get_fake_datetime(retval):
+    class FakeDateTime(datetime.datetime):
+        @classmethod
+        def fromtimestamp(cls, timestamp):
+            return retval
+
+    return FakeDateTime
+
+
 class ContextFormatterTestCase(LogTestBase):
     def setUp(self):
         super(ContextFormatterTestCase, self).setUp()
@@ -461,6 +472,35 @@ class ContextFormatterTestCase(LogTestBase):
         expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
                     (ctxt.request_id, ctxt.user, ctxt.tenant,
                      six.text_type(message)))
+        self.assertEqual(expected, self.stream.getvalue())
+
+    @mock.patch("datetime.datetime",
+                get_fake_datetime(
+                    datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)))
+    @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
+    def test_rfc5424_isotime_format(self):
+        self.config(logging_default_format_string="%(isotime)s %(message)s")
+
+        message = "test"
+        expected = "2015-12-16T13:54:26.517893+00:00 %s\n" % message
+
+        self.log.info(message)
+
+        self.assertEqual(expected, self.stream.getvalue())
+
+    @mock.patch("datetime.datetime",
+                get_fake_datetime(
+                    datetime.datetime(2015, 12, 16, 13, 54, 26)))
+    @mock.patch("time.time", new=mock.Mock(return_value=1450274066.000000))
+    @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
+    def test_rfc5424_isotime_format_no_microseconds(self):
+        self.config(logging_default_format_string="%(isotime)s %(message)s")
+
+        message = "test"
+        expected = "2015-12-16T13:54:26.000000+00:00 %s\n" % message
+
+        self.log.info(message)
+
         self.assertEqual(expected, self.stream.getvalue())
 
 
