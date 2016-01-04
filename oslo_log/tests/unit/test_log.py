@@ -528,6 +528,32 @@ class ExceptionLoggingTestCase(LogTestBase):
         log.setup(self.CONF, "test_excepthook_installed")
         self.assertTrue(sys.excepthook != sys.__excepthook__)
 
+    @mock.patch("datetime.datetime",
+                get_fake_datetime(
+                    datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)))
+    @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
+    def test_rfc5424_isotime_format(self):
+        self.config(
+            logging_default_format_string="%(isotime)s %(message)s",
+            logging_exception_prefix="%(isotime)s ",
+        )
+
+        product_name = 'somename'
+        exc_log = log.getLogger(product_name)
+
+        self._add_handler_with_cleanup(exc_log)
+        excepthook = log._create_logging_excepthook(product_name)
+
+        try:
+            raise Exception('Some error happened')
+        except Exception:
+            excepthook(*sys.exc_info())
+
+        expected_string = ("2015-12-16T13:54:26.517893+00:00 "
+                           "Exception: Some error happened")
+        self.assertIn(expected_string,
+                      self.stream.getvalue())
+
 
 class FancyRecordTestCase(LogTestBase):
     """Test how we handle fancy record keys that are not in the
