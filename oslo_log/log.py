@@ -340,11 +340,7 @@ def _setup_logging_from_conf(conf, project, version):
         if syslog is None:
             raise RuntimeError("syslog is not available on this platform")
         facility = _find_facility(conf.syslog_log_facility)
-        # TODO(bogdando) use the format provided by RFCSysLogHandler after
-        # existing syslog format deprecation in J
-        syslog_handler = handlers.OSSysLogHandler(
-            facility=facility,
-            use_syslog_rfc_format=conf.use_syslog_rfc_format)
+        syslog_handler = handlers.OSSysLogHandler(facility=facility)
         log_root.addHandler(syslog_handler)
 
     datefmt = conf.log_date_format

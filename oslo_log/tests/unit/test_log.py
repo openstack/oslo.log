@@ -200,27 +200,15 @@ class LogHandlerTestCase(BaseTestCase):
 
 
 class SysLogHandlersTestCase(BaseTestCase):
-    """Test for standard and RFC compliant Syslog handlers."""
+    """Test the standard Syslog handler."""
     def setUp(self):
         super(SysLogHandlersTestCase, self).setUp()
         self.facility = logging.handlers.SysLogHandler.LOG_USER
-        self.rfclogger = handlers.RFCSysLogHandler(facility=self.facility)
-        self.rfclogger.binary_name = 'Foo_application'
         self.logger = logging.handlers.SysLogHandler(facility=self.facility)
-        self.logger.binary_name = 'Foo_application'
-
-    def test_rfc_format(self):
-        """Ensure syslog msg contains APP-NAME for RFC wrapped handler."""
-        logrecord = logging.LogRecord('name', 'WARN', '/tmp', 1,
-                                      'Message', None, None)
-        expected = logging.LogRecord('name', 'WARN', '/tmp', 1,
-                                     'Foo_application Message', None, None)
-        self.assertEqual(self.rfclogger.format(logrecord),
-                         expected.getMessage())
 
     def test_standard_format(self):
         """Ensure syslog msg isn't modified for standard handler."""
-        logrecord = logging.LogRecord('name', 'WARN', '/tmp', 1,
+        logrecord = logging.LogRecord('name', logging.WARNING, '/tmp', 1,
                                       'Message', None, None)
         expected = logrecord
         self.assertEqual(self.logger.format(logrecord),
@@ -229,7 +217,7 @@ class SysLogHandlersTestCase(BaseTestCase):
 
 @testtools.skipUnless(syslog, "syslog is not available")
 class OSSysLogHandlerTestCase(BaseTestCase):
-    def tests_handler(self):
+    def test_handler(self):
         handler = handlers.OSSysLogHandler()
         syslog.syslog = mock.Mock()
         handler.emit(
@@ -237,6 +225,15 @@ class OSSysLogHandlerTestCase(BaseTestCase):
                               "path", 123, "hey!",
                               None, None))
         self.assertTrue(syslog.syslog.called)
+
+    def test_syslog_binary_name(self):
+        # There is no way to test the actual output written to the
+        # syslog (e.g. /var/log/syslog) to confirm binary_name value
+        # is actually present
+        syslog.openlog = mock.Mock()
+        handlers.OSSysLogHandler()
+        syslog.openlog.assert_called_with(handlers._get_binary_name(),
+                                          0, syslog.LOG_USER)
 
     def test_find_facility(self):
         self.assertEqual(syslog.LOG_USER, log._find_facility("user"))
@@ -847,7 +844,6 @@ class LogConfigOptsTestCase(BaseTestCase):
                          _options._DEFAULT_LOG_DATE_FORMAT)
 
         self.assertEqual(self.CONF.use_syslog, False)
-        self.assertEqual(self.CONF.use_syslog_rfc_format, True)
 
     def test_log_file(self):
         log_file = '/some/path/foo-bar.log'
