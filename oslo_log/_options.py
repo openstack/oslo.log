@@ -29,18 +29,19 @@ DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'stevedore=WARN', 'taskflow=WARN',
                       'keystoneauth=WARN']
 
+_IGNORE_MESSAGE = "This option is ignored if log_config_append is set."
 
 common_cli_opts = [
     cfg.BoolOpt('debug',
                 short='d',
                 default=False,
-                help='Print debugging output (set logging level to '
-                     'DEBUG instead of default INFO level).'),
+                help='If set to true, the logging level will be set to '
+                     'DEBUG instead of the default INFO level.'),
     cfg.BoolOpt('verbose',
                 short='v',
                 default=True,
-                help='If set to false, will disable INFO logging level, '
-                     'making WARNING the default.',
+                help='If set to false, the logging level will be set to '
+                     'WARNING instead of the default INFO level.',
                 deprecated_for_removal=True),
 ]
 
@@ -52,9 +53,9 @@ logging_cli_opts = [
                     'is appended to any existing logging configuration '
                     'files. For details about logging configuration files, '
                     'see the Python logging module documentation. Note that '
-                    'when logging configuration files are used then all '
-                    'logging configuration is set in the configuration file '
-                    'and other logging configuration options are ignored '
+                    'when logging configuration files are used all '
+                    'logging configuration is defined in the configuration '
+                    'file and other logging configuration options are ignored '
                     '(for example, log_format).'),
     cfg.StrOpt('log-format',
                metavar='FORMAT',
@@ -68,54 +69,55 @@ logging_cli_opts = [
     cfg.StrOpt('log-date-format',
                default=_DEFAULT_LOG_DATE_FORMAT,
                metavar='DATE_FORMAT',
-               help='Format string for %%(asctime)s in log records. '
-                    'Default: %(default)s . This option is ignored if '
-                    'log_config_append is set.'),
+               help='Defines the format string for %%(asctime)s in log '
+                    'records. Default: %(default)s . '
+                    + _IGNORE_MESSAGE),
     cfg.StrOpt('log-file',
                metavar='PATH',
                deprecated_name='logfile',
-               help='(Optional) Name of log file to output to. '
-                    'If no default is set, logging will go to stdout. This '
-                    'option is ignored if log_config_append is set.'),
+               help='(Optional) Name of log file to send logging output to. '
+                    'If no default is set, logging will go to stderr as '
+                    'defined by use_stderr. '
+                    + _IGNORE_MESSAGE),
     cfg.StrOpt('log-dir',
                deprecated_name='logdir',
-               help='(Optional) The base directory used for relative '
-                    '--log-file paths. This option is ignored if '
-                    'log_config_append is set.'),
+               help='(Optional) The base directory used for relative log_file '
+                    ' paths. '
+                    + _IGNORE_MESSAGE),
     cfg.BoolOpt('watch-log-file',
                 default=False,
-                help='(Optional) Uses logging handler designed to watch file '
+                help='Uses logging handler designed to watch file '
                      'system. When log file is moved or removed this handler '
                      'will open a new log file with specified path '
-                     'instantaneously. It makes sense only if log-file option '
-                     'is specified and Linux platform is used. This option is '
-                     'ignored if log_config_append is set.'),
+                     'instantaneously. It makes sense only if log_file option '
+                     'is specified and Linux platform is used. '
+                     + _IGNORE_MESSAGE),
     cfg.BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging. '
                      'Existing syslog format is DEPRECATED '
-                     'and will be changed later to honor RFC5424. This option '
-                     'is ignored if log_config_append is set.'),
+                     'and will be changed later to honor RFC5424. '
+                     + _IGNORE_MESSAGE),
     cfg.BoolOpt('use-syslog-rfc-format',
                 default=True,
                 deprecated_for_removal=True,
-                help='(Optional) Enables or disables syslog rfc5424 format '
+                help='Enables or disables syslog rfc5424 format '
                      'for logging. If enabled, prefixes the MSG part of the '
                      'syslog message with APP-NAME (RFC5424). The '
                      'format without the APP-NAME is deprecated in Kilo, '
                      'and will be removed in Mitaka, along with this option. '
-                     'This option is ignored if log_config_append is set.'),
+                     + _IGNORE_MESSAGE),
     cfg.StrOpt('syslog-log-facility',
                default='LOG_USER',
-               help='Syslog facility to receive log lines. This option is '
-                    'ignored if log_config_append is set.')
+               help='Syslog facility to receive log lines. '
+                    + _IGNORE_MESSAGE),
 ]
 
 generic_log_opts = [
     cfg.BoolOpt('use_stderr',
                 default=True,
-                help='Log output to standard error. This option is ignored if '
-                     'log_config_append is set.')
+                help='Log output to standard error. '
+                     + _IGNORE_MESSAGE),
 ]
 
 log_opts = [
@@ -127,18 +129,25 @@ log_opts = [
     cfg.StrOpt('logging_default_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
                        '%(name)s [-] %(instance)s%(message)s',
-               help='Format string to use for log messages without context.'),
+               help='Format string to use for log messages when context is '
+                    'undefined.'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
-               help='Data to append to log format when level is DEBUG.'),
+               help='Additional data to append to log message when logging '
+                    'level for the message is DEBUG.'),
     cfg.StrOpt('logging_exception_prefix',
                default='%(asctime)s.%(msecs)03d %(process)d ERROR %(name)s '
                '%(instance)s',
                help='Prefix each line of exception output with this format.'),
+    cfg.StrOpt('logging_user_identity_format',
+               default='%(user)s %(tenant)s '
+                       '%(domain)s %(user_domain)s %(project_domain)s',
+               help='Defines the format string for %(user_identity)s that '
+                    'is used in logging_context_format_string.'),
     cfg.ListOpt('default_log_levels',
                 default=DEFAULT_LOG_LEVELS,
-                help='List of logger=LEVEL pairs. This option is ignored if '
-                     'log_config_append is set.'),
+                help='List of package logging levels in logger=LEVEL pairs. '
+                     + _IGNORE_MESSAGE),
     cfg.BoolOpt('publish_errors',
                 default=False,
                 help='Enables or disables publication of error events.'),
@@ -154,11 +163,6 @@ log_opts = [
                default='[instance: %(uuid)s] ',
                help='The format for an instance UUID that is passed with the '
                     'log message.'),
-    cfg.StrOpt('logging_user_identity_format',
-               default='%(user)s %(tenant)s '
-                       '%(domain)s %(user_domain)s %(project_domain)s',
-               help='Format string for user_identity field of '
-                    'the logging_context_format_string'),
 ]
 
 
@@ -174,7 +178,8 @@ def list_opts():
     config files.
 
     The purpose of this is to allow tools like the Oslo sample config file
-    generator to discover the options exposed to users by this library.
+    generator (oslo-config-generator) to discover the options exposed to users
+    by this library.
 
     :returns: a list of (group_name, opts) tuples
     """
