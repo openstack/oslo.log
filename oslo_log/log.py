@@ -414,3 +414,13 @@ def getLogger(name=None, project='unknown', version='unknown'):
                                                 {'project': project,
                                                  'version': version})
     return _loggers[name]
+
+
+def get_default_log_levels():
+    """Return the Oslo Logging default log levels.
+
+    Returns a copy of the list so an application can change the value
+    and not affect the default value used in the log_opts configuration
+    setup.
+    """
+    return list(_options.DEFAULT_LOG_LEVELS)
