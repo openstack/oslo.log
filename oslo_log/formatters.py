@@ -254,19 +254,7 @@ class ContextFormatter(logging.Formatter):
                 self.conf.logging_debug_format_suffix):
             fmt += " " + self.conf.logging_debug_format_suffix
 
-        # set iso8601 timestamp
-        localtz = tz.tzlocal()
-        record.isotime = datetime.datetime.fromtimestamp(
-            record.created).replace(tzinfo=localtz).isoformat()
-        if record.created == int(record.created):
-            # NOTE(stpierre): when the timestamp includes no
-            # microseconds -- e.g., 1450274066.000000 -- then the
-            # microseconds aren't included in the isoformat() time. As
-            # a result, in literally one in a million cases
-            # isoformat() looks different. This adds microseconds when
-            # that happens.
-            record.isotime = "%s.000000%s" % (record.isotime[:-6],
-                                              record.isotime[-6:])
+        self._compute_iso_time(record)
 
         if sys.version_info < (3, 2):
             self._fmt = fmt
@@ -292,9 +280,26 @@ class ContextFormatter(logging.Formatter):
         if self.conf.logging_exception_prefix.find('%(asctime)') != -1:
             record.asctime = self.formatTime(record, self.datefmt)
 
+        self._compute_iso_time(record)
+
         formatted_lines = []
         for line in lines:
             pl = self.conf.logging_exception_prefix % record.__dict__
             fl = '%s%s' % (pl, line)
             formatted_lines.append(fl)
         return '\n'.join(formatted_lines)
+
+    def _compute_iso_time(self, record):
+        # set iso8601 timestamp
+        localtz = tz.tzlocal()
+        record.isotime = datetime.datetime.fromtimestamp(
+            record.created).replace(tzinfo=localtz).isoformat()
+        if record.created == int(record.created):
+            # NOTE(stpierre): when the timestamp includes no
+            # microseconds -- e.g., 1450274066.000000 -- then the
+            # microseconds aren't included in the isoformat() time. As
+            # a result, in literally one in a million cases
+            # isoformat() looks different. This adds microseconds when
+            # that happens.
+            record.isotime = "%s.000000%s" % (record.isotime[:-6],
+                                              record.isotime[-6:])
