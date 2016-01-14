@@ -15,6 +15,7 @@ logging (like resource id's etc).
    migration
    opts
    configfiles/index
+   examples
    contributing
    history
 
