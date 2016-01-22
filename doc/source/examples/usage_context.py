@@ -12,9 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A usage example of Oslo Logging with Oslo i18n
+"""A usage example of Oslo Logging with context
 
 This example requires the following package to be installed.
+
 $ pip install oslo.log
 
 Additional Oslo packages installed include oslo.config, oslo.context,
@@ -23,12 +24,12 @@ oslo.i18n, osli.serialization and oslo.utils.
 More information about Oslo Logging can be found at:
 
   http://docs.openstack.org/developer/oslo.log/usage.html
-  http://docs.openstack.org/developer/oslo.i18n/usage.html
+  http://docs.openstack.org/developer/oslo.context/usage.html
 """
 
 from oslo_config import cfg
+from oslo_context import context
 from oslo_log import log as logging
-from _i18n import _, _LI, _LW, _LE  # noqa
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -75,10 +76,10 @@ def prepare():
 
 if __name__ == '__main__':
     prepare()
-    # NOTE: These examples use Oslo i18n marker functions
 
-    LOG.info(_LI("Welcome to Oslo Logging"))
-    LOG.debug("A debugging message")  # Debug messages are not translated
-    LOG.warning(_LW("A warning occured"))
-    LOG.error(_LE("An error occured"))
-    LOG.exception(_("An Exception occured"))
+    LOG.info("Welcome to Oslo Logging")
+    LOG.info("Without context")
+    context.RequestContext(user='6ce90b4d',
+                           tenant='d6134462',
+                           domain='a6b9360e')
+    LOG.info("With context")

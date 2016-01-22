@@ -31,7 +31,7 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-DOMAIN = "demo"
+DOMAIN = 'demo'
 
 
 def prepare():
@@ -59,12 +59,14 @@ def prepare():
     #  oslo_log._options.log_opts[0].default
     #
 
-    custom_log_level_defaults = logging.get_default_log_levels() + [
+    extra_log_level_defaults = [
         'dogpile=INFO',
         'routes=INFO'
         ]
 
-    logging.set_defaults(default_log_levels=custom_log_level_defaults)
+    logging.set_defaults(
+        default_log_levels=logging.get_default_log_levels() +
+        extra_log_level_defaults)
 
     # Required setup based on configuration and domain
     logging.setup(CONF, DOMAIN)
@@ -73,6 +75,7 @@ def prepare():
 if __name__ == '__main__':
     prepare()
     # NOTE: These examples do not demonstration Oslo i18n messages
+
     LOG.info("Welcome to Oslo Logging")
     LOG.debug("A debugging message")
     LOG.warning("A warning occured")

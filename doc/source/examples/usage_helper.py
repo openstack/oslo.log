@@ -26,10 +26,10 @@ More information about Oslo Logging can be found at:
   http://docs.openstack.org/developer/oslo.log/usage.html
 """
 
-from oslo_config import cfg
-from oslo_log import log as logging
 # Use default Python logging to display running output
 import logging as py_logging
+from oslo_config import cfg
+from oslo_log import log as logging
 
 
 LOG = py_logging.getLogger(__name__)
