@@ -699,7 +699,7 @@ class DomainTestCase(LogTestBase):
 
     def test_domain_in_log_msg(self):
         ctxt = _fake_context()
-        user_identity = ctxt.to_dict()['user_identity']
+        user_identity = ctxt.get_logging_values()['user_identity']
         self.assertTrue(ctxt.domain in user_identity)
         self.assertTrue(ctxt.project_domain in user_identity)
         self.assertTrue(ctxt.user_domain in user_identity)
