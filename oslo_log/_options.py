@@ -27,7 +27,8 @@ DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'urllib3.util.retry=WARN',
                       'keystonemiddleware=WARN', 'routes.middleware=WARN',
                       'stevedore=WARN', 'taskflow=WARN',
-                      'keystoneauth=WARN']
+                      'keystoneauth=WARN', 'oslo.cache=INFO',
+                      'dogpile.core.dogpile=INFO']
 
 _IGNORE_MESSAGE = "This option is ignored if log_config_append is set."
 
