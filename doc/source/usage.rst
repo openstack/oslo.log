@@ -79,9 +79,9 @@ log levels.
 .. testoutput::
 
     2016-01-14 21:07:51.394 12945 INFO __main__ [-] Welcome to Oslo Logging
-    2016-01-14 21:07:51.395 12945 WARNING __main__ [-] A warning occured
-    2016-01-14 21:07:51.395 12945 ERROR __main__ [-] An error occured
-    2016-01-14 21:07:51.396 12945 ERROR __main__ [-] An Exception occured
+    2016-01-14 21:07:51.395 12945 WARNING __main__ [-] A warning occurred
+    2016-01-14 21:07:51.395 12945 ERROR __main__ [-] An error occurred
+    2016-01-14 21:07:51.396 12945 ERROR __main__ [-] An Exception occurred
     2016-01-14 21:07:51.396 12945 ERROR __main__ None
     2016-01-14 21:07:51.396 12945 ERROR __main__
 

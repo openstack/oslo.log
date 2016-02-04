@@ -79,6 +79,6 @@ if __name__ == '__main__':
 
     LOG.info(_LI("Welcome to Oslo Logging"))
     LOG.debug("A debugging message")  # Debug messages are not translated
-    LOG.warning(_LW("A warning occured"))
-    LOG.error(_LE("An error occured"))
-    LOG.exception(_("An Exception occured"))
+    LOG.warning(_LW("A warning occurred"))
+    LOG.error(_LE("An error occurred"))
+    LOG.exception(_("An Exception occurred"))
