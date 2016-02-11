@@ -95,6 +95,6 @@ if __name__ == '__main__':
     # NOTE: These examples do not demonstration Oslo i18n messages
     LOG.info("Welcome to Oslo Logging")
     LOG.debug("A debugging message")
-    LOG.warning("A warning occured")
-    LOG.error("An error occured")
-    LOG.exception("An Exception occured")
+    LOG.warning("A warning occurred")
+    LOG.error("An error occurred")
+    LOG.exception("An Exception occurred")
