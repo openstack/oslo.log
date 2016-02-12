@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-
 from oslo_config import cfg
 
 from oslo_log import versionutils
@@ -185,6 +183,6 @@ def list_opts():
 
     :returns: a list of (group_name, opts) tuples
     """
-    return [(None, copy.deepcopy(common_cli_opts + logging_cli_opts +
-                                 generic_log_opts + log_opts +
-                                 versionutils.deprecated_opts))]
+    return [(None, (common_cli_opts + logging_cli_opts +
+                    generic_log_opts + log_opts +
+                    versionutils.deprecated_opts))]
