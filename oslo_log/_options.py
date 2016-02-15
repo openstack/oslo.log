@@ -52,19 +52,10 @@ logging_cli_opts = [
                     'is appended to any existing logging configuration '
                     'files. For details about logging configuration files, '
                     'see the Python logging module documentation. Note that '
-                    'when logging configuration files are used all '
-                    'logging configuration is defined in the configuration '
-                    'file and other logging configuration options are ignored '
-                    '(for example, log_format).'),
-    cfg.StrOpt('log-format',
-               metavar='FORMAT',
-               help='DEPRECATED. '
-                    'A logging.Formatter log message format string which may '
-                    'use any of the available logging.LogRecord attributes. '
-                    'This option is deprecated.  Please use '
-                    'logging_context_format_string and '
-                    'logging_default_format_string instead. This option is '
-                    'ignored if log_config_append is set.'),
+                    'when logging configuration files are used then all '
+                    'logging configuration is set in the configuration file '
+                    'and other logging configuration options are ignored '
+                    '(for example, logging_context_format_string).'),
     cfg.StrOpt('log-date-format',
                default=_DEFAULT_LOG_DATE_FORMAT,
                metavar='DATE_FORMAT',

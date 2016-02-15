@@ -828,7 +828,6 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertTrue('debug' in f.getvalue())
         self.assertTrue('verbose' in f.getvalue())
         self.assertTrue('log-config' in f.getvalue())
-        self.assertTrue('log-format' in f.getvalue())
         self.assertTrue('watch-log-file' in f.getvalue())
 
     def test_debug_verbose(self):
@@ -843,7 +842,6 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertIsNone(self.CONF.log_config_append)
         self.assertIsNone(self.CONF.log_file)
         self.assertIsNone(self.CONF.log_dir)
-        self.assertIsNone(self.CONF.log_format)
 
         self.assertEqual(self.CONF.log_date_format,
                          _options._DEFAULT_LOG_DATE_FORMAT)
@@ -898,14 +896,6 @@ class LogConfigOptsTestCase(BaseTestCase):
         logdir = '/some/other/path/'
         self.CONF(['--logdir', logdir])
         self.assertEqual(self.CONF.log_dir, logdir)
-
-    def test_log_format_overrides_formatter(self):
-        self.CONF(['--log-format', '[Any format]'])
-        log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        logger = log._loggers[None].logger
-        for handler in logger.handlers:
-            formatter = handler.formatter
-            self.assertTrue(isinstance(formatter, logging.Formatter))
 
     def test_default_formatter(self):
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
