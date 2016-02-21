@@ -20,8 +20,6 @@ try:
 except ImportError:
     syslog = None
 
-from debtcollector import removals
-
 
 NullHandler = logging.NullHandler
 
@@ -29,27 +27,6 @@ NullHandler = logging.NullHandler
 def _get_binary_name():
     return os.path.basename(inspect.stack()[-1][1])
 
-
-class RFCSysLogHandler(logging.handlers.SysLogHandler):
-    """SysLogHandler following the RFC
-
-    .. deprecated:: 1.2.0
-       Use :class:`OSSysLogHandler` instead
-    """
-
-    @removals.remove(
-        message='use oslo_log.handlers.OSSysLogHandler()',
-        version='1.2.0',
-        removal_version='?',
-    )
-    def __init__(self, *args, **kwargs):
-        self.binary_name = _get_binary_name()
-        super(RFCSysLogHandler, self).__init__(*args, **kwargs)
-
-    def format(self, record):
-        msg = super(RFCSysLogHandler, self).format(record)
-        msg = self.binary_name + ' ' + msg
-        return msg
 
 _AUDIT = logging.INFO + 1
 _TRACE = 5
@@ -67,15 +44,11 @@ if syslog is not None:
             "WARN": syslog.LOG_WARNING,
         }
 
-        def __init__(self, facility=syslog.LOG_USER,
-                     use_syslog_rfc_format=True):
+        def __init__(self, facility=syslog.LOG_USER):
             # Do not use super() unless type(logging.Handler) is 'type'
             # (i.e. >= Python 2.7).
             logging.Handler.__init__(self)
-            if use_syslog_rfc_format:
-                binary_name = _get_binary_name()
-            else:
-                binary_name = ""
+            binary_name = _get_binary_name()
             syslog.openlog(binary_name, 0, facility)
 
         def emit(self, record):
