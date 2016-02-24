@@ -271,7 +271,7 @@ def report_deprecated_feature(logger, msg, *args, **kwargs):
         return
 
     sent_args.append(args)
-    logger.warn(stdmsg, *args, **kwargs)
+    logger.warning(stdmsg, *args, **kwargs)
 
 
 class DeprecatedConfig(Exception):
