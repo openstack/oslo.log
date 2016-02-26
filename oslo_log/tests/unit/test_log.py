@@ -953,6 +953,16 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertEqual(1, len(handlers))
         self.assertNotIn(handlers[0], old_handlers)
 
+    def test_list_opts(self):
+        all_options = _options.list_opts()
+        (group, options) = all_options[0]
+        self.assertIsNone(group)
+        self.assertEqual((_options.common_cli_opts +
+                          _options.logging_cli_opts +
+                          _options.generic_log_opts +
+                          _options.log_opts +
+                          _options.versionutils.deprecated_opts), options)
+
 
 class LogConfigTestCase(BaseTestCase):
 
