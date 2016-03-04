@@ -326,3 +326,33 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         mock_register_opts.assert_called_once_with(
             versionutils.deprecated_opts)
+
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
+    def test_deprecated_mitaka_plus_two(self, mock_reporter):
+
+        @versionutils.deprecated(as_of=versionutils.deprecated.MITAKA,
+                                 remove_in=+2)
+        class OutdatedClass(object):
+            pass
+        obj = OutdatedClass()
+
+        self.assertIsInstance(obj, OutdatedClass)
+        self.assert_deprecated(mock_reporter,
+                               what='OutdatedClass()',
+                               as_of='Mitaka',
+                               remove_in='Ocata')
+
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
+    def test_deprecated_newton_plus_two(self, mock_reporter):
+
+        @versionutils.deprecated(as_of=versionutils.deprecated.NEWTON,
+                                 remove_in=+2)
+        class OutdatedClass(object):
+            pass
+        obj = OutdatedClass()
+
+        self.assertIsInstance(obj, OutdatedClass)
+        self.assert_deprecated(mock_reporter,
+                               what='OutdatedClass()',
+                               as_of='Newton',
+                               remove_in='P')
