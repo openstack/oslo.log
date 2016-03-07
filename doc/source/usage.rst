@@ -19,7 +19,7 @@ demostrates basic logging.
 
 Source: :ref:`examples/python_logging.py <example_python_logging.py>`
 
-When using ``Oslo Logging`` the following setup demonstrates a comparative
+When using Oslo Logging the following setup demonstrates a comparative
 syntax with Python standard logging.
 
 
@@ -76,7 +76,7 @@ log levels.
 
 **Example Logging Output:**
 
-.. testoutput::
+::
 
     2016-01-14 21:07:51.394 12945 INFO __main__ [-] Welcome to Oslo Logging
     2016-01-14 21:07:51.395 12945 WARNING __main__ [-] A warning occurred
@@ -109,21 +109,22 @@ additional contextual information applicable for your application.
 
 **Example Logging Output:**
 
-.. testoutput::
+::
 
     2016-01-14 20:04:34.562 11266 INFO __main__ [-] Welcome to Oslo Logging
     2016-01-14 20:04:34.563 11266 INFO __main__ [-] Without context
     2016-01-14 20:04:34.563 11266 INFO __main__ [req-bbc837a6-be80-4eb2-8ca3-53043a93b78d 6ce90b4d d6134462 a6b9360e - -] With context
 
 The log record output format without context is defined with
-:ref:`logging_default_format_string <opt-default-logging_default_format_string>`
-configuration variable.  When specifying context the
-:ref:`logging_context_format_string <opt-default-logging_context_format_string>`
-configuration variable is used.
+:oslo.config:option:`logging_default_format_string` configuration
+variable.  When specifying context the
+:oslo.config:option:`logging_context_format_string` configuration
+variable is used.
 
 The Oslo RequestContext object contains a number of attributes that can be
-specified in ``logging_context_format_string``. An application can extend this
-object to provide additional attributes that can be specified in log records.
+specified in :oslo.config:option:`logging_context_format_string`. An
+application can extend this object to provide additional attributes that can
+be specified in log records.
 
 
 
