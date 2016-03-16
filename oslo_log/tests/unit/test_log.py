@@ -215,6 +215,12 @@ class LogHandlerTestCase(BaseTestCase):
                          binary=prefix),
                          expected)
 
+    def test_iter_loggers(self):
+        mylog = logging.getLogger("abc.cde")
+        loggers = list(log._iter_loggers())
+        self.assertIn(logging.getLogger(), loggers)
+        self.assertIn(mylog, loggers)
+
 
 class SysLogHandlersTestCase(BaseTestCase):
     """Test the standard Syslog handler."""
