@@ -49,6 +49,7 @@ logging_cli_opts = [
     cfg.StrOpt('log-config-append',
                metavar='PATH',
                deprecated_name='log-config',
+               mutable=True,
                help='The name of a logging configuration file. This file '
                     'is appended to any existing logging configuration '
                     'files. For details about logging configuration files, '
