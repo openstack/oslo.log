@@ -26,9 +26,6 @@ def _get_full_class_name(cls):
 def log_method_call(method):
     """Decorator helping to log method calls.
 
-    The decorator is not intended to be used for static methods (which
-    are just simple functions from Python point of view).
-
     :param method: Method to decorate to be logged.
     :type method: method definition
     """
@@ -36,12 +33,17 @@ def log_method_call(method):
 
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
-        first_arg = args[0]
-        cls = first_arg if isinstance(first_arg, type) else first_arg.__class__
-        data = {'class_name': _get_full_class_name(cls),
+        if args:
+            first_arg = args[0]
+            cls = (first_arg if isinstance(first_arg, type)
+                   else first_arg.__class__)
+            caller = _get_full_class_name(cls)
+        else:
+            caller = 'static'
+        data = {'caller': caller,
                 'method_name': method.__name__,
                 'args': args[1:], 'kwargs': kwargs}
-        log.debug('%(class_name)s method %(method_name)s '
+        log.debug('%(caller)s method %(method_name)s '
                   'called with arguments %(args)s %(kwargs)s', data)
         return method(*args, **kwargs)
     return wrapper

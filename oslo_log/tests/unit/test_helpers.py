@@ -15,6 +15,11 @@ from oslo_log import helpers
 from oslotest import base as test_base
 
 
+@helpers.log_method_call
+def _static_method():
+    pass
+
+
 class LogHelpersTestCase(test_base.BaseTestCase):
 
     def test_log_decorator(self):
@@ -35,7 +40,7 @@ class LogHelpersTestCase(test_base.BaseTestCase):
 
         obj = test_class()
         for method_name in ('test_method', 'test_classmethod'):
-            data = {'class_name': helpers._get_full_class_name(test_class),
+            data = {'caller': helpers._get_full_class_name(test_class),
                     'method_name': method_name,
                     'args': args,
                     'kwargs': kwargs}
@@ -44,3 +49,14 @@ class LogHelpersTestCase(test_base.BaseTestCase):
             with mock.patch('logging.Logger.debug') as debug:
                 method(*args, **kwargs)
                 debug.assert_called_with(mock.ANY, data)
+
+    def test_log_decorator_for_static(self):
+        '''Test that LOG.debug is called with proper arguments.'''
+
+        data = {'caller': 'static',
+                'method_name': '_static_method',
+                'args': (),
+                'kwargs': {}}
+        with mock.patch('logging.Logger.debug') as debug:
+            _static_method()
+            debug.assert_called_with(mock.ANY, data)
