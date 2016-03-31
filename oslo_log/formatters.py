@@ -153,8 +153,6 @@ class ContextFormatter(logging.Formatter):
 
     Furthermore, logging_context_format_string has access to all of
     the data in a dict representation of the context.
-
-    If available, uses the context value stored in TLS - local.store.context
     """
 
     def __init__(self, *args, **kwargs):
