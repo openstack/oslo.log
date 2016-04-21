@@ -1,62 +1,62 @@
 # Translations template for oslo.log.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the oslo.log project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: oslo.log 1.11.1.dev17\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-26 06:06+0000\n"
+"Project-Id-Version: oslo.log 3.5.0\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-21 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
-#: oslo_log/log.py:214
+#: oslo_log/log.py:203
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 
-#: oslo_log/log.py:301
+#: oslo_log/log.py:297
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr ""
 
-#: oslo_log/versionutils.py:124
+#: oslo_log/versionutils.py:128
 #, python-format
 msgid ""
 "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s and "
 "may be removed in %(remove_in)s."
 msgstr ""
 
-#: oslo_log/versionutils.py:128
+#: oslo_log/versionutils.py:132
 #, python-format
 msgid ""
 "%(what)s is deprecated as of %(as_of)s and may be removed in "
 "%(remove_in)s. It will not be superseded."
 msgstr ""
 
-#: oslo_log/versionutils.py:132
+#: oslo_log/versionutils.py:136
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s."
 msgstr ""
 
-#: oslo_log/versionutils.py:135
+#: oslo_log/versionutils.py:139
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s. It will not be superseded."
 msgstr ""
 
-#: oslo_log/versionutils.py:260
+#: oslo_log/versionutils.py:264
 #, python-format
 msgid "Deprecated: %s"
 msgstr ""
 
-#: oslo_log/versionutils.py:278
+#: oslo_log/versionutils.py:282
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr ""
