@@ -19,6 +19,7 @@ import datetime
 import logging
 import os
 import platform
+import shutil
 import sys
 try:
     import syslog
@@ -855,6 +856,32 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         os.remove(log_path)
         time.sleep(2)
         self.assertTrue(os.path.exists(log_path))
+
+
+class ConfigTestCase(test_base.BaseTestCase):
+    def test_mutate(self):
+        conf = cfg.CONF
+        old_config = ("[DEFAULT]\n"
+                      "debug = false\n")
+        new_config = ("[DEFAULT]\n"
+                      "debug = true\n")
+        paths = self.create_tempfiles([('old', old_config),
+                                       ('new', new_config)])
+        log.register_options(conf)
+        conf(['--config-file', paths[0]])
+        log_root = log.getLogger(None).logger
+
+        log._setup_logging_from_conf(conf, 'test', 'test')
+        self.assertEqual(conf.debug, False)
+        self.assertEqual(conf.verbose, True)
+        self.assertEqual(log.INFO, log_root.getEffectiveLevel())
+
+        shutil.copy(paths[1], paths[0])
+        conf.mutate_config_files()
+
+        self.assertEqual(conf.debug, True)
+        self.assertEqual(conf.verbose, True)
+        self.assertEqual(log.DEBUG, log_root.getEffectiveLevel())
 
 
 class LogConfigOptsTestCase(BaseTestCase):

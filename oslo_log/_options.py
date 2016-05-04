@@ -34,6 +34,7 @@ common_cli_opts = [
     cfg.BoolOpt('debug',
                 short='d',
                 default=False,
+                mutable=True,
                 help='If set to true, the logging level will be set to '
                      'DEBUG instead of the default INFO level.'),
     cfg.BoolOpt('verbose',
