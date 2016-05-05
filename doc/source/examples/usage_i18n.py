@@ -81,4 +81,7 @@ if __name__ == '__main__':
     LOG.debug("A debugging message")  # Debug messages are not translated
     LOG.warning(_LW("A warning occurred"))
     LOG.error(_LE("An error occurred"))
-    LOG.exception(_("An Exception occurred"))
+    try:
+        raise Exception(_("This is exceptional"))
+    except Exception:
+        LOG.exception(_("An Exception occurred"))

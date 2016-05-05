@@ -80,4 +80,7 @@ if __name__ == '__main__':
     LOG.debug("A debugging message")
     LOG.warning("A warning occurred")
     LOG.error("An error occurred")
-    LOG.exception("An Exception occurred")
+    try:
+        raise Exception("This is exceptional")
+    except Exception:
+        LOG.exception("An Exception occurred")
