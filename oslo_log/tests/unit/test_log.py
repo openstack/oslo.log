@@ -90,13 +90,6 @@ class CommonLoggerTestsMixIn(object):
         self.log.info("foo", context=_fake_context())
         self.assertTrue(True)  # didn't raise exception
 
-    def test_will_be_verbose_if_verbose_flag_set(self):
-        self.config(verbose=True)
-        logger_name = 'test_is_verbose'
-        log.setup(self.CONF, logger_name)
-        logger = logging.getLogger(logger_name)
-        self.assertEqual(logging.INFO, logger.getEffectiveLevel())
-
     def test_will_be_debug_if_debug_flag_set(self):
         self.config(debug=True)
         logger_name = 'test_is_debug'
@@ -104,9 +97,9 @@ class CommonLoggerTestsMixIn(object):
         logger = logging.getLogger(logger_name)
         self.assertEqual(logging.DEBUG, logger.getEffectiveLevel())
 
-    def test_will_not_be_verbose_if_verbose_flag_not_set(self):
-        self.config(verbose=False)
-        logger_name = 'test_is_not_verbose'
+    def test_will_be_warning_if_debug_flag_not_set(self):
+        self.config(debug=False)
+        logger_name = 'test_is_not_debug'
         log.setup(self.CONF, logger_name)
         logger = logging.getLogger(logger_name)
         self.assertEqual(logging.WARNING, logger.getEffectiveLevel())
@@ -272,8 +265,7 @@ class LogLevelTestCase(BaseTestCase):
         levels.append(warn_level + '=WARN')
         levels.append(other_level + '=7')
         levels.append(trace_level + '=TRACE')
-        self.config(default_log_levels=levels,
-                    verbose=True)
+        self.config(default_log_levels=levels)
         log.setup(self.CONF, 'testing')
         self.log = log.getLogger(info_level)
         self.log_no_debug = log.getLogger(warn_level)
@@ -839,7 +831,7 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         log_path = self._config()
         logger = log._loggers[None].logger
         text = 'Hello World!'
-        logger.info(text)
+        logger.warning(text)
         with open(log_path, 'r') as f:
             file_content = f.read()
         self.assertTrue(text in file_content)
@@ -873,14 +865,12 @@ class ConfigTestCase(test_base.BaseTestCase):
 
         log._setup_logging_from_conf(conf, 'test', 'test')
         self.assertEqual(conf.debug, False)
-        self.assertEqual(conf.verbose, True)
-        self.assertEqual(log.INFO, log_root.getEffectiveLevel())
+        self.assertEqual(log.WARN, log_root.getEffectiveLevel())
 
         shutil.copy(paths[1], paths[0])
         conf.mutate_config_files()
 
         self.assertEqual(conf.debug, True)
-        self.assertEqual(conf.verbose, True)
         self.assertEqual(log.DEBUG, log_root.getEffectiveLevel())
 
 
@@ -893,14 +883,12 @@ class LogConfigOptsTestCase(BaseTestCase):
         f = six.StringIO()
         self.CONF([])
         self.CONF.print_help(file=f)
-        for option in ['debug', 'verbose', 'log-config', 'watch-log-file']:
+        for option in ['debug', 'log-config', 'watch-log-file']:
             self.assertIn(option, f.getvalue())
 
-    def test_debug_verbose(self):
-        self.CONF(['--debug', '--verbose'])
-
+    def test_debug(self):
+        self.CONF(['--debug'])
         self.assertEqual(self.CONF.debug, True)
-        self.assertEqual(self.CONF.verbose, True)
 
     def test_logging_opts(self):
         self.CONF([])
