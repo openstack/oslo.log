@@ -848,13 +848,13 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         log_path = self._config()
         os_level_dst, log_path_dst = tempfile.mkstemp()
         os.rename(log_path, log_path_dst)
-        time.sleep(2)
+        time.sleep(6)
         self.assertTrue(os.path.exists(log_path))
 
     def test_remove(self):
         log_path = self._config()
         os.remove(log_path)
-        time.sleep(2)
+        time.sleep(6)
         self.assertTrue(os.path.exists(log_path))
 
 

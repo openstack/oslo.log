@@ -61,12 +61,12 @@ class FastWatchedFileHandler(logging.handlers.WatchedFileHandler, object):
 
     Watching thread sleeps max(0, READ_FREQ - (TIMEOUT / 1000)) seconds.
     """
-    READ_FREQ = 1
+    READ_FREQ = 5
 
     """Poll timeout in milliseconds.
 
     See https://docs.python.org/2/library/select.html#select.poll.poll"""
-    TIMEOUT = 500
+    TIMEOUT = 5
 
     def __init__(self, logpath, *args, **kwargs):
         self._log_file = os.path.basename(logpath)
