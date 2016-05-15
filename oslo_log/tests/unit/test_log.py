@@ -97,12 +97,12 @@ class CommonLoggerTestsMixIn(object):
         logger = logging.getLogger(logger_name)
         self.assertEqual(logging.DEBUG, logger.getEffectiveLevel())
 
-    def test_will_be_warning_if_debug_flag_not_set(self):
+    def test_will_be_info_if_debug_flag_not_set(self):
         self.config(debug=False)
         logger_name = 'test_is_not_debug'
         log.setup(self.CONF, logger_name)
         logger = logging.getLogger(logger_name)
-        self.assertEqual(logging.WARNING, logger.getEffectiveLevel())
+        self.assertEqual(logging.INFO, logger.getEffectiveLevel())
 
     def test_no_logging_via_module(self):
         for func in ('critical', 'error', 'exception', 'warning', 'warn',
@@ -831,7 +831,7 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         log_path = self._config()
         logger = log._loggers[None].logger
         text = 'Hello World!'
-        logger.warning(text)
+        logger.info(text)
         with open(log_path, 'r') as f:
             file_content = f.read()
         self.assertTrue(text in file_content)
@@ -865,7 +865,7 @@ class ConfigTestCase(test_base.BaseTestCase):
 
         log._setup_logging_from_conf(conf, 'test', 'test')
         self.assertEqual(conf.debug, False)
-        self.assertEqual(log.WARN, log_root.getEffectiveLevel())
+        self.assertEqual(log.INFO, log_root.getEffectiveLevel())
 
         shutil.copy(paths[1], paths[0])
         conf.mutate_config_files()

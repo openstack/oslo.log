@@ -322,7 +322,7 @@ def _refresh_root_level(debug):
     if debug:
         log_root.setLevel(logging.DEBUG)
     else:
-        log_root.setLevel(logging.WARNING)
+        log_root.setLevel(logging.INFO)
 
 
 def _setup_logging_from_conf(conf, project, version):
