@@ -800,6 +800,7 @@ class SetDefaultsTestCase(BaseTestCase):
     def test_tempest_set_log_file(self):
         log_file = 'foo.log'
         log.tempest_set_log_file(log_file)
+        self.addCleanup(log.tempest_set_log_file, None)
         log.set_defaults()
         self.conf([])
         self.assertEqual(log_file, self.conf.log_file)
