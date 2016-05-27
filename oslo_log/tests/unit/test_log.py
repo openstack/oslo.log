@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2011 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -258,6 +260,17 @@ class OSSysLogHandlerTestCase(BaseTestCase):
         self.assertRaises(TypeError,
                           log._find_facility,
                           "fougere")
+
+    def test_syslog(self):
+        msg_unicode = u"Benoît Knecht & François Deppierraz login failure"
+        msg_utf8 = msg_unicode.encode('utf-8')
+
+        handler = handlers.OSSysLogHandler()
+        syslog.syslog = mock.Mock()
+        handler.emit(
+            logging.LogRecord("name", logging.INFO, "path", 123,
+                              msg_unicode, None, None))
+        syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
 
 
 class LogLevelTestCase(BaseTestCase):
