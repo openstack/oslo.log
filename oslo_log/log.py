@@ -415,6 +415,12 @@ def _setup_logging_from_conf(conf, project, version):
         else:
             logger.setLevel(level_name)
 
+    if conf.rate_limit_burst >= 1 and conf.rate_limit_interval >= 1:
+        from oslo_log import rate_limit
+        rate_limit.install_filter(conf.rate_limit_burst,
+                                  conf.rate_limit_interval,
+                                  conf.rate_limit_except)
+
 _loggers = {}
 
 

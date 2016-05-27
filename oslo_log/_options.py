@@ -146,6 +146,21 @@ log_opts = [
                default='[instance: %(uuid)s] ',
                help='The format for an instance UUID that is passed with the '
                     'log message.'),
+
+    cfg.IntOpt('rate_limit_interval',
+               default=0,
+               help='Interval, number of seconds, of log rate limiting.'),
+    cfg.IntOpt('rate_limit_burst',
+               default=0,
+               help='Maximum number of logged messages per '
+                    'rate_limit_interval.'),
+    cfg.StrOpt('rate_limit_except_level',
+               default='CRITICAL',
+               help='Log level name used by rate limiting: CRITICAL, ERROR, '
+                    'INFO, WARNING, DEBUG or empty string. Logs with level '
+                    'greater or equal to rate_limit_except_level are not '
+                    'filtered. An empty string means that all levels are '
+                    'filtered.'),
 ]
 
 
