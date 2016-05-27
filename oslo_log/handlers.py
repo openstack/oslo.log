@@ -19,6 +19,7 @@ try:
     import syslog
 except ImportError:
     syslog = None
+from oslo_utils import encodeutils
 
 
 NullHandler = logging.NullHandler
@@ -52,9 +53,11 @@ if syslog is not None:
             syslog.openlog(binary_name, 0, facility)
 
         def emit(self, record):
-            syslog.syslog(self.severity_map.get(record.levelname,
-                                                syslog.LOG_DEBUG),
-                          self.format(record))
+            priority = self.severity_map.get(record.levelname,
+                                             syslog.LOG_DEBUG)
+            message = encodeutils.safe_encode(self.format(record))
+
+            syslog.syslog(priority, message)
 
 
 class ColorHandler(logging.StreamHandler):
