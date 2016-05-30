@@ -11,6 +11,7 @@
 #    under the License.
 
 import datetime
+import debtcollector
 import itertools
 import logging
 import logging.config
@@ -28,11 +29,21 @@ from oslo_serialization import jsonutils
 
 
 def _dictify_context(context):
-    if context is None:
-        return {}
-    if not isinstance(context, dict) and getattr(context, 'to_dict', None):
-        context = context.to_dict()
-    return context
+    if getattr(context, 'get_logging_values', None):
+        return context.get_logging_values()
+    elif getattr(context, 'to_dict', None):
+        debtcollector.deprecate(
+            'The RequestContext.get_logging_values() '
+            'method should be defined for logging context specific '
+            'information.  The to_dict() method is deprecated '
+            'for oslo.log use.', version='3.8.0', removal_version='5.0.0')
+        return context.to_dict()
+    # This dict only style logging format will become deprecated
+    # when projects using a dictionary object for context are updated
+    elif isinstance(context, dict):
+        return context
+
+    return {}
 
 
 # A configuration object is given to us when the application registers
@@ -48,19 +59,20 @@ def _store_global_conf(conf):
 def _update_record_with_context(record):
     """Given a log record, update it with context information.
 
-    The request context, if there is one, will either be in the
-    extra values for the incoming record or in the global
-    thread-local store.
+    The request context, if there is one, will either be passed with the
+    incoming record or in the global thread-local store.
     """
     context = record.__dict__.get(
         'context',
         context_utils.get_current()
     )
-    d = _dictify_context(context)
-    # Copy the context values directly onto the record so they can be
-    # used by the formatting strings.
-    for k, v in d.items():
-        setattr(record, k, v)
+    if context:
+        d = _dictify_context(context)
+        # Copy the context values directly onto the record so they can be
+        # used by the formatting strings.
+        for k, v in d.items():
+            setattr(record, k, v)
+
     return context
 
 
@@ -236,7 +248,7 @@ class ContextFormatter(logging.Formatter):
 
         # Set the "user_identity" value of "logging_context_format_string"
         # by using "logging_user_identity_format" and
-        # "to_dict()" of oslo.context.
+        # get_logging_values of oslo.context.
         if context:
             record.user_identity = (
                 self.conf.logging_user_identity_format %
