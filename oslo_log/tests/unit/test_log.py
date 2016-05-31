@@ -402,6 +402,14 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertTrue(extra_keys[1] in data['extra'])
         self.assertEqual(special_user, data['extra'][extra_keys[1]])
 
+    def test_can_process_strings(self):
+        expected = b'\\u2622'
+        if six.PY3:
+            # see ContextFormatterTestCase.test_can_process_strings
+            expected = '\\\\xe2\\\\x98\\\\xa2'
+        self.log.info(b'%s', u'\u2622'.encode('utf8'))
+        self.assertIn(expected, self.stream.getvalue())
+
 
 def get_fake_datetime(retval):
     class FakeDateTime(datetime.datetime):
@@ -568,6 +576,16 @@ class ContextFormatterTestCase(LogTestBase):
         self.log.info(message)
 
         self.assertEqual(expected, self.stream.getvalue())
+
+    def test_can_process_strings(self):
+        expected = b'\xe2\x98\xa2'
+        if six.PY3:
+            # in PY3 logging format string should be unicode string
+            # or it will fail and inserting byte string in unicode string
+            # causes such formatting
+            expected = '\\xe2\\x98\\xa2'
+        self.log.info(b'%s', u'\u2622'.encode('utf8'))
+        self.assertIn(expected, self.stream.getvalue())
 
 
 class ExceptionLoggingTestCase(LogTestBase):
@@ -1238,20 +1256,20 @@ class UnicodeConversionTestCase(BaseTestCase):
     def test_ascii_to_unicode(self):
         msg = self._MSG
         enc_msg = msg.encode('utf-8')
-        result = log._ensure_unicode(enc_msg)
+        result = formatters._ensure_unicode(enc_msg)
         self.assertEqual(msg, result)
         self.assertIsInstance(result, six.text_type)
 
     def test_unicode_to_unicode(self):
         msg = self._MSG
-        result = log._ensure_unicode(msg)
+        result = formatters._ensure_unicode(msg)
         self.assertEqual(msg, result)
         self.assertIsInstance(result, six.text_type)
 
     def test_exception_to_unicode(self):
         msg = self._MSG
         exc = Exception(msg)
-        result = log._ensure_unicode(exc)
+        result = formatters._ensure_unicode(exc)
         self.assertEqual(msg, result)
         self.assertIsInstance(result, six.text_type)
 
