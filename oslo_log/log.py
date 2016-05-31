@@ -40,7 +40,6 @@ except ImportError:
 import traceback
 
 from oslo_config import cfg
-from oslo_utils import encodeutils
 from oslo_utils import importutils
 import six
 from six import moves
@@ -92,21 +91,6 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
         self.log(TRACE, msg, *args, **kwargs)
 
 
-def _ensure_unicode(msg):
-    """Do our best to turn the input argument into a unicode object.
-    """
-    if not isinstance(msg, six.text_type):
-        if isinstance(msg, six.binary_type):
-            msg = encodeutils.safe_decode(
-                msg,
-                incoming='utf-8',
-                errors='xmlcharrefreplace',
-            )
-        else:
-            msg = six.text_type(msg)
-    return msg
-
-
 class KeywordArgumentAdapter(BaseLoggerAdapter):
     """Logger adapter to add keyword arguments to log record's extra data
 
@@ -126,7 +110,6 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
     """
 
     def process(self, msg, kwargs):
-        msg = _ensure_unicode(msg)
         # Make a new extra dictionary combining the values we were
         # given when we were constructed and anything from kwargs.
         extra = {}

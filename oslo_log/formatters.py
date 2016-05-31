@@ -25,6 +25,7 @@ from six import moves
 
 from oslo_context import context as context_utils
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 
 
 def _dictify_context(context):
@@ -62,6 +63,19 @@ def _update_record_with_context(record):
     for k, v in d.items():
         setattr(record, k, v)
     return context
+
+
+def _ensure_unicode(msg):
+    """Do our best to turn the input argument into a unicode object.
+    """
+    if isinstance(msg, six.text_type):
+        return msg
+    if not isinstance(msg, six.binary_type):
+        return six.text_type(msg)
+    return encodeutils.safe_decode(
+        msg,
+        incoming='utf-8',
+        errors='xmlcharrefreplace')
 
 
 class _ReplaceFalseValue(dict):
@@ -179,11 +193,17 @@ class ContextFormatter(logging.Formatter):
     def format(self, record):
         """Uses contextstring if request_id is set, otherwise default."""
 
-        # NOTE(jecarey): If msg is not unicode, coerce it into unicode
-        #                before it can get to the python logging and
-        #                possibly cause string encoding trouble
-        if not isinstance(record.msg, six.text_type):
-            record.msg = six.text_type(record.msg)
+        if six.PY2:
+            should_use_unicode = True
+            for arg in record.args:
+                try:
+                    six.text_type(arg)
+                except UnicodeDecodeError:
+                    should_use_unicode = False
+                    break
+            if (not isinstance(record.msg, six.text_type)
+                    and should_use_unicode):
+                record.msg = _ensure_unicode(record.msg)
 
         # store project info
         record.project = self.project
