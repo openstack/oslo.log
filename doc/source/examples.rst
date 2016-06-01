@@ -23,7 +23,7 @@ python_logging.py
 oslo_logging.py
 ---------------
 
-.. _example_olso_logging.py:
+.. _example_oslo_logging.py:
 
 .. literalinclude:: examples/oslo_logging.py
 

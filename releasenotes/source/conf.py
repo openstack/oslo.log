@@ -190,7 +190,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'olso.logReleaseNotesdoc'
+htmlhelp_basename = 'oslo.logReleaseNotesdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -210,8 +210,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'olso.logReleaseNotes.tex',
-     u'olso.log Release Notes Documentation',
+    ('index', 'oslo.logReleaseNotes.tex',
+     u'oslo.log Release Notes Documentation',
      u'oslo.log Developers', 'manual'),
 ]
 
@@ -241,7 +241,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'olso.logreleasenotes', u'oslo.log Release Notes Documentation',
+    ('index', 'oslo.logreleasenotes', u'oslo.log Release Notes Documentation',
      [u'oslo.log Developers'], 1)
 ]
 
@@ -256,7 +256,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'oslo.logReleaseNotes', u'oslo.log Release Notes Documentation',
-     u'oslo.log Developers', 'olso.logReleaseNotes',
+     u'oslo.log Developers', 'oslo.logReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]

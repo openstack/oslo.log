@@ -28,9 +28,9 @@ syntax with Python standard logging.
    :lines: 17-30
    :emphasize-lines: 8,9
 
-Source: :ref:`examples/oslo_logging.py <example_olso_logging.py>`
+Source: :ref:`examples/oslo_logging.py <example_oslo_logging.py>`
 
-Olso Logging Setup Methods
+Oslo Logging Setup Methods
 --------------------------
 
 Applications need to use the oslo.log configuration functions to register
@@ -64,7 +64,7 @@ to configure logging for the application.
 
 Source: :ref:`examples/usage.py <example_usage.py>`
 
-Olso Logging Functions
+Oslo Logging Functions
 ----------------------
 
 Use standard Python logging functions to produce log records at applicable
