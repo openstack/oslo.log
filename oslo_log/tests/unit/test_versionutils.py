@@ -25,20 +25,19 @@ from oslo_log import versionutils
 class DeprecatedTestCase(test_base.BaseTestCase):
     def assert_deprecated(self, mock_reporter, no_removal=False,
                           **expected_details):
-        decorator = versionutils.deprecated
         if 'in_favor_of' in expected_details:
             if no_removal is False:
-                expected_msg = decorator._deprecated_msg_with_alternative
+                expected_msg = versionutils._deprecated_msg_with_alternative
             else:
                 expected_msg = getattr(
-                    decorator,
+                    versionutils,
                     '_deprecated_msg_with_alternative_no_removal')
         else:
             if no_removal is False:
-                expected_msg = decorator._deprecated_msg_no_alternative
+                expected_msg = versionutils._deprecated_msg_no_alternative
             else:
                 expected_msg = getattr(
-                    decorator,
+                    versionutils,
                     '_deprecated_msg_with_no_alternative_no_removal')
         # The first argument is the logger, and we don't care about
         # that, so ignore it with ANY.
@@ -356,3 +355,17 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                what='OutdatedClass()',
                                as_of='Newton',
                                remove_in='P')
+
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
+    def test_deprecated_message(self, mock_reporter):
+
+        versionutils.deprecation_warning('outdated_stuff',
+                                         as_of=versionutils.deprecated.KILO,
+                                         in_favor_of='different_stuff',
+                                         remove_in=+2)
+
+        self.assert_deprecated(mock_reporter,
+                               what='outdated_stuff',
+                               in_favor_of='different_stuff',
+                               as_of='Kilo',
+                               remove_in='Mitaka')
