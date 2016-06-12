@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2011 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -42,6 +44,8 @@ from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
 from oslo_log import log
+
+from oslo_utils import encodeutils
 
 
 def _fake_context():
@@ -243,6 +247,17 @@ class OSSysLogHandlerTestCase(BaseTestCase):
         self.assertRaises(TypeError,
                           log._find_facility,
                           "fougere")
+
+    def test_syslog(self):
+        msg_unicode = u"Benoît Knecht & François Deppierraz login failure"
+        msg_utf8 = encodeutils.safe_encode(msg_unicode)
+
+        handler = handlers.OSSysLogHandler()
+        syslog.syslog = mock.Mock()
+        handler.emit(
+            logging.LogRecord("name", logging.INFO, "path", 123,
+                              msg_unicode, None, None))
+        syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
 
 
 class LogLevelTestCase(BaseTestCase):
