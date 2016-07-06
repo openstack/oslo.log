@@ -79,6 +79,22 @@ def _get_log_file_path(conf, binary=None):
     return None
 
 
+def _iter_loggers():
+    """Iterate on existing loggers."""
+
+    # Sadly, Logger.manager and Manager.loggerDict are not documented,
+    # but there is no logging public function to iterate on all loggers.
+
+    # The root logger is not part of loggerDict.
+    yield logging.getLogger()
+
+    manager = logging.Logger.manager
+    for logger in manager.loggerDict.values():
+        if isinstance(logger, logging.PlaceHolder):
+            continue
+        yield logger
+
+
 class BaseLoggerAdapter(logging.LoggerAdapter):
 
     warn = logging.LoggerAdapter.warning
