@@ -84,4 +84,4 @@ if __name__ == '__main__':
     try:
         raise Exception(_("This is exceptional"))
     except Exception:
-        LOG.exception(_("An Exception occurred"))
+        LOG.exception(_LE("An Exception occurred"))
