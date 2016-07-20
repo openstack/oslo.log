@@ -249,8 +249,8 @@ class SysLogHandlersTestCase(BaseTestCase):
         logrecord = logging.LogRecord('name', logging.WARNING, '/tmp', 1,
                                       'Message', None, None)
         expected = logrecord
-        self.assertEqual(self.logger.format(logrecord),
-                         expected.getMessage())
+        self.assertEqual(expected.getMessage(),
+                         self.logger.format(logrecord))
 
 
 @testtools.skipUnless(syslog, "syslog is not available")
@@ -689,8 +689,8 @@ class FancyRecordTestCase(LogTestBase):
         sys.stderr = six.StringIO()
 
         self.colorlog.info("foo")
-        self.assertNotEqual(sys.stderr.getvalue().find("KeyError: 'missing'"),
-                            -1)
+        self.assertNotEqual(-1,
+                            sys.stderr.getvalue().find("KeyError: 'missing'"))
 
         sys.stderr = error
 
@@ -995,15 +995,15 @@ class MutateTestCase(BaseTestCase):
             "[DEFAULT]\ndebug = true\n")
         log_root = log.getLogger(None).logger
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        self.assertEqual(self.CONF.debug, False)
-        self.assertEqual(self.CONF.verbose, True)
+        self.assertEqual(False, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
         self.assertEqual(log.INFO, log_root.getEffectiveLevel())
 
         shutil.copy(paths[1], paths[0])
         self.CONF.mutate_config_files()
 
-        self.assertEqual(self.CONF.debug, True)
-        self.assertEqual(self.CONF.verbose, True)
+        self.assertEqual(True, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
         self.assertEqual(log.DEBUG, log_root.getEffectiveLevel())
 
     @mock.patch.object(logging.config, "fileConfig")
@@ -1246,8 +1246,8 @@ class LogConfigOptsTestCase(BaseTestCase):
     def test_debug_verbose(self):
         self.CONF(['--debug', '--verbose'])
 
-        self.assertEqual(self.CONF.debug, True)
-        self.assertEqual(self.CONF.verbose, True)
+        self.assertEqual(True, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
 
     def test_logging_opts(self):
         self.CONF([])
@@ -1256,15 +1256,15 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertIsNone(self.CONF.log_file)
         self.assertIsNone(self.CONF.log_dir)
 
-        self.assertEqual(self.CONF.log_date_format,
-                         _options._DEFAULT_LOG_DATE_FORMAT)
+        self.assertEqual(_options._DEFAULT_LOG_DATE_FORMAT,
+                         self.CONF.log_date_format)
 
-        self.assertEqual(self.CONF.use_syslog, False)
+        self.assertEqual(False, self.CONF.use_syslog)
 
     def test_log_file(self):
         log_file = '/some/path/foo-bar.log'
         self.CONF(['--log-file', log_file])
-        self.assertEqual(self.CONF.log_file, log_file)
+        self.assertEqual(log_file, self.CONF.log_file)
 
     def test_log_dir_handlers(self):
         log_dir = tempfile.mkdtemp()
@@ -1289,7 +1289,7 @@ class LogConfigOptsTestCase(BaseTestCase):
             self.assertEqual(2, len(logger.handlers))
             self.assertIsInstance(logger.handlers[0],
                                   logging.handlers.WatchedFileHandler)
-            self.assertEqual(logger.handlers[1], fake_handler)
+            self.assertEqual(fake_handler, logger.handlers[1])
             mock_import.assert_called_once_with(
                 'oslo_messaging.notify.log_handler.PublishErrorsHandler',
                 logging.ERROR)
@@ -1297,17 +1297,17 @@ class LogConfigOptsTestCase(BaseTestCase):
     def test_logfile_deprecated(self):
         logfile = '/some/other/path/foo-bar.log'
         self.CONF(['--logfile', logfile])
-        self.assertEqual(self.CONF.log_file, logfile)
+        self.assertEqual(logfile, self.CONF.log_file)
 
     def test_log_dir(self):
         log_dir = '/some/path/'
         self.CONF(['--log-dir', log_dir])
-        self.assertEqual(self.CONF.log_dir, log_dir)
+        self.assertEqual(log_dir, self.CONF.log_dir)
 
     def test_logdir_deprecated(self):
         logdir = '/some/other/path/'
         self.CONF(['--logdir', logdir])
-        self.assertEqual(self.CONF.log_dir, logdir)
+        self.assertEqual(logdir, self.CONF.log_dir)
 
     def test_default_formatter(self):
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
@@ -1394,7 +1394,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
     def test_empty_kwargs(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
         msg, kwargs = a.process('message', {})
-        self.assertEqual(kwargs, {'extra': {'extra_keys': []}})
+        self.assertEqual({'extra': {'extra_keys': []}}, kwargs)
 
     def test_include_constructor_extras(self):
         key = 'foo'
@@ -1402,17 +1402,17 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         data = {key: val}
         a = log.KeywordArgumentAdapter(self.mock_log, data)
         msg, kwargs = a.process('message', {})
-        self.assertEqual(kwargs,
-                         {'extra': {key: val, 'extra_keys': [key]}})
+        self.assertEqual({'extra': {key: val, 'extra_keys': [key]}},
+                         kwargs)
 
     def test_pass_through_exc_info(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
         exc_message = 'exception'
         msg, kwargs = a.process('message', {'exc_info': exc_message})
         self.assertEqual(
-            kwargs,
             {'extra': {'extra_keys': []},
-             'exc_info': exc_message})
+             'exc_info': exc_message},
+            kwargs)
 
     def test_update_extras(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
@@ -1424,12 +1424,12 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
 
         msg, kwargs = a.process('message', data)
         self.assertEqual(
-            kwargs,
             {'extra': {'anything': expected['anything'],
                        'context': expected['context'],
                        'extra_keys': sorted(expected.keys()),
                        'instance': expected['instance'],
-                       'resource_uuid': expected['resource_uuid']}})
+                       'resource_uuid': expected['resource_uuid']}},
+            kwargs)
 
     def test_pass_args_to_log(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
