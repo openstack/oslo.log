@@ -197,18 +197,18 @@ class LogTestBase(BaseTestCase):
 
 class LogHandlerTestCase(BaseTestCase):
     def test_log_path_logdir(self):
-        path = '/some/path'
+        path = os.path.join('some', 'path')
         binary = 'foo-bar'
-        expected = '%s/%s.log' % (path, binary)
+        expected = os.path.join(path, '%s.log' % binary)
         self.config(log_dir=path, log_file=None)
         self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
                          binary=binary),
                          expected)
 
     def test_log_path_logfile(self):
-        path = '/some/path'
+        path = os.path.join('some', 'path')
         binary = 'foo-bar'
-        expected = '%s/%s.log' % (path, binary)
+        expected = os.path.join(path, '%s.log' % binary)
         self.config(log_file=expected)
         self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
                          binary=binary),
@@ -221,10 +221,10 @@ class LogHandlerTestCase(BaseTestCase):
                           binary=prefix))
 
     def test_log_path_logfile_overrides_logdir(self):
-        path = '/some/path'
+        path = os.path.join(os.sep, 'some', 'path')
         prefix = 'foo-bar'
-        expected = '%s/%s.log' % (path, prefix)
-        self.config(log_dir='/some/other/path',
+        expected = os.path.join(path, '%s.log' % prefix)
+        self.config(log_dir=os.path.join('some', 'other', 'path'),
                     log_file=expected)
         self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
                          binary=prefix),
