@@ -8,7 +8,7 @@ In an Application
 =================
 
 When using `Python's standard logging library`_ the following minimal setup
-demostrates basic logging.
+demonstrates basic logging.
 
 .. _Python's standard logging library: https://docs.python.org/2/library/logging.html
 
