@@ -983,6 +983,11 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
 
 
 class MutateTestCase(BaseTestCase):
+    def setUp(self):
+        super(MutateTestCase, self).setUp()
+        if hasattr(log._load_log_config, 'old_time'):
+            del log._load_log_config.old_time
+
     def setup_confs(self, *confs):
         paths = self.create_tempfiles(
             ('conf_%d' % i, conf) for i, conf in enumerate(confs))
@@ -1176,6 +1181,8 @@ keys=
 
         yield loginis, confs
         shutil.copy(confs[1], confs[0])
+        # prevent the mtime ever matching
+        os.utime(self.CONF.log_config_append, (0, 0))
         self.CONF.mutate_config_files()
 
     @mock.patch.object(logging.config, "fileConfig")
@@ -1339,11 +1346,12 @@ class LogConfigOptsTestCase(BaseTestCase):
 
 
 class LogConfigTestCase(BaseTestCase):
-
     def setUp(self):
         super(LogConfigTestCase, self).setUp()
         names = self.create_tempfiles([('logging', MIN_LOG_INI)])
         self.log_config_append = names[0]
+        if 'old_time' in vars(log._load_log_config):
+            del log._load_log_config.old_time
 
     def test_log_config_append_ok(self):
         self.config(log_config_append=self.log_config_append)
@@ -1357,7 +1365,7 @@ class LogConfigTestCase(BaseTestCase):
                           'test_log_config_append')
 
     def test_log_config_append_invalid(self):
-        names = self.create_tempfiles([('logging', MIN_LOG_INI[5:])])
+        names = self.create_tempfiles([('logging', 'squawk')])
         self.log_config_append = names[0]
         self.config(log_config_append=self.log_config_append)
         self.assertRaises(log.LogConfigError, log.setup,
