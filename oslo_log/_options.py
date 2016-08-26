@@ -98,7 +98,7 @@ logging_cli_opts = [
 
 generic_log_opts = [
     cfg.BoolOpt('use_stderr',
-                default=True,
+                default=False,
                 help='Log output to standard error. '
                      + _IGNORE_MESSAGE),
 ]
