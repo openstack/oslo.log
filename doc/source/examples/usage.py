@@ -19,7 +19,7 @@ This example requires the following package to be installed.
 $ pip install oslo.log
 
 Additional Oslo packages installed include oslo.config, oslo.context,
-oslo.i18n, osli.serialization and oslo.utils.
+oslo.i18n, oslo.serialization and oslo.utils.
 
 More information about Oslo Logging can be found at:
 
