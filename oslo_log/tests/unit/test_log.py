@@ -352,7 +352,7 @@ class JSONFormatterTestCase(LogTestBase):
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
-        self.assertTrue('extra' in data)
+        self.assertIn('extra', data)
         extra = data['extra']
         self.assertEqual('value', extra['key'])
         self.assertEqual(local_context.auth_token, extra['auth_token'])
@@ -380,7 +380,7 @@ class JSONFormatterTestCase(LogTestBase):
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
-        self.assertTrue('extra' in data)
+        self.assertIn('extra', data)
         self.assertEqual('test-json', data['name'])
 
         self.assertEqual(test_msg % test_data, data['message'])
@@ -400,7 +400,7 @@ class JSONFormatterTestCase(LogTestBase):
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
-        self.assertTrue('extra' in data)
+        self.assertIn('extra', data)
         for k, v in extra_data.items():
             self.assertIn(k, data['extra'])
             self.assertEqual(v, data['extra'][k])
@@ -417,10 +417,10 @@ class JSONFormatterTestCase(LogTestBase):
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
-        self.assertTrue('extra' in data)
-        self.assertTrue(extra_keys[0] in data['extra'])
+        self.assertIn('extra', data)
+        self.assertIn(extra_keys[0], data['extra'])
         self.assertEqual(special_tenant, data['extra'][extra_keys[0]])
-        self.assertTrue(extra_keys[1] in data['extra'])
+        self.assertIn(extra_keys[1], data['extra'])
         self.assertEqual(special_user, data['extra'][extra_keys[1]])
 
     def test_can_process_strings(self):
@@ -470,7 +470,7 @@ class FluentFormatterTestCase(LogTestBase):
         self.log.debug(test_msg, test_data, key='value', context=local_context)
 
         data = jsonutils.loads(self.stream.getvalue())
-        self.assertTrue('extra' in data)
+        self.assertIn('extra', data)
         extra = data['extra']
         self.assertEqual('value', extra['key'])
         self.assertEqual(local_context.auth_token, extra['auth_token'])
@@ -495,7 +495,7 @@ class FluentFormatterTestCase(LogTestBase):
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
-        self.assertTrue('extra' in data)
+        self.assertIn('extra', data)
         self.assertEqual('test-fluent', data['name'])
 
         self.assertEqual(test_msg % test_data, data['message'])
@@ -689,8 +689,8 @@ class ExceptionLoggingTestCase(LogTestBase):
 
         expected_string = ("CRITICAL somename [-] "
                            "Exception: Some error happened")
-        self.assertTrue(expected_string in self.stream.getvalue(),
-                        msg="Exception is not logged")
+        self.assertIn(expected_string, self.stream.getvalue(),
+                      message="Exception is not logged")
 
     def test_excepthook_installed(self):
         log.setup(self.CONF, "test_excepthook_installed")
@@ -926,9 +926,9 @@ class DomainTestCase(LogTestBase):
     def test_domain_in_log_msg(self):
         ctxt = _fake_context()
         user_identity = ctxt.get_logging_values()['user_identity']
-        self.assertTrue(ctxt.domain in user_identity)
-        self.assertTrue(ctxt.project_domain in user_identity)
-        self.assertTrue(ctxt.user_domain in user_identity)
+        self.assertIn(ctxt.domain, user_identity)
+        self.assertIn(ctxt.project_domain, user_identity)
+        self.assertIn(ctxt.user_domain, user_identity)
         self._validate_keys(ctxt, ('[%s]: %s' %
                                    (ctxt.request_id, user_identity)))
 
@@ -1029,7 +1029,7 @@ class FastWatchedFileHandlerTestCase(BaseTestCase):
         logger.info(text)
         with open(log_path, 'r') as f:
             file_content = f.read()
-        self.assertTrue(text in file_content)
+        self.assertIn(text, file_content)
 
     def test_move(self):
         log_path = self._config()
