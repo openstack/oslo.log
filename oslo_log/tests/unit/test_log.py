@@ -1384,8 +1384,8 @@ class LogConfigOptsTestCase(BaseTestCase):
         logger = log._loggers[None].logger
         for handler in logger.handlers:
             formatter = handler.formatter
-            self.assertTrue(isinstance(formatter,
-                                       formatters.ContextFormatter))
+            self.assertIsInstance(formatter,
+                                  formatters.ContextFormatter)
 
     def test_handlers_cleanup(self):
         """Test that all old handlers get removed from log_root."""
