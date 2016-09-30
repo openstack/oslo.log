@@ -68,6 +68,8 @@ _RELEASES = {
     'M': 'Mitaka',
     'N': 'Newton',
     'O': 'Ocata',
+    'P': 'Pike',
+    'Q': 'Queens',
 }
 
 
@@ -140,6 +142,8 @@ class deprecated(object):
     MITAKA = 'M'
     NEWTON = 'N'
     OCATA = 'O'
+    PIKE = 'P'
+    QUEENS = 'Q'
 
     def __init__(self, as_of, in_favor_of=None, remove_in=2, what=None):
         """Initialize decorator
