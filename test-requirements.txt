@@ -14,12 +14,12 @@ oslotest>=1.10.0 # Apache-2.0
 # when we can require tox>= 1.4, this can go into tox.ini:
 #  [testenv:cover]
 #  deps = {[testenv]deps} coverage
-coverage>=3.6 # Apache-2.0
+coverage>=4.0 # Apache-2.0
 
 # this is required for the docs build jobs
 sphinx!=1.3b1,<1.4,>=1.2.1 # BSD
 oslosphinx>=4.7.0 # Apache-2.0
-reno>=1.8.0 # Apache2
+reno>=1.8.0 # Apache-2.0
 
 # Bandit security code scanner
 bandit>=1.1.0 # Apache-2.0
