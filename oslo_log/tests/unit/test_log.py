@@ -291,7 +291,10 @@ class OSSysLogHandlerTestCase(BaseTestCase):
         handler.emit(
             logging.LogRecord("name", logging.INFO, "path", 123,
                               msg_unicode, None, None))
-        syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
+        if six.PY2:
+            syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
+        else:
+            syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_unicode)
 
 
 class LogLevelTestCase(BaseTestCase):
