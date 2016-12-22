@@ -1416,7 +1416,7 @@ class LogConfigTestCase(BaseTestCase):
         super(LogConfigTestCase, self).setUp()
         names = self.create_tempfiles([('logging', MIN_LOG_INI)])
         self.log_config_append = names[0]
-        if 'old_time' in vars(log._load_log_config):
+        if hasattr(log._load_log_config, 'old_time'):
             del log._load_log_config.old_time
 
     def test_log_config_append_ok(self):
