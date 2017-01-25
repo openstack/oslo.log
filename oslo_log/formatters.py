@@ -337,7 +337,7 @@ class ContextFormatter(logging.Formatter):
         if context:
             record.user_identity = (
                 self.conf.logging_user_identity_format %
-                _ReplaceFalseValue(context.__dict__)
+                _ReplaceFalseValue(_dictify_context(context))
             )
 
         if record.__dict__.get('request_id'):
