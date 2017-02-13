@@ -365,7 +365,7 @@ def _setup_logging_from_conf(conf, project, version):
     elif not logpath:
         # pass sys.stdout as a positional argument
         # python2.6 calls the argument strm, in 2.7 it's stream
-        streamlog = logging.StreamHandler(sys.stdout)
+        streamlog = handlers.ColorHandler(sys.stdout)
         log_root.addHandler(streamlog)
 
     if conf.publish_errors:
