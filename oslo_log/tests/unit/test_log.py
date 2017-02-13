@@ -107,6 +107,13 @@ class CommonLoggerTestsMixIn(object):
         self.log.info("foo", context=_fake_context())
         self.assertTrue(True)  # didn't raise exception
 
+    def test_will_be_verbose_if_verbose_flag_set(self):
+        self.config(verbose=True)
+        logger_name = 'test_is_verbose'
+        log.setup(self.CONF, logger_name)
+        logger = logging.getLogger(logger_name)
+        self.assertEqual(logging.INFO, logger.getEffectiveLevel())
+
     def test_will_be_debug_if_debug_flag_set(self):
         self.config(debug=True)
         logger_name = 'test_is_debug'
@@ -114,12 +121,12 @@ class CommonLoggerTestsMixIn(object):
         logger = logging.getLogger(logger_name)
         self.assertEqual(logging.DEBUG, logger.getEffectiveLevel())
 
-    def test_will_be_info_if_debug_flag_not_set(self):
-        self.config(debug=False)
-        logger_name = 'test_is_not_debug'
+    def test_will_not_be_verbose_if_verbose_flag_not_set(self):
+        self.config(verbose=False)
+        logger_name = 'test_is_not_verbose'
         log.setup(self.CONF, logger_name)
         logger = logging.getLogger(logger_name)
-        self.assertEqual(logging.INFO, logger.getEffectiveLevel())
+        self.assertEqual(logging.WARN, logger.getEffectiveLevel())
 
     def test_no_logging_via_module(self):
         for func in ('critical', 'error', 'exception', 'warning', 'warn',
@@ -302,7 +309,8 @@ class LogLevelTestCase(BaseTestCase):
         levels.append(warn_level + '=WARN')
         levels.append(other_level + '=7')
         levels.append(trace_level + '=TRACE')
-        self.config(default_log_levels=levels)
+        self.config(default_log_levels=levels,
+                    verbose=True)
         log.setup(self.CONF, 'testing')
         self.log = log.getLogger(info_level)
         self.log_no_debug = log.getLogger(warn_level)
@@ -1059,12 +1067,14 @@ class MutateTestCase(BaseTestCase):
         log_root = log.getLogger(None).logger
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
         self.assertEqual(False, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
         self.assertEqual(log.INFO, log_root.getEffectiveLevel())
 
         shutil.copy(paths[1], paths[0])
         self.CONF.mutate_config_files()
 
         self.assertEqual(True, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
         self.assertEqual(log.DEBUG, log_root.getEffectiveLevel())
 
     @mock.patch.object(logging.config, "fileConfig")
@@ -1303,12 +1313,14 @@ class LogConfigOptsTestCase(BaseTestCase):
         f = six.StringIO()
         self.CONF([])
         self.CONF.print_help(file=f)
-        for option in ['debug', 'log-config', 'watch-log-file']:
+        for option in ['debug', 'verbose', 'log-config', 'watch-log-file']:
             self.assertIn(option, f.getvalue())
 
-    def test_debug(self):
-        self.CONF(['--debug'])
+    def test_debug_verbose(self):
+        self.CONF(['--debug', '--verbose'])
+
         self.assertEqual(True, self.CONF.debug)
+        self.assertEqual(True, self.CONF.verbose)
 
     def test_logging_opts(self):
         self.CONF([])
