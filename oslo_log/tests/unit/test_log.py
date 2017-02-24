@@ -1591,3 +1591,23 @@ class LoggerNameTestCase(LoggerTestCase):
         expected = logger_name.replace('_', '.')
         l = log.getLogger(logger_name)
         self.assertEqual(expected, l.logger.name)
+
+
+class IsDebugEnabledTestCase(test_base.BaseTestCase):
+    def setUp(self):
+        super(IsDebugEnabledTestCase, self).setUp()
+        self.config_fixture = self.useFixture(
+            fixture_config.Config(cfg.ConfigOpts()))
+        self.config = self.config_fixture.config
+        self.CONF = self.config_fixture.conf
+        log.register_options(self.config_fixture.conf)
+
+    def _test_is_debug_enabled(self, debug=False):
+        self.config(debug=debug)
+        self.assertEqual(debug, log.is_debug_enabled(self.CONF))
+
+    def test_is_debug_enabled_off(self):
+        self._test_is_debug_enabled()
+
+    def test_is_debug_enabled_on(self):
+        self._test_is_debug_enabled(debug=True)

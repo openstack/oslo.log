@@ -459,3 +459,8 @@ def get_default_log_levels():
     setup.
     """
     return list(_options.DEFAULT_LOG_LEVELS)
+
+
+def is_debug_enabled(conf):
+    """Determine if debug logging mode is enabled."""
+    return conf.debug
