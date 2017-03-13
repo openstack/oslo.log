@@ -15,12 +15,26 @@
 """Log helper functions."""
 
 import functools
+import inspect
 import logging
 
 
 def _get_full_class_name(cls):
     return '%s.%s' % (cls.__module__,
                       getattr(cls, '__qualname__', cls.__name__))
+
+
+def _is_method(obj, method):
+    """Returns True if a given method is obj's method.
+
+    You can not simply test a given method like:
+
+    return inspect.ismethod(method)
+
+    This is because functools.wraps converts the method to a function
+    in log_method_call function.
+    """
+    return inspect.ismethod(getattr(obj, method.__name__, None))
 
 
 def log_method_call(method):
@@ -33,16 +47,21 @@ def log_method_call(method):
 
     @functools.wraps(method)
     def wrapper(*args, **kwargs):
+        args_start_pos = 0
         if args:
             first_arg = args[0]
-            cls = (first_arg if isinstance(first_arg, type)
-                   else first_arg.__class__)
-            caller = _get_full_class_name(cls)
+            if _is_method(first_arg, method):
+                cls = (first_arg if isinstance(first_arg, type)
+                       else first_arg.__class__)
+                caller = _get_full_class_name(cls)
+                args_start_pos = 1
+            else:
+                caller = 'static'
         else:
             caller = 'static'
         data = {'caller': caller,
                 'method_name': method.__name__,
-                'args': args[1:], 'kwargs': kwargs}
+                'args': args[args_start_pos:], 'kwargs': kwargs}
         log.debug('%(caller)s method %(method_name)s '
                   'called with arguments %(args)s %(kwargs)s', data)
         return method(*args, **kwargs)
