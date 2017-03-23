@@ -328,10 +328,8 @@ def _find_facility(facility):
 def _refresh_root_level(debug):
     """Set the level of the root logger.
 
-    If 'debug' is True, the level will be DEBUG. Otherwise the level will be
-    INFO.
-
-    :param debug
+    :param debug: If 'debug' is True, the level will be DEBUG.
+     Otherwise the level will be INFO.
     """
     log_root = getLogger(None).logger
     if debug:
