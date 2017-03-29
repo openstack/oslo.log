@@ -74,6 +74,20 @@ def _fake_context():
     return ctxt
 
 
+def _fake_new_context():
+    # New style contexts have a user_name / project_name, this is done
+    # distinctly from the above context to not have to rewrite all the
+    # other tests.
+    ctxt = context.RequestContext(1, 1, overwrite=True)
+    ctxt.user_name = 'myuser'
+    ctxt.project_name = 'mytenant'
+    ctxt.domain = 'mydomain'
+    ctxt.project_domain = 'myprojectdomain'
+    ctxt.user_domain = 'myuserdomain'
+
+    return ctxt
+
+
 class CommonLoggerTestsMixIn(object):
     """These tests are shared between LoggerTestCase and
     LazyLoggerTestCase.
@@ -288,6 +302,39 @@ class OSSysLogHandlerTestCase(BaseTestCase):
             syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
         else:
             syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_unicode)
+
+
+class OSJournalHandlerTestCase(BaseTestCase):
+    """Test systemd journal logging.
+
+    This is a lightweight test for testing systemd journal logging. It
+    mocks out the journal interface itself, which allows us to not
+    have to have systemd-python installed (which is not possible to
+    install on non Linux environments).
+
+    Real world testing is also encouraged.
+
+    """
+    def setUp(self):
+        super(OSJournalHandlerTestCase, self).setUp()
+        self.config(use_journal=True)
+        self.journal = mock.patch("oslo_log.handlers.journal").start()
+        self.addCleanup(self.journal.stop)
+        log.setup(self.CONF, 'testing')
+
+    def test_emit(self):
+        l = log.getLogger('nova-test.foo')
+        local_context = _fake_new_context()
+        l.info("Foo", context=local_context)
+        self.assertEqual(
+            self.journal.send.call_args,
+            mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
+                      CODE_LINE=mock.ANY, LOGGER_LEVEL='INFO',
+                      LOGGER_NAME='nova-test.foo', PRIORITY=6,
+                      SYSLOG_IDENTIFIER=mock.ANY,
+                      REQUEST_ID=mock.ANY,
+                      PROJECT_NAME='mytenant',
+                      USER_NAME='myuser'))
 
 
 class LogLevelTestCase(BaseTestCase):

@@ -84,6 +84,14 @@ logging_cli_opts = [
                      'Existing syslog format is DEPRECATED '
                      'and will be changed later to honor RFC5424. '
                      + _IGNORE_MESSAGE),
+    cfg.BoolOpt('use-journal',
+                default=False,
+                help='Enable journald for logging. '
+                     'If running in a systemd environment you may wish '
+                     'to enable journal support. Doing so will use the '
+                     'journal native protocol which includes structured '
+                     'metadata in addition to log messages.'
+                     + _IGNORE_MESSAGE),
     cfg.StrOpt('syslog-log-facility',
                default='LOG_USER',
                help='Syslog facility to receive log lines. '

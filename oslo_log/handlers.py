@@ -17,6 +17,11 @@ import logging.config
 import logging.handlers
 import os
 import six
+
+try:
+    from systemd import journal
+except ImportError:
+    journal = None
 try:
     import syslog
 except ImportError:
@@ -82,6 +87,55 @@ if syslog is not None:
                 message = encodeutils.safe_encode(self.format(record))
 
             syslog.syslog(priority, message)
+
+
+class OSJournalHandler(logging.Handler):
+    severity_map = {
+        "CRITICAL": syslog.LOG_CRIT,
+        "DEBUG": syslog.LOG_DEBUG,
+        "ERROR": syslog.LOG_ERR,
+        "INFO": syslog.LOG_INFO,
+        "WARNING": syslog.LOG_WARNING,
+        "WARN": syslog.LOG_WARNING,
+    }
+
+    custom_fields = (
+        'project_name',
+        'project_id',
+        'user_name',
+        'user_id',
+        'request_id',
+    )
+
+    def __init__(self):
+        # Do not use super() unless type(logging.Handler) is 'type'
+        # (i.e. >= Python 2.7).
+        if not journal:
+            raise Exception("Systemd bindings do not exist")
+        logging.Handler.__init__(self)
+        self.binary_name = _get_binary_name()
+
+    def emit(self, record):
+        priority = self.severity_map.get(record.levelname,
+                                         syslog.LOG_DEBUG)
+        message = self.format(record)
+
+        extras = {
+            'CODE_FILE': record.pathname,
+            'CODE_LINE': record.lineno,
+            'CODE_FUNC': record.funcName,
+            'LOGGER_NAME': record.name,
+            'LOGGER_LEVEL': record.levelname,
+            'SYSLOG_IDENTIFIER': self.binary_name,
+            'PRIORITY': priority
+        }
+
+        for field in self.custom_fields:
+            value = record.__dict__.get(field)
+            if value:
+                extras[field.upper()] = value
+
+        journal.send(message, **extras)
 
 
 class ColorHandler(logging.StreamHandler):
