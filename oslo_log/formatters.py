@@ -270,7 +270,7 @@ class ContextFormatter(logging.Formatter):
 
         if six.PY2:
             should_use_unicode = True
-            for arg in record.args:
+            for arg in record.args or []:
                 try:
                     six.text_type(arg)
                 except UnicodeDecodeError:
