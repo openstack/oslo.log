@@ -360,7 +360,12 @@ def _setup_logging_from_conf(conf, project, version):
         streamlog = handlers.ColorHandler()
         log_root.addHandler(streamlog)
 
-    elif not logpath:
+    if conf.use_journal:
+        journal = handlers.OSJournalHandler()
+        log_root.addHandler(journal)
+
+    # if None of the above are True, then fall back to standard out
+    if not logpath and not conf.use_stderr and not conf.use_journal:
         # pass sys.stdout as a positional argument
         # python2.6 calls the argument strm, in 2.7 it's stream
         streamlog = handlers.ColorHandler(sys.stdout)
