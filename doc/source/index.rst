@@ -12,6 +12,7 @@ logging (like resource id's etc).
 
    installation
    usage
+   journal
    migration
    opts
    configfiles/index
