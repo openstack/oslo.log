@@ -39,18 +39,22 @@ def _get_binary_name():
 _AUDIT = logging.INFO + 1
 _TRACE = 5
 
+# This is a copy of the numerical constants from syslog.h. The
+# definition of these goes back at least 20 years, and is specifically
+# 3 bits in a packed field, so these aren't likely to ever need
+# changing.
+SYSLOG_MAP = {
+    "CRITICAL": 2,
+    "ERROR": 3,
+    "WARNING": 4,
+    "WARN": 4,
+    "INFO": 6,
+    "DEBUG": 7,
+}
 
 if syslog is not None:
     class OSSysLogHandler(logging.Handler):
         """Syslog based handler. Only available on UNIX-like platforms."""
-        severity_map = {
-            "CRITICAL": syslog.LOG_CRIT,
-            "DEBUG": syslog.LOG_DEBUG,
-            "ERROR": syslog.LOG_ERR,
-            "INFO": syslog.LOG_INFO,
-            "WARNING": syslog.LOG_WARNING,
-            "WARN": syslog.LOG_WARNING,
-        }
 
         def __init__(self, facility=syslog.LOG_USER):
             # Do not use super() unless type(logging.Handler) is 'type'
@@ -60,8 +64,7 @@ if syslog is not None:
             syslog.openlog(binary_name, 0, facility)
 
         def emit(self, record):
-            priority = self.severity_map.get(record.levelname,
-                                             syslog.LOG_DEBUG)
+            priority = SYSLOG_MAP.get(record.levelname, 7)
             message = self.format(record)
 
             # NOTE(gangila): In python2, the syslog function takes in 's' as
@@ -90,14 +93,6 @@ if syslog is not None:
 
 
 class OSJournalHandler(logging.Handler):
-    severity_map = {
-        "CRITICAL": syslog.LOG_CRIT,
-        "DEBUG": syslog.LOG_DEBUG,
-        "ERROR": syslog.LOG_ERR,
-        "INFO": syslog.LOG_INFO,
-        "WARNING": syslog.LOG_WARNING,
-        "WARN": syslog.LOG_WARNING,
-    }
 
     custom_fields = (
         'project_name',
@@ -111,13 +106,12 @@ class OSJournalHandler(logging.Handler):
         # Do not use super() unless type(logging.Handler) is 'type'
         # (i.e. >= Python 2.7).
         if not journal:
-            raise Exception("Systemd bindings do not exist")
+            raise RuntimeError("Systemd bindings do not exist")
         logging.Handler.__init__(self)
         self.binary_name = _get_binary_name()
 
     def emit(self, record):
-        priority = self.severity_map.get(record.levelname,
-                                         syslog.LOG_DEBUG)
+        priority = SYSLOG_MAP.get(record.levelname, 7)
         message = self.format(record)
 
         extras = {
