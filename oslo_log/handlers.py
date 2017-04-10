@@ -52,44 +52,46 @@ SYSLOG_MAP = {
     "DEBUG": 7,
 }
 
-if syslog is not None:
-    class OSSysLogHandler(logging.Handler):
-        """Syslog based handler. Only available on UNIX-like platforms."""
 
-        def __init__(self, facility=syslog.LOG_USER):
-            # Do not use super() unless type(logging.Handler) is 'type'
-            # (i.e. >= Python 2.7).
-            logging.Handler.__init__(self)
-            binary_name = _get_binary_name()
-            syslog.openlog(binary_name, 0, facility)
+class OSSysLogHandler(logging.Handler):
+    """Syslog based handler. Only available on UNIX-like platforms."""
 
-        def emit(self, record):
-            priority = SYSLOG_MAP.get(record.levelname, 7)
-            message = self.format(record)
+    def __init__(self, facility=syslog.LOG_USER):
+        # Do not use super() unless type(logging.Handler) is 'type'
+        # (i.e. >= Python 2.7).
+        if not syslog:
+            raise RuntimeError("Syslog not available on this platform")
+        logging.Handler.__init__(self)
+        binary_name = _get_binary_name()
+        syslog.openlog(binary_name, 0, facility)
 
-            # NOTE(gangila): In python2, the syslog function takes in 's' as
-            # the format argument, which means it either accepts python string
-            # (str = 'a') or unicode strings (str = u'a'), the PyArg_ParseTuple
-            # then if needed converts the unicode objects to C strings using
-            # the *default encoding*. This default encoding is 'ascii' in case
-            # of python2 while it has been changed to 'utf-8' in case of
-            # python3. What this leads to is when we supply a syslog message
-            # like:
-            # >>> syslog.syslog(syslog.LOG_DEBUG, u"François Deppierraz")
-            # In case of python2 the above fails with TypeError: [priority,]
-            # message string. Because python2 doesn't explicitly encode as
-            # 'utf-8' and use the system default encoding ascii, which raises
-            # a UnicodeEncodeError (UnicodeEncodeError: 'ascii' codec can't
-            # encode character u'\xe7' in position 4: ordinal not in
-            # range(128)), and hence the error message that's set in the code
-            # (TypeError: [priority,] message string) gets shown to the user.
-            # However, this in the case of Python3, where the system default
-            # encoding is 'utf-8' works without any issues. Therefore, we need
-            # to safe_encode in case of python2 and not in case of Python3.
-            if six.PY2:
-                message = encodeutils.safe_encode(self.format(record))
+    def emit(self, record):
+        priority = SYSLOG_MAP.get(record.levelname, 7)
+        message = self.format(record)
 
-            syslog.syslog(priority, message)
+        # NOTE(gangila): In python2, the syslog function takes in 's' as
+        # the format argument, which means it either accepts python string
+        # (str = 'a') or unicode strings (str = u'a'), the PyArg_ParseTuple
+        # then if needed converts the unicode objects to C strings using
+        # the *default encoding*. This default encoding is 'ascii' in case
+        # of python2 while it has been changed to 'utf-8' in case of
+        # python3. What this leads to is when we supply a syslog message
+        # like:
+        # >>> syslog.syslog(syslog.LOG_DEBUG, u"François Deppierraz")
+        # In case of python2 the above fails with TypeError: [priority,]
+        # message string. Because python2 doesn't explicitly encode as
+        # 'utf-8' and use the system default encoding ascii, which raises
+        # a UnicodeEncodeError (UnicodeEncodeError: 'ascii' codec can't
+        # encode character u'\xe7' in position 4: ordinal not in
+        # range(128)), and hence the error message that's set in the code
+        # (TypeError: [priority,] message string) gets shown to the user.
+        # However, this in the case of Python3, where the system default
+        # encoding is 'utf-8' works without any issues. Therefore, we need
+        # to safe_encode in case of python2 and not in case of Python3.
+        if six.PY2:
+            message = encodeutils.safe_encode(self.format(record))
+
+        syslog.syslog(priority, message)
 
 
 class OSJournalHandler(logging.Handler):
