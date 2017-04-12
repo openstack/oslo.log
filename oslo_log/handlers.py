@@ -56,7 +56,10 @@ SYSLOG_MAP = {
 class OSSysLogHandler(logging.Handler):
     """Syslog based handler. Only available on UNIX-like platforms."""
 
-    def __init__(self, facility=syslog.LOG_USER):
+    def __init__(self, facility=None):
+        # Default values always get evaluated, for which reason we avoid
+        # using 'syslog' directly, which may not be available.
+        facility = facility if facility is not None else syslog.LOG_USER
         # Do not use super() unless type(logging.Handler) is 'type'
         # (i.e. >= Python 2.7).
         if not syslog:
