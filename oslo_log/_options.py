@@ -18,7 +18,8 @@ _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
                       'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
-                      'oslo.messaging=INFO', 'iso8601=WARN',
+                      'oslo.messaging=INFO', 'oslo_messaging=INFO',
+                      'iso8601=WARN',
                       'requests.packages.urllib3.connectionpool=WARN',
                       'urllib3.connectionpool=WARN', 'websocket=WARN',
                       'requests.packages.urllib3.util.retry=WARN',
