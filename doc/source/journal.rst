@@ -58,8 +58,17 @@ known at the time of logging the message.
 CODE_FILE=, CODE_LINE=, CODE_FUNC=
 
    The code location generating this message, if known. Contains the
-   source filename, the line number and the function name. (This is
-   the same as systemd uses)
+   source filename, the line number and the function name. (This is the
+   same as systemd uses)
+
+THREAD_NAME=, PROCESS_NAME=
+
+   Information about the thread and process, if known. (This is the same
+   as systemd uses)
+
+EXCEPTION_TEXT=, EXCEPTION_INFO=
+
+   Information about an exception, if an exception has been logged.
 
 LOGGER_NAME=
 

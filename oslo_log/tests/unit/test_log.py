@@ -334,6 +334,30 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       SYSLOG_IDENTIFIER=mock.ANY,
                       REQUEST_ID=mock.ANY,
                       PROJECT_NAME='mytenant',
+                      PROCESS_NAME='MainProcess',
+                      THREAD_NAME='MainThread',
+                      USER_NAME='myuser'))
+
+    def test_emit_exception(self):
+        l = log.getLogger('nova-exception.foo')
+        local_context = _fake_new_context()
+        try:
+            raise Exception("Some exception")
+        except Exception:
+            l.exception("Foo", context=local_context)
+        self.assertEqual(
+            self.journal.send.call_args,
+            mock.call(mock.ANY, CODE_FILE=mock.ANY,
+                      CODE_FUNC='test_emit_exception',
+                      CODE_LINE=mock.ANY, LOGGER_LEVEL='ERROR',
+                      LOGGER_NAME='nova-exception.foo', PRIORITY=3,
+                      SYSLOG_IDENTIFIER=mock.ANY,
+                      REQUEST_ID=mock.ANY,
+                      EXCEPTION_INFO=mock.ANY,
+                      EXCEPTION_TEXT=mock.ANY,
+                      PROJECT_NAME='mytenant',
+                      PROCESS_NAME='MainProcess',
+                      THREAD_NAME='MainThread',
                       USER_NAME='myuser'))
 
 
