@@ -759,7 +759,7 @@ class ExceptionLoggingTestCase(LogTestBase):
         except Exception:
             excepthook(*sys.exc_info())
 
-        expected_string = ("CRITICAL somename [-] "
+        expected_string = ("CRITICAL somename [-] Unhandled error: "
                            "Exception: Some error happened")
         self.assertIn(expected_string, self.stream.getvalue(),
                       message="Exception is not logged")
@@ -834,15 +834,16 @@ class FancyRecordTestCase(LogTestBase):
         warncolor = handlers.ColorHandler.LEVEL_COLORS[logging.WARN]
         info_msg = 'info'
         warn_msg = 'warn'
-        infoexpected = "%s %s %s\n" % (infocolor, keyed_log_string, info_msg)
-        warnexpected = "%s %s %s\n" % (warncolor, keyed_log_string, warn_msg)
+        infoexpected = "%s %s %s" % (infocolor, keyed_log_string, info_msg)
+        warnexpected = "%s %s %s" % (warncolor, keyed_log_string, warn_msg)
 
         self.colorlog.info(info_msg, context=ctxt)
-        self.assertEqual(infoexpected, self.stream.getvalue())
+        self.assertIn(infoexpected, self.stream.getvalue())
         self.assertEqual('\033[00;36m', infocolor)
 
         self.colorlog.warn(warn_msg, context=ctxt)
-        self.assertEqual(infoexpected + warnexpected, self.stream.getvalue())
+        self.assertIn(infoexpected, self.stream.getvalue())
+        self.assertIn(warnexpected, self.stream.getvalue())
         self.assertEqual('\033[01;33m', warncolor)
 
     def test_fancy_key_in_log_msg(self):
@@ -900,51 +901,47 @@ class InstanceRecordTestCase(LogTestBase):
         fake_resource = {'uuid': uuid}
         message = 'info'
         self.log.info(message, context=ctxt, instance=fake_resource)
-        expected = ('[%s]: [instance: %s] %s\n' %
-                    (ctxt.request_id, uuid, message))
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_dict_in_default_log_msg(self):
         uuid = 'C9B7CCC6-8A12-4C53-A736-D7A1C36A62F3'
         fake_resource = {'uuid': uuid}
         message = 'info'
         self.log.info(message, instance=fake_resource)
-        expected = '[instance: %s] %s\n' % (uuid, message)
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_as_arg_in_context_log_msg(self):
         ctxt = _fake_context()
         uuid = 'C9B7CCC6-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt, instance_uuid=uuid)
-        expected = ('[%s]: [instance: %s] %s\n' %
-                    (ctxt.request_id, uuid, message))
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_as_arg_in_default_log_msg(self):
         uuid = 'C9B7CCC6-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, instance_uuid=uuid)
-        expected = '[instance: %s] %s\n' % (uuid, message)
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_from_context_in_context_log_msg(self):
         ctxt = _fake_context()
         ctxt.instance_uuid = 'CCCCCCCC-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        expected = ('[%s]: [instance: %s] %s\n' %
-                    (ctxt.request_id, ctxt.instance_uuid, message))
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % ctxt.instance_uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_resource_uuid_from_context_in_context_log_msg(self):
         ctxt = _fake_context()
         ctxt.resource_uuid = 'RRRRRRRR-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        expected = ('[%s]: [instance: %s] %s\n' %
-                    (ctxt.request_id, ctxt.resource_uuid, message))
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % ctxt.resource_uuid
+        self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_from_context_in_context_log_msg(self):
         # NOTE: instance when passed in a context object is just a uuid.
@@ -953,9 +950,8 @@ class InstanceRecordTestCase(LogTestBase):
         ctxt.instance = 'IIIIIIII-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        values = (ctxt.request_id, ctxt.instance, message)
-        expected = '[%s]: [instance: %s] %s\n' % values
-        self.assertEqual(expected, self.stream.getvalue())
+        expected = '[instance: %s]' % ctxt.instance
+        self.assertIn(expected, self.stream.getvalue())
 
 
 class TraceLevelTestCase(LogTestBase):
