@@ -346,18 +346,6 @@ class ContextFormatter(logging.Formatter):
         else:
             fmt = self.conf.logging_default_format_string
 
-        if (record.levelno == logging.DEBUG and
-                self.conf.logging_debug_format_suffix):
-            fmt += " " + self.conf.logging_debug_format_suffix
-
-        self._compute_iso_time(record)
-
-        if sys.version_info < (3, 2):
-            self._fmt = fmt
-        else:
-            self._style = logging.PercentStyle(fmt)
-            self._fmt = self._style._fmt
-
         # Cache the formatted traceback on the record, Logger will
         # respect our formatted copy
         if record.exc_info:
@@ -376,23 +364,42 @@ class ContextFormatter(logging.Formatter):
             if not exc_info[0]:
                 exc_info = None
 
+        # If we have an exception, format it to be included in the
+        # output.
         if exc_info:
-            # Include the exception summary in the line with the
+            # Build the exception summary in the line with the
             # primary log message, to serve as a mnemonic for error
-            # and warning cases. Replace % with * to remove any
-            # patterns that look like they would be python string
-            # interpolation instructions, since we may not have the
-            # arguments for them and that will break the log
-            # formatter.
-            suffix = traceback.format_exception_only(
+            # and warning cases.
+            record.error_summary = traceback.format_exception_only(
                 exc_info[0],
                 exc_info[1],
-            )[0].rstrip().replace('%', '*')
-            record.msg = '{}: {}'.format(record.msg, suffix)
+            )[0].rstrip()
+            # If the format string does not say where to put the error
+            # text, add it to the end of the line. This allows
+            # operators to put %(error_summary)s in their default format
+            # line if they want more control over it.
+            if '%(error_summary)s' not in fmt:
+                fmt += ': %(error_summary)s'
             # Remove the local reference to the exception and
             # traceback to avoid a memory leak through the frame
             # references.
             del exc_info
+        else:
+            # Set the error text to the usual default placeholder
+            # value.
+            record.error_summary = '-'
+
+        if (record.levelno == logging.DEBUG and
+                self.conf.logging_debug_format_suffix):
+            fmt += " " + self.conf.logging_debug_format_suffix
+
+        self._compute_iso_time(record)
+
+        if sys.version_info < (3, 2):
+            self._fmt = fmt
+        else:
+            self._style = logging.PercentStyle(fmt)
+            self._fmt = self._style._fmt
 
         try:
             return logging.Formatter.format(self, record)

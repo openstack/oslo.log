@@ -643,6 +643,47 @@ class ContextFormatterTestCase(LogTestBase):
                                                six.text_type(message))
         self.assertEqual(expected, self.stream.getvalue())
 
+    def test_exception_logging(self):
+        # NOTE(dhellmann): If there is an exception and %(error_summary)s
+        # does not appear in the format string, ensure that it is
+        # appended to the end of the log lines.
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        try:
+            raise RuntimeError('test_exception_logging')
+        except RuntimeError:
+            self.log.info(message, context=ctxt)
+        expected = 'RuntimeError: test_exception_logging\n'
+        self.assertTrue(self.stream.getvalue().endswith(expected))
+
+    def test_exception_logging_format_string(self):
+        # NOTE(dhellmann): If the format string includes
+        # %(error_summary)s then ensure the exception message ends up in
+        # that position in the output.
+        self.config(logging_context_format_string="A %(error_summary)s B")
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        try:
+            raise RuntimeError('test_exception_logging')
+        except RuntimeError:
+            self.log.info(message, context=ctxt)
+        expected = 'A RuntimeError: test_exception_logging'
+        self.assertTrue(self.stream.getvalue().startswith(expected))
+
+    def test_no_exception_logging_format_string(self):
+        # NOTE(dhellmann): If there is no exception but the format
+        # string includes %(error_summary)s then ensure the "-" is
+        # inserted.
+        self.config(logging_context_format_string="%(error_summary)s")
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        self.log.info(message, context=ctxt)
+        expected = '-\n'
+        self.assertTrue(self.stream.getvalue().startswith(expected))
+
     def test_unicode_conversion_in_adapter(self):
         ctxt = _fake_context()
         ctxt.request_id = six.text_type('99')
