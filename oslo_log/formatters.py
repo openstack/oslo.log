@@ -363,6 +363,17 @@ class ContextFormatter(logging.Formatter):
             # that uses the value simpler.
             if not exc_info[0]:
                 exc_info = None
+            elif exc_info[0] in (TypeError, ValueError,
+                                 KeyError, AttributeError):
+                # NOTE(dhellmann): Do not include information about
+                # common built-in exceptions used to detect cases of
+                # bad or missing data. We don't use isinstance() here
+                # to limit this filter to only the built-in
+                # classes. This check is only performed for cases
+                # where the exception info is being detected
+                # automatically so if a caller gives us an exception
+                # we will definitely log it.
+                exc_info = None
 
         # If we have an exception, format it to be included in the
         # output.
