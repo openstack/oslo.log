@@ -737,6 +737,12 @@ class ContextFormatterTestCase(LogTestBase):
         self.log.info(b'%s', u'\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
+    def test_dict_args_with_unicode(self):
+        msg = '%(thing)s'
+        arg = {'thing': '\xc6\x91\xc6\xa1\xc6\xa1'}
+        self.log.info(msg, arg)
+        self.assertIn(arg['thing'], self.stream.getvalue())
+
 
 class ExceptionLoggingTestCase(LogTestBase):
     """Test that Exceptions are logged."""
