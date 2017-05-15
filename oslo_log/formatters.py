@@ -193,7 +193,8 @@ class JSONFormatter(logging.Formatter):
                    'process_name': record.processName,
                    'process': record.process,
                    'traceback': None,
-                   'hostname': self.hostname}
+                   'hostname': self.hostname,
+                   'error_summary': _get_error_summary(record)}
 
         # Build the extra values that were given to us, including
         # the context.

@@ -497,6 +497,26 @@ class JSONFormatterTestCase(LogTestBase):
         self.log.info(b'%s', u'\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
+    def test_exception(self):
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        try:
+            raise RuntimeError('test_exception')
+        except RuntimeError:
+            self.log.info('testing', context=ctxt)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('RuntimeError: test_exception',
+                         data['error_summary'])
+
+    def test_no_exception(self):
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        self.log.info('testing', context=ctxt)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('', data['error_summary'])
+
 
 def get_fake_datetime(retval):
     class FakeDateTime(datetime.datetime):
