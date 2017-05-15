@@ -256,7 +256,8 @@ class FluentFormatter(logging.Formatter):
                    'funcname': record.funcName,
                    'process_name': record.processName,
                    'hostname': self.hostname,
-                   'traceback': None}
+                   'traceback': None,
+                   'error_summary': _get_error_summary(record)}
 
         # Build the extra values that were given to us, including
         # the context.

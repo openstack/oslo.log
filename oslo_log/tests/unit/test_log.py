@@ -571,6 +571,24 @@ class FluentFormatterTestCase(LogTestBase):
         self.assertEqual('DEBUG', data['level'])
         self.assertFalse(data['traceback'])
 
+    def test_exception(self):
+        local_context = _fake_context()
+        try:
+            raise RuntimeError('test_exception')
+        except RuntimeError:
+            self.log.debug('testing', context=local_context)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('RuntimeError: test_exception',
+                         data['error_summary'])
+
+    def test_no_exception(self):
+        local_context = _fake_context()
+        self.log.info('testing', context=local_context)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('', data['error_summary'])
+
     def test_json_exception(self):
         test_msg = 'This is %s'
         test_data = 'exceptional'
