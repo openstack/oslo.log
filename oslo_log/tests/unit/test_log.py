@@ -697,9 +697,8 @@ class ContextFormatterTestCase(LogTestBase):
         self.assertTrue(self.stream.getvalue().endswith(expected))
 
     def test_skip_logging_builtin_exceptions(self):
-        # NOTE(dhellmann): If there is an exception and %(error_summary)s
-        # does not appear in the format string, ensure that it is
-        # appended to the end of the log lines.
+        # NOTE(dhellmann): Several of the built-in exception types
+        # should not be automatically added to the log output.
         ctxt = _fake_context()
         ctxt.request_id = six.text_type('99')
         message = self.trans_fixture.lazy('test ' + six.unichr(128))
