@@ -37,7 +37,6 @@ try:
     import syslog
 except ImportError:
     syslog = None
-import traceback
 
 from oslo_config import cfg
 from oslo_utils import importutils
@@ -191,9 +190,7 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
 def _create_logging_excepthook(product_name):
     def logging_excepthook(exc_type, value, tb):
         extra = {'exc_info': (exc_type, value, tb)}
-        getLogger(product_name).critical(
-            "".join(traceback.format_exception_only(exc_type, value)),
-            **extra)
+        getLogger(product_name).critical('Unhandled error', **extra)
     return logging_excepthook
 
 

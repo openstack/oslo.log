@@ -267,7 +267,6 @@ class ContextFormatter(logging.Formatter):
 
     def format(self, record):
         """Uses contextstring if request_id is set, otherwise default."""
-
         if six.PY2:
             should_use_unicode = True
             args = (record.args.values() if isinstance(record.args, dict)
@@ -358,10 +357,51 @@ class ContextFormatter(logging.Formatter):
         else:
             self._style = logging.PercentStyle(fmt)
             self._fmt = self._style._fmt
-        # Cache this on the record, Logger will respect our formatted copy
+
+        # Cache the formatted traceback on the record, Logger will
+        # respect our formatted copy
         if record.exc_info:
             record.exc_text = self.formatException(record.exc_info, record)
-        return logging.Formatter.format(self, record)
+            # Save the exception we were given so we can include the
+            # summary in the log line.
+            exc_info = record.exc_info
+        else:
+            # Check to see if there is an active exception that was
+            # not given to us explicitly. If so, save it so we can
+            # include the summary in the log line.
+            exc_info = sys.exc_info()
+            # If we get (None, None, None) because there is no
+            # exception, convert it to a simple None to make the logic
+            # that uses the value simpler.
+            if not exc_info[0]:
+                exc_info = None
+
+        if exc_info:
+            # Include the exception summary in the line with the
+            # primary log message, to serve as a mnemonic for error
+            # and warning cases. Replace % with * to remove any
+            # patterns that look like they would be python string
+            # interpolation instructions, since we may not have the
+            # arguments for them and that will break the log
+            # formatter.
+            suffix = traceback.format_exception_only(
+                exc_info[0],
+                exc_info[1],
+            )[0].rstrip().replace('%', '*')
+            record.msg = '{}: {}'.format(record.msg, suffix)
+            # Remove the local reference to the exception and
+            # traceback to avoid a memory leak through the frame
+            # references.
+            del exc_info
+
+        try:
+            return logging.Formatter.format(self, record)
+        except TypeError as err:
+            # Something went wrong, report that instead so we at least
+            # get the error message.
+            record.msg = 'Error formatting log line msg={!r} err={!r}'.format(
+                record.msg, err).replace('%', '*')
+            return logging.Formatter.format(self, record)
 
     def formatException(self, exc_info, record=None):
         """Format exception output with CONF.logging_exception_prefix."""
