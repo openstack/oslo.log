@@ -657,6 +657,21 @@ class ContextFormatterTestCase(LogTestBase):
         expected = 'RuntimeError: test_exception_logging\n'
         self.assertTrue(self.stream.getvalue().endswith(expected))
 
+    def test_skip_logging_builtin_exceptions(self):
+        # NOTE(dhellmann): If there is an exception and %(error_summary)s
+        # does not appear in the format string, ensure that it is
+        # appended to the end of the log lines.
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        for ignore in [ValueError, TypeError, KeyError, AttributeError]:
+            try:
+                raise ignore('test_exception_logging')
+            except ignore as e:
+                self.log.info(message, context=ctxt)
+                expected = '{}: {}'.format(e.__class__.__name__, e)
+            self.assertNotIn(expected, self.stream.getvalue())
+
     def test_exception_logging_format_string(self):
         # NOTE(dhellmann): If the format string includes
         # %(error_summary)s then ensure the exception message ends up in
