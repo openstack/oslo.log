@@ -93,6 +93,61 @@ def _ensure_unicode(msg):
         errors='xmlcharrefreplace')
 
 
+def _get_error_summary(record):
+    """Return the error summary
+
+    If there is no active exception, return the default.
+
+    If there is an active exception, format it and return the
+    resulting string.
+
+    """
+    error_summary = ''
+
+    if record.exc_info:
+        # Save the exception we were given so we can include the
+        # summary in the log line.
+        exc_info = record.exc_info
+    else:
+        # Check to see if there is an active exception that was
+        # not given to us explicitly. If so, save it so we can
+        # include the summary in the log line.
+        exc_info = sys.exc_info()
+        # If we get (None, None, None) because there is no
+        # exception, convert it to a simple None to make the logic
+        # that uses the value simpler.
+        if not exc_info[0]:
+            exc_info = None
+        elif exc_info[0] in (TypeError, ValueError,
+                             KeyError, AttributeError):
+            # NOTE(dhellmann): Do not include information about
+            # common built-in exceptions used to detect cases of
+            # bad or missing data. We don't use isinstance() here
+            # to limit this filter to only the built-in
+            # classes. This check is only performed for cases
+            # where the exception info is being detected
+            # automatically so if a caller gives us an exception
+            # we will definitely log it.
+            exc_info = None
+
+    # If we have an exception, format it to be included in the
+    # output.
+    if exc_info:
+        # Build the exception summary in the line with the
+        # primary log message, to serve as a mnemonic for error
+        # and warning cases.
+        error_summary = traceback.format_exception_only(
+            exc_info[0],
+            exc_info[1],
+        )[0].rstrip()
+        # Remove the local reference to the exception and
+        # traceback to avoid a memory leak through the frame
+        # references.
+        del exc_info
+
+    return error_summary
+
+
 class _ReplaceFalseValue(dict):
     def __getitem__(self, key):
         return dict.get(self, key, None) or '-'
@@ -350,55 +405,18 @@ class ContextFormatter(logging.Formatter):
         # respect our formatted copy
         if record.exc_info:
             record.exc_text = self.formatException(record.exc_info, record)
-            # Save the exception we were given so we can include the
-            # summary in the log line.
-            exc_info = record.exc_info
-        else:
-            # Check to see if there is an active exception that was
-            # not given to us explicitly. If so, save it so we can
-            # include the summary in the log line.
-            exc_info = sys.exc_info()
-            # If we get (None, None, None) because there is no
-            # exception, convert it to a simple None to make the logic
-            # that uses the value simpler.
-            if not exc_info[0]:
-                exc_info = None
-            elif exc_info[0] in (TypeError, ValueError,
-                                 KeyError, AttributeError):
-                # NOTE(dhellmann): Do not include information about
-                # common built-in exceptions used to detect cases of
-                # bad or missing data. We don't use isinstance() here
-                # to limit this filter to only the built-in
-                # classes. This check is only performed for cases
-                # where the exception info is being detected
-                # automatically so if a caller gives us an exception
-                # we will definitely log it.
-                exc_info = None
 
-        # If we have an exception, format it to be included in the
-        # output.
-        if exc_info:
-            # Build the exception summary in the line with the
-            # primary log message, to serve as a mnemonic for error
-            # and warning cases.
-            record.error_summary = traceback.format_exception_only(
-                exc_info[0],
-                exc_info[1],
-            )[0].rstrip()
-            # If the format string does not say where to put the error
-            # text, add it to the end of the line. This allows
-            # operators to put %(error_summary)s in their default format
-            # line if they want more control over it.
-            if '%(error_summary)s' not in fmt:
-                fmt += ': %(error_summary)s'
-            # Remove the local reference to the exception and
-            # traceback to avoid a memory leak through the frame
-            # references.
-            del exc_info
-        else:
-            # Set the error text to the usual default placeholder
-            # value.
-            record.error_summary = '-'
+        record.error_summary = _get_error_summary(record)
+        if '%(error_summary)s' in fmt:
+            # If we have been told explicitly how to format the error
+            # summary, make sure there is always a default value for
+            # it.
+            record.error_summary = record.error_summary or '-'
+        elif record.error_summary:
+            # If we have not been told how to format the error and
+            # there is an error to summarize, make sure the format
+            # string includes the bits we need to include it.
+            fmt += ': %(error_summary)s'
 
         if (record.levelno == logging.DEBUG and
                 self.conf.logging_debug_format_suffix):
