@@ -252,6 +252,7 @@ class FluentFormatter(logging.Formatter):
                    'name': record.name,
                    'level': record.levelname,
                    'filename': record.filename,
+                   'lineno': record.lineno,
                    'module': record.module,
                    'funcname': record.funcName,
                    'process_name': record.processName,

@@ -556,6 +556,7 @@ class FluentFormatterTestCase(LogTestBase):
         self.log.debug(test_msg, test_data, key='value', context=local_context)
 
         data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('lineno', data)
         self.assertIn('extra', data)
         extra = data['extra']
         self.assertEqual('value', extra['key'])
