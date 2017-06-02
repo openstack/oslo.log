@@ -119,7 +119,7 @@ def _get_error_summary(record):
         if not exc_info[0]:
             exc_info = None
         elif exc_info[0] in (TypeError, ValueError,
-                             KeyError, AttributeError):
+                             KeyError, AttributeError, ImportError):
             # NOTE(dhellmann): Do not include information about
             # common built-in exceptions used to detect cases of
             # bad or missing data. We don't use isinstance() here
