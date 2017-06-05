@@ -702,7 +702,10 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt = _fake_context()
         ctxt.request_id = six.text_type('99')
         message = self.trans_fixture.lazy('test ' + six.unichr(128))
-        for ignore in [ValueError, TypeError, KeyError, AttributeError]:
+        ignored_exceptions = [
+            ValueError, TypeError, KeyError, AttributeError, ImportError
+        ]
+        for ignore in ignored_exceptions:
             try:
                 raise ignore('test_exception_logging')
             except ignore as e:
