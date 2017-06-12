@@ -98,11 +98,16 @@ def _get_error_summary(record):
 
     If there is no active exception, return the default.
 
+    If the record is being logged at debug level, return an empty
+    string.
+
     If there is an active exception, format it and return the
     resulting string.
 
     """
     error_summary = ''
+    if record.levelno == logging.DEBUG:
+        return ''
 
     if record.exc_info:
         # Save the exception we were given so we can include the

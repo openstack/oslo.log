@@ -577,7 +577,7 @@ class FluentFormatterTestCase(LogTestBase):
         try:
             raise RuntimeError('test_exception')
         except RuntimeError:
-            self.log.debug('testing', context=local_context)
+            self.log.info('testing', context=local_context)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
         self.assertEqual('RuntimeError: test_exception',
