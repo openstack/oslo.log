@@ -10,24 +10,12 @@ logging (like resource id's etc).
 .. toctree::
    :maxdepth: 1
 
-   installation
-   usage
-   journal
-   migration
-   opts
-   configfiles/index
-   examples
-   contributing
-   history
-
-API Documentation
-=================
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-
-   api/*
+   install/index
+   user/index
+   reference/index
+   configuration/index
+   admin/index
+   contributor/index
 
 Indices and tables
 ==================

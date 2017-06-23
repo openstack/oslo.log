@@ -4,4 +4,4 @@
 
 .. _assert: https://docs.python.org/2/library/unittest.html#unittest.TestCase.assertTrue
 
-.. include:: ../../ChangeLog
+.. include:: ../../../ChangeLog

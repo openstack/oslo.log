@@ -2,7 +2,7 @@
  Advanced Configuration Files
 ==============================
 
-The oslo.config options described in :doc:`/opts` make it easy to
+The oslo.config options described in :ref:`opts` make it easy to
 enable some default logging configuration behavior such as setting the
 default log level and output file. For more advanced configurations
 using translations or multiple output destinations oslo.log relies on

@@ -9,4 +9,4 @@
 
 .. seealso::
 
-   :doc:`../usage`
+   :ref:`using`
