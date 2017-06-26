@@ -416,6 +416,11 @@ def _setup_logging_from_conf(conf, project, version):
 _loggers = {}
 
 
+def get_loggers():
+    """Return a copy of the oslo loggers dictionary."""
+    return _loggers.copy()
+
+
 def getLogger(name=None, project='unknown', version='unknown'):
     """Build a logger with the given name.
 
