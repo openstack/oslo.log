@@ -503,7 +503,7 @@ class JSONFormatterTestCase(LogTestBase):
         try:
             raise RuntimeError('test_exception')
         except RuntimeError:
-            self.log.info('testing', context=ctxt)
+            self.log.warning('testing', context=ctxt)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
         self.assertEqual('RuntimeError: test_exception',
@@ -577,7 +577,7 @@ class FluentFormatterTestCase(LogTestBase):
         try:
             raise RuntimeError('test_exception')
         except RuntimeError:
-            self.log.info('testing', context=local_context)
+            self.log.warning('testing', context=local_context)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
         self.assertEqual('RuntimeError: test_exception',
@@ -692,7 +692,7 @@ class ContextFormatterTestCase(LogTestBase):
         try:
             raise RuntimeError('test_exception_logging')
         except RuntimeError:
-            self.log.info(message, context=ctxt)
+            self.log.warning(message, context=ctxt)
         expected = 'RuntimeError: test_exception_logging\n'
         self.assertTrue(self.stream.getvalue().endswith(expected))
 
@@ -709,7 +709,7 @@ class ContextFormatterTestCase(LogTestBase):
             try:
                 raise ignore('test_exception_logging')
             except ignore as e:
-                self.log.info(message, context=ctxt)
+                self.log.warning(message, context=ctxt)
                 expected = '{}: {}'.format(e.__class__.__name__, e)
             self.assertNotIn(expected, self.stream.getvalue())
 
@@ -724,7 +724,7 @@ class ContextFormatterTestCase(LogTestBase):
         try:
             raise RuntimeError('test_exception_logging')
         except RuntimeError:
-            self.log.info(message, context=ctxt)
+            self.log.warning(message, context=ctxt)
         expected = 'A RuntimeError: test_exception_logging'
         self.assertTrue(self.stream.getvalue().startswith(expected))
 
