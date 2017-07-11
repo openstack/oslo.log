@@ -33,6 +33,9 @@ repository_name = 'openstack/oslo.log'
 bug_project = 'oslo.log'
 bug_tag = ''
 
+# Must set this variable to include year, month, day, hours, and minutes.
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
+
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
 # execute "export SPHINX_DEBUG=1" in your terminal to disable
