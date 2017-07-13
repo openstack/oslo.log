@@ -401,6 +401,11 @@ class LogLevelTestCase(BaseTestCase):
         l = log.getLogger('nova-trace.foo')
         self.assertEqual(log.TRACE, l.logger.getEffectiveLevel())
 
+    def test_get_loggers(self):
+        log._loggers['sentinel_log'] = mock.sentinel.sentinel_log
+        res = log.get_loggers()
+        self.assertDictEqual(log._loggers, res)
+
 
 class JSONFormatterTestCase(LogTestBase):
     def setUp(self):
