@@ -22,8 +22,8 @@ oslo.i18n, oslo.serialization and oslo.utils.
 
 More information about Oslo Logging can be found at:
 
-  http://docs.openstack.org/developer/oslo.log/usage.html
-  http://docs.openstack.org/developer/oslo.i18n/usage.html
+  https://docs.openstack.org/oslo.log/latest/user/index.html
+  https://docs.openstack.org/oslo.i18n/latest/user/index.html  
 """
 
 from oslo_config import cfg

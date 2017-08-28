@@ -23,7 +23,7 @@ oslo.i18n, oslo.serialization and oslo.utils.
 
 More information about Oslo Logging can be found at:
 
-  http://docs.openstack.org/developer/oslo.log/usage.html
+  https://docs.openstack.org/oslo.log/latest/user/index.html
 """
 
 # Use default Python logging to display running output
