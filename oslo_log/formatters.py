@@ -12,6 +12,7 @@
 
 import datetime
 import debtcollector
+import functools
 import itertools
 import logging
 import logging.config
@@ -30,6 +31,15 @@ from oslo_utils import encodeutils
 
 if six.PY3:
     from functools import reduce
+
+
+try:
+    # Test if to_primitive() has the fallback parameter added
+    # in oslo.serialization 2.20.2
+    jsonutils.to_primitive(1, fallback=repr)
+    _HAVE_JSONUTILS_FALLBACK = True
+except TypeError:
+    _HAVE_JSONUTILS_FALLBACK = False
 
 
 def _dictify_context(context):
@@ -222,7 +232,16 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             message['traceback'] = self.formatException(record.exc_info)
 
-        return jsonutils.dumps(message)
+        if _HAVE_JSONUTILS_FALLBACK:
+            # Bug #1593641: If an object cannot be serialized to JSON, convert
+            # it using repr() to prevent serialization errors. Using repr() is
+            # not ideal, but serialization errors are unexpected on logs,
+            # especially when the code using logs is not aware that the
+            # JSONFormatter will be used.
+            convert = functools.partial(jsonutils.to_primitive, fallback=repr)
+            return jsonutils.dumps(message, default=convert)
+        else:
+            return jsonutils.dumps(message)
 
 
 class FluentFormatter(logging.Formatter):
