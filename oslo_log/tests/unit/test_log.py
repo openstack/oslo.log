@@ -522,6 +522,28 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertIn('error_summary', data)
         self.assertEqual('', data['error_summary'])
 
+    def test_fallback(self):
+        if not formatters._HAVE_JSONUTILS_FALLBACK:
+            self.skipTest("need the fallback parameter of "
+                          "jsonutils.to_primitive() added in "
+                          "oslo_serialization 2.21.1")
+
+        class MyObject(object):
+            def __str__(self):
+                return 'str'
+
+            def __repr__(self):
+                return 'repr'
+
+        obj = MyObject()
+        self.log.debug('obj=%s', obj)
+
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertEqual('obj=str', data['message'])
+        # Bug #1593641: If an object of record.args cannot be serialized,
+        # convert it using repr() to prevent serialization error on logging.
+        self.assertEqual(['repr'], data['args'])
+
 
 def get_fake_datetime(retval):
     class FakeDateTime(datetime.datetime):
