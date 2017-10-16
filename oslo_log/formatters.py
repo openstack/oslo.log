@@ -138,17 +138,22 @@ def _get_error_summary(record):
     # If we have an exception, format it to be included in the
     # output.
     if exc_info:
-        # Build the exception summary in the line with the
-        # primary log message, to serve as a mnemonic for error
-        # and warning cases.
-        error_summary = traceback.format_exception_only(
-            exc_info[0],
-            exc_info[1],
-        )[0].rstrip()
-        # Remove the local reference to the exception and
-        # traceback to avoid a memory leak through the frame
-        # references.
-        del exc_info
+        try:
+            # Build the exception summary in the line with the
+            # primary log message, to serve as a mnemonic for error
+            # and warning cases.
+            error_summary = traceback.format_exception_only(
+                exc_info[0],
+                exc_info[1],
+            )[0].rstrip()
+        except TypeError as type_err:
+            # Work around https://bugs.python.org/issue28603
+            error_summary = "<exception with %s>" % six.text_type(type_err)
+        finally:
+            # Remove the local reference to the exception and
+            # traceback to avoid a memory leak through the frame
+            # references.
+            del exc_info
 
     return error_summary
 
@@ -169,7 +174,12 @@ class JSONFormatter(logging.Formatter):
             self.hostname = None
 
     def formatException(self, ei, strip_newlines=True):
-        lines = traceback.format_exception(*ei)
+        try:
+            lines = traceback.format_exception(*ei)
+        except TypeError as type_error:
+            # Work around https://bugs.python.org/issue28603
+            msg = six.text_type(type_error)
+            lines = ['<Unprintable exception due to %s>\n' % msg]
         if strip_newlines:
             lines = [moves.filter(
                 lambda x: x,
@@ -245,7 +255,12 @@ class FluentFormatter(logging.Formatter):
             self.hostname = None
 
     def formatException(self, exc_info, strip_newlines=True):
-        lines = traceback.format_exception(*exc_info)
+        try:
+            lines = traceback.format_exception(*exc_info)
+        except TypeError as type_error:
+            # Work around https://bugs.python.org/issue28603
+            msg = six.text_type(type_error)
+            lines = ['<Unprintable exception due to %s>\n' % msg]
         if strip_newlines:
             lines = reduce(lambda a, line: a + line.rstrip().splitlines(),
                            lines, [])
@@ -450,11 +465,22 @@ class ContextFormatter(logging.Formatter):
     def formatException(self, exc_info, record=None):
         """Format exception output with CONF.logging_exception_prefix."""
         if not record:
-            return logging.Formatter.formatException(self, exc_info)
+            try:
+                return logging.Formatter.formatException(self, exc_info)
+            except TypeError as type_error:
+                # Work around https://bugs.python.org/issue28603
+                msg = six.text_type(type_error)
+                return '<Unprintable exception due to %s>\n' % msg
 
         stringbuffer = moves.StringIO()
-        traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
-                                  None, stringbuffer)
+        try:
+            traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
+                                      None, stringbuffer)
+        except TypeError as type_error:
+            # Work around https://bugs.python.org/issue28603
+            msg = six.text_type(type_error)
+            stringbuffer.write('<Unprintable exception due to %s>\n' % msg)
+
         lines = stringbuffer.getvalue().split('\n')
         stringbuffer.close()
 
