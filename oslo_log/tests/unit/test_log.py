@@ -415,18 +415,38 @@ class JSONFormatterTestCase(LogTestBase):
                                        formatter=formatters.JSONFormatter)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
 
-    def test_json(self):
+    def test_json_w_context_in_extras(self):
         test_msg = 'This is a %(test)s line'
         test_data = {'test': 'log'}
         local_context = _fake_context()
         self.log.debug(test_msg, test_data, key='value', context=local_context)
+        self._validate_json_data('test_json_w_context_in_extras', test_msg,
+                                 test_data, local_context)
 
+    def test_json_w_fetched_global_context(self):
+        test_msg = 'This is a %(test)s line'
+        test_data = {'test': 'log'}
+        local_context = _fake_context()
+        # NOTE we're not passing the context explicitly here. But it'll add the
+        # context to the extras anyway since the call to fake_context adds the
+        # context to the thread. The context will be fetched with the
+        # _update_record_with_context call that's done in the formatter.
+        self.log.debug(test_msg, test_data, key='value')
+        self._validate_json_data('test_json_w_fetched_global_context',
+                                 test_msg, test_data, local_context)
+
+    def _validate_json_data(self, testname, test_msg, test_data, ctx):
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
         self.assertIn('extra', data)
+        self.assertIn('context', data)
         extra = data['extra']
+        context = data['context']
+        self.assertNotIn('context', extra)
         self.assertEqual('value', extra['key'])
-        self.assertEqual(local_context.user, extra['user'])
+        self.assertEqual(ctx.user, context['user'])
+        self.assertEqual(ctx.user_name, context['user_name'])
+        self.assertEqual(ctx.project_name, context['project_name'])
         self.assertEqual('test-json', data['name'])
 
         self.assertEqual(test_msg % test_data, data['message'])
@@ -434,7 +454,7 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertEqual(test_data, data['args'])
 
         self.assertEqual('test_log.py', data['filename'])
-        self.assertEqual('test_json', data['funcname'])
+        self.assertEqual(testname, data['funcname'])
 
         self.assertEqual('DEBUG', data['levelname'])
         self.assertEqual(logging.DEBUG, data['levelno'])
@@ -563,8 +583,9 @@ class FluentFormatterTestCase(LogTestBase):
         self.assertIn('lineno', data)
         self.assertIn('extra', data)
         extra = data['extra']
+        context = data['context']
         self.assertEqual('value', extra['key'])
-        self.assertEqual(local_context.user, extra['user'])
+        self.assertEqual(local_context.user, context['user'])
         self.assertEqual('test-fluent', data['name'])
 
         self.assertEqual(test_msg % test_data, data['message'])

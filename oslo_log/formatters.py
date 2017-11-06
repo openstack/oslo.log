@@ -221,12 +221,18 @@ class JSONFormatter(logging.Formatter):
         for key in getattr(record, 'extra_keys', []):
             if key not in extra:
                 extra[key] = getattr(record, key)
-        # If we saved a context object, explode it into the extra
-        # dictionary because the values are more useful than the
+        # The context object might have been given from the logging call. if
+        # that was the case, it'll come in the 'extra' entry already. If not,
+        # lets use the context we fetched above. In either case, we explode it
+        # into the 'context' entry because the values are more useful than the
         # object reference.
-        if 'context' in extra:
-            extra.update(_dictify_context(context))
-            del extra['context']
+        if 'context' in extra and extra['context']:
+            message['context'] = _dictify_context(extra['context'])
+        elif context:
+            message['context'] = _dictify_context(context)
+        else:
+            message['context'] = {}
+        extra.pop('context', None)
         message['extra'] = extra
 
         if record.exc_info:
@@ -290,12 +296,18 @@ class FluentFormatter(logging.Formatter):
         for key in getattr(record, 'extra_keys', []):
             if key not in extra:
                 extra[key] = getattr(record, key)
-        # If we saved a context object, explode it into the extra
-        # dictionary because the values are more useful than the
+        # The context object might have been given from the logging call. if
+        # that was the case, it'll come in the 'extra' entry already. If not,
+        # lets use the context we fetched above. In either case, we explode it
+        # into the extra dictionary because the values are more useful than the
         # object reference.
-        if 'context' in extra:
-            extra.update(_dictify_context(context))
-            del extra['context']
+        if 'context' in extra and extra['context']:
+            message['context'] = _dictify_context(extra['context'])
+        elif context:
+            message['context'] = _dictify_context(context)
+        else:
+            message['context'] = {}
+        extra.pop('context', None)
         message['extra'] = extra
 
         if record.exc_info:
