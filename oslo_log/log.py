@@ -383,11 +383,15 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(syslog_handler)
 
     datefmt = conf.log_date_format
-    for handler in log_root.handlers:
-        handler.setFormatter(formatters.ContextFormatter(project=project,
-                                                         version=version,
-                                                         datefmt=datefmt,
-                                                         config=conf))
+    if not conf.use_json:
+        for handler in log_root.handlers:
+            handler.setFormatter(formatters.ContextFormatter(project=project,
+                                                             version=version,
+                                                             datefmt=datefmt,
+                                                             config=conf))
+    else:
+        for handler in log_root.handlers:
+            handler.setFormatter(formatters.JSONFormatter(datefmt=datefmt))
     _refresh_root_level(conf.debug)
 
     for pair in conf.default_log_levels:

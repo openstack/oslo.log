@@ -97,6 +97,10 @@ logging_cli_opts = [
                default='LOG_USER',
                help='Syslog facility to receive log lines. '
                     + _IGNORE_MESSAGE),
+    cfg.BoolOpt('use-json',
+                default=False,
+                help='Use JSON formatting for logging. '
+                     + _IGNORE_MESSAGE),
 ]
 
 generic_log_opts = [

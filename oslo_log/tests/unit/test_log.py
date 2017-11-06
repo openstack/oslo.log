@@ -1496,6 +1496,7 @@ class LogConfigOptsTestCase(BaseTestCase):
                          self.CONF.log_date_format)
 
         self.assertEqual(False, self.CONF.use_syslog)
+        self.assertEqual(False, self.CONF.use_json)
 
     def test_log_file(self):
         log_file = '/some/path/foo-bar.log'
@@ -1552,6 +1553,15 @@ class LogConfigOptsTestCase(BaseTestCase):
             formatter = handler.formatter
             self.assertIsInstance(formatter,
                                   formatters.ContextFormatter)
+
+    def test_json_formatter(self):
+        self.CONF(['--use-json'])
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        logger = log._loggers[None].logger
+        for handler in logger.handlers:
+            formatter = handler.formatter
+            self.assertIsInstance(formatter,
+                                  formatters.JSONFormatter)
 
     def test_handlers_cleanup(self):
         """Test that all old handlers get removed from log_root."""
