@@ -426,7 +426,6 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertIn('extra', data)
         extra = data['extra']
         self.assertEqual('value', extra['key'])
-        self.assertEqual(local_context.auth_token, extra['auth_token'])
         self.assertEqual(local_context.user, extra['user'])
         self.assertEqual('test-json', data['name'])
 
@@ -565,7 +564,6 @@ class FluentFormatterTestCase(LogTestBase):
         self.assertIn('extra', data)
         extra = data['extra']
         self.assertEqual('value', extra['key'])
-        self.assertEqual(local_context.auth_token, extra['auth_token'])
         self.assertEqual(local_context.user, extra['user'])
         self.assertEqual('test-fluent', data['name'])
 
