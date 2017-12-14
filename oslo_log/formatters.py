@@ -156,6 +156,13 @@ def _get_error_summary(record):
                 exc_info[0],
                 exc_info[1],
             )[0].rstrip()
+            # If the exc_info wasn't explicitly passed to us, take only the
+            # first line of it. _Remote exceptions from oslo.messaging append
+            # the full traceback to the exception message, so we want to avoid
+            # outputting the traceback unless we've been passed exc_info
+            # directly (via LOG.exception(), for example).
+            if not record.exc_info:
+                error_summary = error_summary.split('\n', 1)[0]
         except TypeError as type_err:
             # Work around https://bugs.python.org/issue28603
             error_summary = "<exception with %s>" % six.text_type(type_err)
