@@ -541,6 +541,30 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertIn('error_summary', data)
         self.assertEqual('', data['error_summary'])
 
+    def test_exception_without_exc_info_passed(self):
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        try:
+            raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
+        except RuntimeError:
+            self.log.warning('testing', context=ctxt)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('RuntimeError: test_exception', data['error_summary'])
+
+    def test_exception_with_exc_info_passed(self):
+        ctxt = _fake_context()
+        ctxt.request_id = six.text_type('99')
+        try:
+            raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
+        except RuntimeError:
+            self.log.exception('testing', context=ctxt)
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertIn('error_summary', data)
+        self.assertEqual('RuntimeError: test_exception'
+                         '\ntraceback\nfrom\nremote error',
+                         data['error_summary'])
+
     def test_fallback(self):
         if not formatters._HAVE_JSONUTILS_FALLBACK:
             self.skipTest("need the fallback parameter of "
