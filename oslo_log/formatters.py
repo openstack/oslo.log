@@ -181,9 +181,10 @@ class _ReplaceFalseValue(dict):
 
 
 class JSONFormatter(logging.Formatter):
-    def __init__(self, fmt=None, datefmt=None):
-        # NOTE(jkoelker) we ignore the fmt argument, but its still there
-        #                since logging.config.fileConfig passes it.
+    def __init__(self, fmt=None, datefmt=None, style='%'):
+        # NOTE(sfinucan) we ignore the fmt and style arguments, but they're
+        # still there since logging.config.fileConfig passes the former in
+        # Python < 3.2 and both in Python >= 3.2
         self.datefmt = datefmt
         try:
             self.hostname = socket.gethostname()
@@ -277,9 +278,9 @@ class FluentFormatter(logging.Formatter):
     .. versionadded:: 3.17
     """
 
-    def __init__(self, fmt=None, datefmt=None):
-        # NOTE(masaki) we ignore the fmt argument because of the same reason
-        #              with JSONFormatter.
+    def __init__(self, fmt=None, datefmt=None, style='%s'):
+        # NOTE(sfinucan) we ignore the fmt and style arguments for the same
+        # reason as JSONFormatter.
         self.datefmt = datefmt
         try:
             self.hostname = socket.gethostname()
