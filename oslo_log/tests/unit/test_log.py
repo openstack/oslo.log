@@ -448,6 +448,10 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertEqual(ctx.user_name, context['user_name'])
         self.assertEqual(ctx.project_name, context['project_name'])
         self.assertEqual('test-json', data['name'])
+        self.assertIn('request_id', context)
+        self.assertEqual(ctx.request_id, context['request_id'])
+        self.assertIn('global_request_id', context)
+        self.assertEqual(ctx.global_request_id, context['global_request_id'])
 
         self.assertEqual(test_msg % test_data, data['message'])
         self.assertEqual(test_msg, data['msg'])
@@ -633,6 +637,12 @@ class FluentFormatterTestCase(LogTestBase):
         self.assertEqual('value', extra['key'])
         self.assertEqual(local_context.user, context['user'])
         self.assertEqual('test-fluent', data['name'])
+
+        self.assertIn('request_id', context)
+        self.assertEqual(local_context.request_id, context['request_id'])
+        self.assertIn('global_request_id', context)
+        self.assertEqual(local_context.global_request_id,
+                         context['global_request_id'])
 
         self.assertEqual(test_msg % test_data, data['message'])
 
