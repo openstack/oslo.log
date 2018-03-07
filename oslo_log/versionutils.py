@@ -70,6 +70,7 @@ _RELEASES = {
     'O': 'Ocata',
     'P': 'Pike',
     'Q': 'Queens',
+    'R': 'Rocky',
 }
 
 
