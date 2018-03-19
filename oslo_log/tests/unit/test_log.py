@@ -1355,7 +1355,7 @@ class MutateTestCase(BaseTestCase):
         mock_fileConfig.reset_mock()
 
         # No thread sync going on here, just ensure the mtimes are different
-        time.sleep(0.1)
+        time.sleep(1)
         os.utime(logini, None)
         self.CONF.mutate_config_files()
 
