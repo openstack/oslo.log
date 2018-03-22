@@ -18,3 +18,7 @@
       jobs:
         - oslo.log-src-grenade-devstack
 
+        - openstack-tox-lower-constraints
+    gate:
+      jobs:
+        - openstack-tox-lower-constraints
