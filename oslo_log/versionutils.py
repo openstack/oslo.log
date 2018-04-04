@@ -145,6 +145,7 @@ class deprecated(object):
     OCATA = 'O'
     PIKE = 'P'
     QUEENS = 'Q'
+    ROCKY = 'R'
 
     def __init__(self, as_of, in_favor_of=None, remove_in=2, what=None):
         """Initialize decorator
