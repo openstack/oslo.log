@@ -12,11 +12,11 @@ oslo.log -- Oslo Logging Library
 ================================
 
 .. image:: https://img.shields.io/pypi/v/oslo.log.svg
-    :target: https://pypi.python.org/pypi/oslo.log/
+    :target: https://pypi.org/project/oslo.log/
     :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/oslo.log.svg
-    :target: https://pypi.python.org/pypi/oslo.log/
+    :target: https://pypi.org/project/oslo.log/
     :alt: Downloads
 
 The oslo.log (logging) configuration library provides standardized
