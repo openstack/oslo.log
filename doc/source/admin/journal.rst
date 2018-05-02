@@ -29,7 +29,7 @@ running in a virtualenv, you can install with pip.::
 
    There are also many non official systemd python modules on pypi,
    with confusingly close names. Make sure you install `systemd-python
-   <https://pypi.python.org/pypi/systemd-python>`_.
+   <https://pypi.org/project/systemd-python>`_.
 
 After the package is installed, you must enable journald support
 manually in all services that will be using it. Add the following to
