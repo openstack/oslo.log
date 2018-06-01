@@ -987,7 +987,8 @@ class FancyRecordTestCase(LogTestBase):
                                                   "[%(request_id)s]: "
                                                   "%(instance)s"
                                                   "%(resource)s"
-                                                  "%(message)s",
+                                                  "%(message)s"
+                                                  "%(reset_color)s",
                     logging_default_format_string="%(missing)s: %(message)s")
         self.colorlog = log.getLogger()
         self._add_handler_with_cleanup(self.colorlog, handlers.ColorHandler)
@@ -1040,7 +1041,7 @@ class FancyRecordTestCase(LogTestBase):
         fake_resource = {'name': resource}
         message = 'info'
         self.colorlog.info(message, context=ctxt, resource=fake_resource)
-        expected = ('%s [%s]: [%s] %s\n' %
+        expected = ('%s [%s]: [%s] %s\033[00m\n' %
                     (color, ctxt.request_id, resource, message))
         self.assertEqual(expected, self.stream.getvalue())
 
@@ -1053,7 +1054,7 @@ class FancyRecordTestCase(LogTestBase):
                          'id': resource_id}
         message = 'info'
         self.colorlog.info(message, context=ctxt, resource=fake_resource)
-        expected = ('%s [%s]: [%s-%s] %s\n' %
+        expected = ('%s [%s]: [%s-%s] %s\033[00m\n' %
                     (color, ctxt.request_id, type, resource_id, message))
         self.assertEqual(expected, self.stream.getvalue())
 
