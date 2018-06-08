@@ -146,6 +146,12 @@ class OSJournalHandler(logging.Handler):
 
 
 class ColorHandler(logging.StreamHandler):
+    """Log handler that sets the 'color' key based on the level
+
+    To use, include a '%(color)s' entry in the logging_context_format_string
+    and a '%(reset_color)s' entry at the end of the format string so that the
+    color setting does not persist between log lines.
+    """
     LEVEL_COLORS = {
         _TRACE: '\033[00;35m',  # MAGENTA
         logging.DEBUG: '\033[00;32m',  # GREEN
@@ -158,4 +164,5 @@ class ColorHandler(logging.StreamHandler):
 
     def format(self, record):
         record.color = self.LEVEL_COLORS[record.levelno]
+        record.reset_color = '\033[00m'
         return logging.StreamHandler.format(self, record)
