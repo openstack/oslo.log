@@ -25,6 +25,7 @@ formatters, handlers and support for context specific
 logging (like resource id's etc).
 
 * Free software: Apache license
-* Documentation: https://docs.openstack.org/oslo.log/latest
+* Documentation: https://docs.openstack.org/oslo.log/latest/
 * Source: https://git.openstack.org/cgit/openstack/oslo.log
 * Bugs: https://bugs.launchpad.net/oslo.log
+* Release notes: https://docs.openstack.org/releasenotes/oslo.log/
