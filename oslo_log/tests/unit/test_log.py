@@ -987,8 +987,7 @@ class FancyRecordTestCase(LogTestBase):
                                                   "[%(request_id)s]: "
                                                   "%(instance)s"
                                                   "%(resource)s"
-                                                  "%(message)s"
-                                                  "%(reset_color)s",
+                                                  "%(message)s",
                     logging_default_format_string="%(missing)s: %(message)s")
         self.colorlog = log.getLogger()
         self._add_handler_with_cleanup(self.colorlog, handlers.ColorHandler)
