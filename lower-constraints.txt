@@ -60,6 +60,7 @@ snowballstemmer==1.2.1
 Sphinx==1.6.5
 sphinxcontrib-websupport==1.0.1
 stevedore==1.28.0
+systemd-python==234
 testrepository==0.0.20
 testtools==2.3.0
 traceback2==1.4.0
