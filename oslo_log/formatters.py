@@ -184,6 +184,19 @@ class _ReplaceFalseValue(dict):
 _MSG_KEY_REGEX = re.compile(r'(%+)\((\w+)\)')
 
 
+def _json_dumps_with_fallback(obj):
+    if _HAVE_JSONUTILS_FALLBACK:
+        # Bug #1593641: If an object cannot be serialized to JSON, convert
+        # it using repr() to prevent serialization errors. Using repr() is
+        # not ideal, but serialization errors are unexpected on logs,
+        # especially when the code using logs is not aware that the
+        # JSONFormatter will be used.
+        convert = functools.partial(jsonutils.to_primitive, fallback=repr)
+        return jsonutils.dumps(obj, default=convert)
+    else:
+        return jsonutils.dumps(obj)
+
+
 class JSONFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, style='%'):
         # NOTE(sfinucan) we ignore the fmt and style arguments, but they're
@@ -271,16 +284,7 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             message['traceback'] = self.formatException(record.exc_info)
 
-        if _HAVE_JSONUTILS_FALLBACK:
-            # Bug #1593641: If an object cannot be serialized to JSON, convert
-            # it using repr() to prevent serialization errors. Using repr() is
-            # not ideal, but serialization errors are unexpected on logs,
-            # especially when the code using logs is not aware that the
-            # JSONFormatter will be used.
-            convert = functools.partial(jsonutils.to_primitive, fallback=repr)
-            return jsonutils.dumps(message, default=convert)
-        else:
-            return jsonutils.dumps(message)
+        return _json_dumps_with_fallback(message)
 
 
 class FluentFormatter(logging.Formatter):
@@ -352,6 +356,12 @@ class FluentFormatter(logging.Formatter):
         else:
             message['context'] = {}
         extra.pop('context', None)
+        # NOTE(vdrok): try to dump complex objects
+        primitive_types = six.string_types + six.integer_types + (
+            bool, type(None), float, list, dict)
+        for key, value in extra.items():
+            if not isinstance(value, primitive_types):
+                extra[key] = _json_dumps_with_fallback(value)
         message['extra'] = extra
 
         if record.exc_info:
