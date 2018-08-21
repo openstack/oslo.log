@@ -1702,6 +1702,20 @@ class LogConfigTestCase(BaseTestCase):
                                            disable_existing_loggers=False)
 
 
+class SavingAdapter(log.KeywordArgumentAdapter):
+
+    def __init__(self, *args, **kwds):
+        super(log.KeywordArgumentAdapter, self).__init__(*args, **kwds)
+        self.results = []
+
+    def process(self, msg, kwargs):
+        # Run the real adapter and save the inputs and outputs
+        # before returning them so the test can examine both.
+        results = super(SavingAdapter, self).process(msg, kwargs)
+        self.results.append((msg, kwargs, results))
+        return results
+
+
 class KeywordArgumentAdapterTestCase(BaseTestCase):
 
     def setUp(self):
@@ -1754,52 +1768,44 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
             kwargs)
 
     def test_pass_args_to_log(self):
-        a = log.KeywordArgumentAdapter(self.mock_log, {})
+        a = SavingAdapter(self.mock_log, {})
+
         message = 'message'
         exc_message = 'exception'
-        key = 'name'
         val = 'value'
         a.log(logging.DEBUG, message, name=val, exc_info=exc_message)
-        if six.PY3:
-            self.mock_log._log.assert_called_once_with(
-                logging.DEBUG,
-                message,
-                (),
-                extra={key: val, 'extra_keys': [key]},
-                exc_info=exc_message
-            )
-        else:
-            self.mock_log.log.assert_called_once_with(
-                logging.DEBUG,
-                message,
-                extra={key: val, 'extra_keys': [key]},
-                exc_info=exc_message
-            )
+
+        expected = {
+            'exc_info': exc_message,
+            'extra': {'name': val, 'extra_keys': ['name']},
+        }
+
+        actual = a.results[0]
+        self.assertEqual(message, actual[0])
+        self.assertEqual(expected, actual[1])
+        results = actual[2]
+        self.assertEqual(message, results[0])
+        self.assertEqual(expected, results[1])
 
     def test_pass_args_via_debug(self):
-        a = log.KeywordArgumentAdapter(self.mock_log, {})
+
+        a = SavingAdapter(self.mock_log, {})
         message = 'message'
         exc_message = 'exception'
-        key = 'name'
         val = 'value'
         a.debug(message, name=val, exc_info=exc_message)
-        # The adapter implementation for debug() is different for
-        # python 3, so we expect a different method to be called
-        # internally.
-        if six.PY3:
-            self.mock_log._log.assert_called_once_with(
-                logging.DEBUG,
-                message,
-                (),
-                extra={key: val, 'extra_keys': [key]},
-                exc_info=exc_message
-            )
-        else:
-            self.mock_log.debug.assert_called_once_with(
-                message,
-                extra={key: val, 'extra_keys': [key]},
-                exc_info=exc_message
-            )
+
+        expected = {
+            'exc_info': exc_message,
+            'extra': {'name': val, 'extra_keys': ['name']},
+        }
+
+        actual = a.results[0]
+        self.assertEqual(message, actual[0])
+        self.assertEqual(expected, actual[1])
+        results = actual[2]
+        self.assertEqual(message, results[0])
+        self.assertEqual(expected, results[1])
 
 
 class UnicodeConversionTestCase(BaseTestCase):
