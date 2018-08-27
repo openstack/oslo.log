@@ -591,6 +591,22 @@ class JSONFormatterTestCase(LogTestBase):
         # convert it using repr() to prevent serialization error on logging.
         self.assertEqual(['repr'], data['args'])
 
+    def test_extra_args_filtered(self):
+        test_msg = 'This is a %(test)s line %%(unused)'
+        test_data = {'test': 'log', 'unused': 'removeme'}
+        self.log.debug(test_msg, test_data)
+
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertNotIn('unused', data['args'])
+
+    def test_entire_dict(self):
+        test_msg = 'This is a %s dict'
+        test_data = {'test': 'log', 'other': 'value'}
+        self.log.debug(test_msg, test_data)
+
+        data = jsonutils.loads(self.stream.getvalue())
+        self.assertEqual(test_data, data['args'])
+
 
 def get_fake_datetime(retval):
     class FakeDateTime(datetime.datetime):
