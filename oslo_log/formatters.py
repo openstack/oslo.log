@@ -17,6 +17,7 @@ import itertools
 import logging
 import logging.config
 import logging.handlers
+import re
 import socket
 import sys
 import traceback
@@ -180,6 +181,9 @@ class _ReplaceFalseValue(dict):
         return dict.get(self, key, None) or '-'
 
 
+_MSG_KEY_REGEX = re.compile('(%+)\((\w+)\)')
+
+
 class JSONFormatter(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, style='%'):
         # NOTE(sfinucan) we ignore the fmt and style arguments, but they're
@@ -206,11 +210,22 @@ class JSONFormatter(logging.Formatter):
         return lines
 
     def format(self, record):
+        args = record.args
+        if isinstance(args, dict):
+            msg_keys = _MSG_KEY_REGEX.findall(record.msg)
+            # NOTE(bnemec): The logic around skipping escaped placeholders is
+            # tricky and error-prone to include in the regex.  Much easier to
+            # just grab them all and filter after the fact.
+            msg_keys = [m[1] for m in msg_keys if len(m[0]) == 1]
+            # If no named keys were found, then the entire dict must have been
+            # the value to be formatted.  Don't filter anything.
+            if msg_keys:
+                args = {k: v for k, v in args.items() if k in msg_keys}
         message = {'message': record.getMessage(),
                    'asctime': self.formatTime(record, self.datefmt),
                    'name': record.name,
                    'msg': record.msg,
-                   'args': record.args,
+                   'args': args,
                    'levelname': record.levelname,
                    'levelno': record.levelno,
                    'pathname': record.pathname,
