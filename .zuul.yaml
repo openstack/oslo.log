@@ -13,14 +13,44 @@
     run: playbooks/legacy/oslo.log-src-grenade-devstack/run.yaml
     timeout: 10800
 
+- job:
+    name: oslo.log-jsonformatter
+    parent: devstack-tempest
+    timeout: 10800
+    vars:
+      devstack_local_conf:
+        post-config:
+          $NOVA_CONF:
+            DEFAULT:
+              use_json: True
+          $NEUTRON_CONF:
+            DEFAULT:
+              use_json: True
+          $GLANCE_CONF:
+            DEFAULT:
+              use_json: True
+          $CINDER_CONF:
+            DEFAULT:
+              use_json: True
+          $KEYSTONE_CONF:
+            DEFAULT:
+              use_json: True
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+
+
 - project:
     check:
       jobs:
         - oslo.log-src-grenade-devstack
-
+        - oslo.log-jsonformatter
         - openstack-tox-lower-constraints
     gate:
       jobs:
+        - oslo.log-jsonformatter
         - openstack-tox-lower-constraints
     templates:
       - openstack-python-jobs
