@@ -140,6 +140,25 @@ class CommonLoggerTestsMixIn(object):
                      'info', 'debug', 'log'):
             self.assertRaises(AttributeError, getattr, log, func)
 
+    @mock.patch('platform.system', return_value='Linux')
+    def test_eventlog_missing(self, platform_mock):
+        self.config(use_eventlog=True)
+        self.assertRaises(RuntimeError,
+                          log._setup_logging_from_conf,
+                          self.CONF,
+                          'test',
+                          'test')
+
+    @mock.patch('platform.system', return_value='Windows')
+    @mock.patch('logging.handlers.NTEventLogHandler')
+    @mock.patch('oslo_log.log.getLogger')
+    def test_eventlog(self, loggers_mock, handler_mock, platform_mock):
+        self.config(use_eventlog=True)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handler_mock.assert_called_once_with('test')
+        mock_logger = loggers_mock.return_value.logger
+        mock_logger.addHandler.assert_any_call(handler_mock.return_value)
+
 
 class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
     def setUp(self):
