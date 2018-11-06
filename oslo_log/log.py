@@ -361,6 +361,14 @@ def _setup_logging_from_conf(conf, project, version):
         journal = handlers.OSJournalHandler()
         log_root.addHandler(journal)
 
+    if conf.use_eventlog:
+        if platform.system() == 'Windows':
+            eventlog = logging.handlers.NTEventLogHandler(project)
+            log_root.addHandler(eventlog)
+        else:
+            raise RuntimeError(_("Windows Event Log is not available on this "
+                                 "platform."))
+
     # if None of the above are True, then fall back to standard out
     if not logpath and not conf.use_stderr and not conf.use_journal:
         # pass sys.stdout as a positional argument

@@ -108,6 +108,9 @@ generic_log_opts = [
                 default=False,
                 help='Log output to standard error. '
                      + _IGNORE_MESSAGE),
+    cfg.BoolOpt('use_eventlog',
+                default=False,
+                help='Log output to Windows Event Log.'),
 ]
 
 log_opts = [
