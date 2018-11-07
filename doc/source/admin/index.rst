@@ -7,3 +7,4 @@
 
    advanced_config
    journal
+   log_rotation

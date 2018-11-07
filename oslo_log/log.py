@@ -40,6 +40,7 @@ except ImportError:
 
 from oslo_config import cfg
 from oslo_utils import importutils
+from oslo_utils import units
 import six
 from six import moves
 
@@ -59,6 +60,15 @@ NOTSET = logging.NOTSET
 TRACE = handlers._TRACE
 
 logging.addLevelName(TRACE, 'TRACE')
+
+LOG_ROTATE_INTERVAL_MAPPING = {
+    'seconds': 's',
+    'minutes': 'm',
+    'hours': 'h',
+    'days': 'd',
+    'weekday': 'w',
+    'midnight': 'midnight'
+}
 
 
 def _get_log_file_path(conf, binary=None):
@@ -344,13 +354,33 @@ def _setup_logging_from_conf(conf, project, version):
 
     logpath = _get_log_file_path(conf)
     if logpath:
+        # On Windows, in-use files cannot be moved or deleted.
         if conf.watch_log_file and platform.system() == 'Linux':
             from oslo_log import watchers
             file_handler = watchers.FastWatchedFileHandler
+            filelog = file_handler(logpath)
+        elif conf.log_rotation_type.lower() == "interval":
+            file_handler = logging.handlers.TimedRotatingFileHandler
+            when = conf.log_rotate_interval_type.lower()
+            interval_type = LOG_ROTATE_INTERVAL_MAPPING[when]
+            # When weekday is configured, "when" has to be a value between
+            # 'w0'-'w6' (w0 for Monday, w1 for Tuesday, and so on)'
+            if interval_type == 'w':
+                interval_type = interval_type + str(conf.log_rotate_interval)
+            filelog = file_handler(logpath,
+                                   when=interval_type,
+                                   interval=conf.log_rotate_interval,
+                                   backupCount=conf.max_logfile_count)
+        elif conf.log_rotation_type.lower() == "size":
+            file_handler = logging.handlers.RotatingFileHandler
+            maxBytes = conf.max_logfile_size_mb * units.Mi
+            filelog = file_handler(logpath,
+                                   maxBytes=maxBytes,
+                                   backupCount=conf.max_logfile_count)
         else:
             file_handler = logging.handlers.WatchedFileHandler
+            filelog = file_handler(logpath)
 
-        filelog = file_handler(logpath)
         log_root.addHandler(filelog)
 
     if conf.use_stderr:

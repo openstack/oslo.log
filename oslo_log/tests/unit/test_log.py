@@ -47,6 +47,7 @@ from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
 from oslo_log import log
+from oslo_utils import units
 
 
 MIN_LOG_INI = b"""[loggers]
@@ -107,6 +108,7 @@ class CommonLoggerTestsMixIn(object):
                                                   '%(message)s')
         self.log = None
         log._setup_logging_from_conf(self.config_fixture.conf, 'test', 'test')
+        self.log_handlers = log.getLogger(None).logger.handlers
 
     def test_handlers_have_context_formatter(self):
         formatters_list = []
@@ -158,6 +160,58 @@ class CommonLoggerTestsMixIn(object):
         handler_mock.assert_called_once_with('test')
         mock_logger = loggers_mock.return_value.logger
         mock_logger.addHandler.assert_any_call(handler_mock.return_value)
+
+    @mock.patch('oslo_log.watchers.FastWatchedFileHandler')
+    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
+    @mock.patch('platform.system', return_value='Linux')
+    def test_watchlog_on_linux(self, platfotm_mock, path_mock, handler_mock):
+        self.config(watch_log_file=True)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handler_mock.assert_called_once_with(path_mock.return_value)
+        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
+
+    @mock.patch('logging.handlers.WatchedFileHandler')
+    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
+    @mock.patch('platform.system', return_value='Windows')
+    def test_watchlog_on_windows(self, platform_mock, path_mock, handler_mock):
+        self.config(watch_log_file=True)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handler_mock.assert_called_once_with(path_mock.return_value)
+        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
+
+    @mock.patch('logging.handlers.TimedRotatingFileHandler')
+    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
+    def test_timed_rotate_log(self, path_mock, handler_mock):
+        rotation_type = 'interval'
+        when = 'weekday'
+        interval = 2
+        backup_count = 2
+        self.config(log_rotation_type=rotation_type,
+                    log_rotate_interval=interval,
+                    log_rotate_interval_type=when,
+                    max_logfile_count=backup_count)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handler_mock.assert_called_once_with(path_mock.return_value,
+                                             when='w2',
+                                             interval=interval,
+                                             backupCount=backup_count)
+        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
+
+    @mock.patch('logging.handlers.RotatingFileHandler')
+    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
+    def test_rotate_log(self, path_mock, handler_mock):
+        rotation_type = 'size'
+        max_logfile_size_mb = 100
+        maxBytes = max_logfile_size_mb * units.Mi
+        backup_count = 2
+        self.config(log_rotation_type=rotation_type,
+                    max_logfile_size_mb=max_logfile_size_mb,
+                    max_logfile_count=backup_count)
+        log._setup_logging_from_conf(self.CONF, 'test', 'test')
+        handler_mock.assert_called_once_with(path_mock.return_value,
+                                             maxBytes=maxBytes,
+                                             backupCount=backup_count)
+        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
 
 
 class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):

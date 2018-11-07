@@ -111,6 +111,35 @@ generic_log_opts = [
     cfg.BoolOpt('use_eventlog',
                 default=False,
                 help='Log output to Windows Event Log.'),
+    cfg.IntOpt('log_rotate_interval',
+               default=1,
+               help='The amount of time before the log files are rotated. '
+                    'This option is ignored unless log_rotation_type is set'
+                    'to "interval".'),
+    cfg.StrOpt('log_rotate_interval_type',
+               choices=['Seconds', 'Minutes', 'Hours', 'Days', 'Weekday',
+                        'Midnight'],
+               ignore_case=True,
+               default='days',
+               help='Rotation interval type. The time of the last file '
+                    'change (or the time when the service was started) is '
+                    'used when scheduling the next rotation.'),
+    cfg.IntOpt('max_logfile_count',
+               default=30,
+               help='Maximum number of rotated log files.'),
+    cfg.IntOpt('max_logfile_size_mb',
+               default=200,
+               help='Log file maximum size in MB. This option is ignored if '
+                    '"log_rotation_type" is not set to "size".'),
+    cfg.StrOpt('log_rotation_type',
+               default='none',
+               choices=[('interval',
+                         'Rotate logs at predefined time intervals.'),
+                        ('size',
+                         'Rotate logs once they reach a predefined size.'),
+                        ('none', 'Do not rotate log files.')],
+               ignore_case=True,
+               help='Log rotation type.')
 ]
 
 log_opts = [
