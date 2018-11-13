@@ -155,4 +155,4 @@ References
 
 - The guide for using systemd in devstack provides additional examples
   of effective journalctl queries -
-  http://git.openstack.org/cgit/openstack-dev/devstack/tree/SYSTEMD.rst
+  https://git.openstack.org/cgit/openstack-dev/devstack/tree/SYSTEMD.rst
