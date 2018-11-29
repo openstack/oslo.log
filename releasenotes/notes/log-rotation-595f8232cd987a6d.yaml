@@ -7,3 +7,4 @@ features:
     * ``log_rotate_interval_type``
     * ``max_logfile_count``
     * ``max_logfile_size_mb``
+    * ``log_rotation_type``

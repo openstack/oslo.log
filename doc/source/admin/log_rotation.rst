@@ -33,7 +33,7 @@ The following sample configures log rotation to be performed every 12 hours.
     [DEFAULT]
     log_rotation_type = interval
     log_rotate_interval = 12
-    log_rotate_interval_type = H
+    log_rotate_interval_type = Hours
     max_logfile_count = 60
 
 .. note::
