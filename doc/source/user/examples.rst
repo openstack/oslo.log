@@ -8,7 +8,7 @@ These files can be found in the docs/source/examples directory of
 the git source of this project.  They can also be found in the
 `online git repository`_ of this project.
 
-.. _online git repository: http://git.openstack.org/cgit/openstack/oslo.log/tree/doc/source/examples
+.. _online git repository: https://git.openstack.org/cgit/openstack/oslo.log/tree/doc/source/examples
 
 
 python_logging.py

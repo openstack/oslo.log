@@ -88,7 +88,7 @@ log levels.
 Logging within an application should use `Oslo International Utilities (i18n)`_ marker
 functions to provide language translation capabilities.
 
-.. _Oslo International Utilities (i18n): http://docs.openstack.org/oslo.i18n/latest
+.. _Oslo International Utilities (i18n): https://docs.openstack.org/oslo.i18n/latest
 
 .. literalinclude:: examples/usage_i18n.py
    :linenos:
@@ -100,7 +100,7 @@ Source: :ref:`examples/usage_i18n.py <example_usage_i18n.py>`
 With the use of `Oslo Context`_, log records can also contain
 additional contextual information applicable for your application.
 
-.. _Oslo Context: http://docs.openstack.org/oslo.context/latest
+.. _Oslo Context: https://docs.openstack.org/oslo.context/latest
 
 .. literalinclude:: examples/usage_context.py
    :linenos:
@@ -152,7 +152,7 @@ The `OpenStack Logging Guidelines`_ in openstack-specs repository
 explain how to use different logging levels, and the desired logging
 patterns to be used in OpenStack applications.
 
-.. _OpenStack Logging Guidelines: http://specs.openstack.org/openstack/openstack-specs/specs/log-guidelines.html
+.. _OpenStack Logging Guidelines: https://specs.openstack.org/openstack/openstack-specs/specs/log-guidelines.html
 
 In a Library
 ============
