@@ -131,11 +131,16 @@ class OSJournalHandler(logging.Handler):
             'PRIORITY': priority
         }
 
-        if record.exc_text:
-            extras['EXCEPTION_TEXT'] = record.exc_text
-
         if record.exc_info:
-            extras['EXCEPTION_INFO'] = record.exc_info
+            # Cache the traceback text to avoid converting it multiple times
+            # (it's constant anyway)
+            if not record.exc_text:
+                record.exc_text = self.formatter.formatException(
+                    record.exc_info)
+        if record.exc_text:
+            extras['EXCEPTION_INFO'] = record.exc_text
+            # Leave EXCEPTION_TEXT for backward compatibility
+            extras['EXCEPTION_TEXT'] = record.exc_text
 
         for field in self.custom_fields:
             value = record.__dict__.get(field)

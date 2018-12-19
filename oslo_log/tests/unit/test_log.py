@@ -400,7 +400,6 @@ class OSJournalHandlerTestCase(BaseTestCase):
         local_context = _fake_new_context()
         l.info("Foo", context=local_context)
         self.assertEqual(
-            self.journal.send.call_args,
             mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
                       CODE_LINE=mock.ANY, LOGGER_LEVEL='INFO',
                       LOGGER_NAME='nova-test.foo', PRIORITY=6,
@@ -409,7 +408,17 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       PROJECT_NAME='mytenant',
                       PROCESS_NAME='MainProcess',
                       THREAD_NAME='MainThread',
-                      USER_NAME='myuser'))
+                      USER_NAME='myuser'),
+            self.journal.send.call_args)
+        args, kwargs = self.journal.send.call_args
+        self.assertEqual(len(args), 1)
+        self.assertIsInstance(args[0], six.string_types)
+        self.assertIsInstance(kwargs['CODE_LINE'], int)
+        self.assertIsInstance(kwargs['PRIORITY'], int)
+        del kwargs['CODE_LINE'], kwargs['PRIORITY']
+        for key, arg in kwargs.items():
+            self.assertIsInstance(key, six.string_types)
+            self.assertIsInstance(arg, six.string_types + (six.binary_type,))
 
     def test_emit_exception(self):
         l = log.getLogger('nova-exception.foo')
@@ -419,7 +428,6 @@ class OSJournalHandlerTestCase(BaseTestCase):
         except Exception:
             l.exception("Foo", context=local_context)
         self.assertEqual(
-            self.journal.send.call_args,
             mock.call(mock.ANY, CODE_FILE=mock.ANY,
                       CODE_FUNC='test_emit_exception',
                       CODE_LINE=mock.ANY, LOGGER_LEVEL='ERROR',
@@ -431,7 +439,17 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       PROJECT_NAME='mytenant',
                       PROCESS_NAME='MainProcess',
                       THREAD_NAME='MainThread',
-                      USER_NAME='myuser'))
+                      USER_NAME='myuser'),
+            self.journal.send.call_args)
+        args, kwargs = self.journal.send.call_args
+        self.assertEqual(len(args), 1)
+        self.assertIsInstance(args[0], six.string_types)
+        self.assertIsInstance(kwargs['CODE_LINE'], int)
+        self.assertIsInstance(kwargs['PRIORITY'], int)
+        del kwargs['CODE_LINE'], kwargs['PRIORITY']
+        for key, arg in kwargs.items():
+            self.assertIsInstance(key, six.string_types)
+            self.assertIsInstance(arg, six.string_types + (six.binary_type,))
 
 
 class LogLevelTestCase(BaseTestCase):
