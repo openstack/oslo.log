@@ -29,6 +29,8 @@ termcolor = importutils.try_import('termcolor')
 
 
 _USE_COLOR = False
+DEFAULT_LEVEL_KEY = 'levelname'
+DEFAULT_TRACEBACK_KEY = 'traceback'
 
 
 def main():
@@ -41,6 +43,8 @@ def main():
         args.locator,
         loggers=args.loggers,
         levels=args.levels,
+        level_key=args.levelkey,
+        traceback_key=args.tbkey,
         )
     if args.lines:
         # Read backward until we find all of our newline characters
@@ -74,6 +78,13 @@ def parse_args():
     parser.add_argument("--locator",
                         default='[%(funcname)s %(pathname)s:%(lineno)s]',
                         help="Locator to append to DEBUG records")
+    parser.add_argument("--levelkey",
+                        default=DEFAULT_LEVEL_KEY,
+                        help="Key in the JSON record where the level is held")
+    parser.add_argument("--tbkey",
+                        default=DEFAULT_TRACEBACK_KEY,
+                        help="Key in the JSON record where the"
+                             " traceback/exception is held")
     parser.add_argument("-c", "--color",
                         action='store_true', default=False,
                         help="Color log levels (requires `termcolor`)")
@@ -144,7 +155,9 @@ def reformat_json(fh, formatter, follow=False):
             yield out_line
 
 
-def console_format(prefix, locator, record, loggers=[], levels=[]):
+def console_format(prefix, locator, record, loggers=[], levels=[],
+                   level_key=DEFAULT_LEVEL_KEY,
+                   traceback_key=DEFAULT_TRACEBACK_KEY):
     # Provide an empty string to format-specifiers the record is
     # missing, instead of failing. Doesn't work for non-string
     # specifiers.
@@ -155,11 +168,11 @@ def console_format(prefix, locator, record, loggers=[], levels=[]):
         if not any(name.startswith(n) for n in loggers):
             return
     if levels:
-        if record.get('levelname') not in levels:
+        if record.get(level_key) not in levels:
             return
-    levelname = record.get('levelname')
+    levelname = record.get(level_key)
     if levelname:
-        record['levelname'] = colorise(levelname)
+        record[level_key] = colorise(levelname)
 
     try:
         prefix = prefix % record
@@ -177,8 +190,10 @@ def console_format(prefix, locator, record, loggers=[], levels=[]):
 
     yield ' '.join(x for x in [prefix, record['message'], locator] if x)
 
-    tb = record.get('traceback')
+    tb = record.get(traceback_key)
     if tb:
+        if type(tb) is str:
+            tb = tb.rstrip().split("\n")
         for tb_line in tb:
             yield ' '.join([prefix, tb_line])
 
