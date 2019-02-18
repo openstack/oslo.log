@@ -53,7 +53,7 @@ logging_cli_opts = [
                     'when logging configuration files are used then all '
                     'logging configuration is set in the configuration file '
                     'and other logging configuration options are ignored '
-                    '(for example, logging_context_format_string).'),
+                    '(for example, log-date-format).'),
     cfg.StrOpt('log-date-format',
                default=_DEFAULT_LOG_DATE_FORMAT,
                metavar='DATE_FORMAT',
@@ -148,25 +148,30 @@ log_opts = [
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
                        '%(name)s [%(request_id)s %(user_identity)s] '
                        '%(instance)s%(message)s',
-               help='Format string to use for log messages with context.'),
+               help='Format string to use for log messages with context. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_default_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
                        '%(name)s [-] %(instance)s%(message)s',
                help='Format string to use for log messages when context is '
-                    'undefined.'),
+                    'undefined. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
                help='Additional data to append to log message when logging '
-                    'level for the message is DEBUG.'),
+                    'level for the message is DEBUG. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_exception_prefix',
                default='%(asctime)s.%(msecs)03d %(process)d ERROR %(name)s '
                '%(instance)s',
-               help='Prefix each line of exception output with this format.'),
+               help='Prefix each line of exception output with this format. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_user_identity_format',
                default='%(user)s %(tenant)s '
                        '%(domain)s %(user_domain)s %(project_domain)s',
                help='Defines the format string for %(user_identity)s that '
-                    'is used in logging_context_format_string.'),
+                    'is used in logging_context_format_string. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
     cfg.ListOpt('default_log_levels',
                 default=DEFAULT_LOG_LEVELS,
                 help='List of package logging levels in logger=LEVEL pairs. '
