@@ -301,6 +301,7 @@ class FluentFormatter(logging.Formatter):
             self.hostname = socket.gethostname()
         except socket.error:
             self.hostname = None
+        self.cmdline = " ".join(sys.argv)
 
     def formatException(self, exc_info, strip_newlines=True):
         try:
@@ -324,6 +325,7 @@ class FluentFormatter(logging.Formatter):
                    'module': record.module,
                    'funcname': record.funcName,
                    'process_name': record.processName,
+                   'cmdline': self.cmdline,
                    'hostname': self.hostname,
                    'traceback': None,
                    'error_summary': _get_error_summary(record)}
