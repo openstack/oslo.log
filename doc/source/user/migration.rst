@@ -23,7 +23,7 @@ exists. We agreed in the `cross project spec`_ to stop using audit
 level anyway, so those calls should be replaced with calls to
 ``info()``.
 
-.. _cross project spec: https://git.openstack.org/cgit/openstack/openstack-specs/tree/specs/log-guidelines.rst
+.. _cross project spec: https://opendev.org/openstack/openstack-specs/src/branch/master/specs/log-guidelines.rst
 
 Deprecation tools moved to ``versionutils``
 -------------------------------------------
