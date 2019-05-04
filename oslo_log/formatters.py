@@ -181,7 +181,7 @@ class _ReplaceFalseValue(dict):
         return dict.get(self, key, None) or '-'
 
 
-_MSG_KEY_REGEX = re.compile('(%+)\((\w+)\)')
+_MSG_KEY_REGEX = re.compile(r'(%+)\((\w+)\)')
 
 
 class JSONFormatter(logging.Formatter):
