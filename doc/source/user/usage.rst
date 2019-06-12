@@ -85,17 +85,16 @@ log levels.
     2016-01-14 21:07:51.396 12945 ERROR __main__ None
     2016-01-14 21:07:51.396 12945 ERROR __main__
 
-Logging within an application should use `Oslo International Utilities (i18n)`_ marker
-functions to provide language translation capabilities.
+Oslo Log Translation
+--------------------
 
-.. _Oslo International Utilities (i18n): https://docs.openstack.org/oslo.i18n/latest
+As of the Pike release, `logging within an application should no
+longer use Oslo International Utilities (i18n) marker functions
+<https://docs.openstack.org/oslo.i18n/latest/user/guidelines.html#log-translation>`_
+to provide language translation capabilities.
 
-.. literalinclude:: examples/usage_i18n.py
-   :linenos:
-   :lines: 31-32,76,79-85
-   :emphasize-lines: 1
-
-Source: :ref:`examples/usage_i18n.py <example_usage_i18n.py>`
+Adding Context to Logging
+-------------------------
 
 With the use of `Oslo Context`_, log records can also contain
 additional contextual information applicable for your application.
@@ -126,8 +125,6 @@ specified in :oslo.config:option:`logging_context_format_string`. An
 application can extend this object to provide additional attributes that can
 be specified in log records.
 
-
-
 Examples
 --------
 
@@ -137,9 +134,6 @@ example of Oslo Logging setup.
 :ref:`examples/usage_helper.py <example_usage_helper.py>` provides an
 example showing debugging logging at each step details the configuration
 and logging at each step of Oslo Logging setup.
-
-:ref:`examples/usage_i18n.py <example_usage_i18n.py>` provides a
-documented example of Oslo Logging with Oslo i18n supported messages.
 
 :ref:`examples/usage_context.py <example_usage_context.py>` provides
 a documented example of Oslo Logging with Oslo Context.

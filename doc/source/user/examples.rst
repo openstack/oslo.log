@@ -43,14 +43,6 @@ usage_helper.py
 .. literalinclude:: examples/usage_helper.py
    :linenos:
 
-usage_i18n.py
--------------
-
-.. _example_usage_i18n.py:
-
-.. literalinclude:: examples/usage_i18n.py
-   :linenos:
-
 usage_context.py
 ----------------
 
