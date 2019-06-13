@@ -139,15 +139,6 @@ and logging at each step of Oslo Logging setup.
 a documented example of Oslo Logging with Oslo Context.
 
 
-General Logging Guidelines
-==========================
-
-The `OpenStack Logging Guidelines`_ in openstack-specs repository
-explain how to use different logging levels, and the desired logging
-patterns to be used in OpenStack applications.
-
-.. _OpenStack Logging Guidelines: https://specs.openstack.org/openstack/openstack-specs/specs/log-guidelines.html
-
 In a Library
 ============
 
