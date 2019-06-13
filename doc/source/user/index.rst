@@ -10,5 +10,4 @@
    usage
    examples
    guidelines
-   migration
    history
