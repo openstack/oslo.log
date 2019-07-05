@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    #'sphinx.ext.intersphinx',
     'oslo_config.sphinxext',
     'openstackdocstheme',
 ]
@@ -33,32 +32,11 @@ repository_name = 'openstack/oslo.log'
 bug_project = 'oslo.log'
 bug_tag = ''
 
-# Must set this variable to include year, month, day, hours, and minutes.
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
-
-# autodoc generation is a bit aggressive and a nuisance when doing heavy
-# text edit cycles.
-# execute "export SPHINX_DEBUG=1" in your terminal to disable
-
-# The suffix of source filenames.
-source_suffix = '.rst'
-
 # The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
-project = u'oslo.log'
 copyright = u'2014, OpenStack Foundation'
-
-# If true, '()' will be appended to :func: etc. cross-reference text.
-add_function_parentheses = True
-
-# If true, the current module name will be prepended to all description
-# unit titles (such as .. function::).
-add_module_names = True
-
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -66,19 +44,3 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 # html_static_path = ['static']
 html_theme = 'openstackdocs'
-
-# Output file base name for HTML help builder.
-htmlhelp_basename = '%sdoc' % project
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    ('index',
-     '%s.tex' % project,
-     u'%s Documentation' % project,
-     u'OpenStack Foundation', 'manual'),
-]
-
-# Example configuration for intersphinx: refer to the Python standard library.
-#intersphinx_mapping = {'http://docs.python.org/': None}
