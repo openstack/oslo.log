@@ -226,7 +226,7 @@ def _load_log_config(log_config_append):
             # Reset all existing loggers before reloading config as fileConfig
             # does not reset non-child loggers.
             for logger in _iter_loggers():
-                logger.level = logging.NOTSET
+                logger.setLevel(logging.NOTSET)
                 logger.handlers = []
                 logger.propagate = 1
             logging.config.fileConfig(log_config_append,
