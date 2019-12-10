@@ -34,15 +34,6 @@ if six.PY3:
     from functools import reduce
 
 
-try:
-    # Test if to_primitive() has the fallback parameter added
-    # in oslo.serialization 2.21.1
-    jsonutils.to_primitive(1, fallback=repr)
-    _HAVE_JSONUTILS_FALLBACK = True
-except TypeError:
-    _HAVE_JSONUTILS_FALLBACK = False
-
-
 def _dictify_context(context):
     if getattr(context, 'get_logging_values', None):
         return context.get_logging_values()
@@ -185,16 +176,13 @@ _MSG_KEY_REGEX = re.compile(r'(%+)\((\w+)\)')
 
 
 def _json_dumps_with_fallback(obj):
-    if _HAVE_JSONUTILS_FALLBACK:
-        # Bug #1593641: If an object cannot be serialized to JSON, convert
-        # it using repr() to prevent serialization errors. Using repr() is
-        # not ideal, but serialization errors are unexpected on logs,
-        # especially when the code using logs is not aware that the
-        # JSONFormatter will be used.
-        convert = functools.partial(jsonutils.to_primitive, fallback=repr)
-        return jsonutils.dumps(obj, default=convert)
-    else:
-        return jsonutils.dumps(obj)
+    # Bug #1593641: If an object cannot be serialized to JSON, convert
+    # it using repr() to prevent serialization errors. Using repr() is
+    # not ideal, but serialization errors are unexpected on logs,
+    # especially when the code using logs is not aware that the
+    # JSONFormatter will be used.
+    convert = functools.partial(jsonutils.to_primitive, fallback=repr)
+    return jsonutils.dumps(obj, default=convert)
 
 
 class JSONFormatter(logging.Formatter):

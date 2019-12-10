@@ -661,10 +661,6 @@ class JSONFormatterTestCase(LogTestBase):
                          data['error_summary'])
 
     def test_fallback(self):
-        if not formatters._HAVE_JSONUTILS_FALLBACK:
-            self.skipTest("need the fallback parameter of "
-                          "jsonutils.to_primitive() added in "
-                          "oslo_serialization 2.21.1")
 
         class MyObject(object):
             def __str__(self):
