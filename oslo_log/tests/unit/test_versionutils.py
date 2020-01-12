@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import unittest
+
 import mock
 from oslotest import base as test_base
 import six
 from testtools import matchers
-import unittest2
 
 from oslo_log import versionutils
 
@@ -247,7 +248,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
                                as_of='Juno',
                                remove_in='Kilo')
 
-    @unittest2.skipIf(
+    @unittest.skipIf(
         six.PY3,
         'Deprecated exception detection does not work for Python 3')
     @mock.patch('oslo_log.versionutils.report_deprecated_feature')

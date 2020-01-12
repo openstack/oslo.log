@@ -65,6 +65,5 @@ systemd-python==234
 testrepository==0.0.20
 testtools==2.3.0
 traceback2==1.4.0
-unittest2==1.1.0
 urllib3==1.22
 wrapt==1.10.11
