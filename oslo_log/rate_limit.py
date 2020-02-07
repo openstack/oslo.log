@@ -132,6 +132,7 @@ def install_filter(burst, interval, except_level='CRITICAL'):
     for logger in _iter_loggers():
         logger.addFilter(log_filter)
 
+
 install_filter.log_filter = None
 install_filter.logger_class = None
 

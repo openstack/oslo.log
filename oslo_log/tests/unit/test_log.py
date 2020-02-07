@@ -396,9 +396,9 @@ class OSJournalHandlerTestCase(BaseTestCase):
         log.setup(self.CONF, 'testing')
 
     def test_emit(self):
-        l = log.getLogger('nova-test.foo')
+        logger = log.getLogger('nova-test.foo')
         local_context = _fake_new_context()
-        l.info("Foo", context=local_context)
+        logger.info("Foo", context=local_context)
         self.assertEqual(
             mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
                       CODE_LINE=mock.ANY, LOGGER_LEVEL='INFO',
@@ -421,12 +421,12 @@ class OSJournalHandlerTestCase(BaseTestCase):
             self.assertIsInstance(arg, six.string_types + (six.binary_type,))
 
     def test_emit_exception(self):
-        l = log.getLogger('nova-exception.foo')
+        logger = log.getLogger('nova-exception.foo')
         local_context = _fake_new_context()
         try:
             raise Exception("Some exception")
         except Exception:
-            l.exception("Foo", context=local_context)
+            logger.exception("Foo", context=local_context)
         self.assertEqual(
             mock.call(mock.ANY, CODE_FILE=mock.ANY,
                       CODE_FUNC='test_emit_exception',
@@ -485,12 +485,12 @@ class LogLevelTestCase(BaseTestCase):
         self.assertEqual(log.TRACE, self.log_trace.logger.getEffectiveLevel())
 
     def test_child_log_has_level_of_parent_flag(self):
-        l = log.getLogger('nova-test.foo')
-        self.assertEqual(logging.INFO, l.logger.getEffectiveLevel())
+        logger = log.getLogger('nova-test.foo')
+        self.assertEqual(logging.INFO, logger.logger.getEffectiveLevel())
 
     def test_child_log_has_level_of_parent_flag_for_trace(self):
-        l = log.getLogger('nova-trace.foo')
-        self.assertEqual(log.TRACE, l.logger.getEffectiveLevel())
+        logger = log.getLogger('nova-trace.foo')
+        self.assertEqual(log.TRACE, logger.logger.getEffectiveLevel())
 
     def test_get_loggers(self):
         log._loggers['sentinel_log'] = mock.sentinel.sentinel_log
@@ -1940,14 +1940,14 @@ class LoggerNameTestCase(LoggerTestCase):
 
     def test_oslo_dot(self):
         logger_name = 'oslo.subname'
-        l = log.getLogger(logger_name)
-        self.assertEqual(logger_name, l.logger.name)
+        logger = log.getLogger(logger_name)
+        self.assertEqual(logger_name, logger.logger.name)
 
     def test_oslo_underscore(self):
         logger_name = 'oslo_subname'
         expected = logger_name.replace('_', '.')
-        l = log.getLogger(logger_name)
-        self.assertEqual(expected, l.logger.name)
+        logger = log.getLogger(logger_name)
+        self.assertEqual(expected, logger.logger.name)
 
 
 class IsDebugEnabledTestCase(test_base.BaseTestCase):
