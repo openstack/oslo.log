@@ -19,6 +19,7 @@
 from contextlib import contextmanager
 import copy
 import datetime
+import io
 import logging
 import os
 import platform
@@ -40,7 +41,6 @@ from oslo_context import fixture as fixture_context
 from oslo_i18n import fixture as fixture_trans
 from oslo_serialization import jsonutils
 from oslotest import base as test_base
-import six
 import testtools
 
 from oslo_log import _options
@@ -251,7 +251,7 @@ class LogTestBase(BaseTestCase):
         :param formatter: The formatter class to set on the handler.  Must be
             the class itself, not an instance.
         """
-        self.stream = six.StringIO()
+        self.stream = io.StringIO()
         if handler is None:
             handler = logging.StreamHandler
         self.handler = handler(self.stream)
@@ -364,17 +364,12 @@ class OSSysLogHandlerTestCase(BaseTestCase):
 
     def test_syslog(self):
         msg_unicode = u"Benoît Knecht & François Deppierraz login failure"
-        msg_utf8 = msg_unicode.encode('utf-8')
-
         handler = handlers.OSSysLogHandler()
         syslog.syslog = mock.Mock()
         handler.emit(
             logging.LogRecord("name", logging.INFO, "path", 123,
                               msg_unicode, None, None))
-        if six.PY2:
-            syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_utf8)
-        else:
-            syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_unicode)
+        syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_unicode)
 
 
 class OSJournalHandlerTestCase(BaseTestCase):
@@ -412,13 +407,13 @@ class OSJournalHandlerTestCase(BaseTestCase):
             self.journal.send.call_args)
         args, kwargs = self.journal.send.call_args
         self.assertEqual(len(args), 1)
-        self.assertIsInstance(args[0], six.string_types)
+        self.assertIsInstance(args[0], str)
         self.assertIsInstance(kwargs['CODE_LINE'], int)
         self.assertIsInstance(kwargs['PRIORITY'], int)
         del kwargs['CODE_LINE'], kwargs['PRIORITY']
         for key, arg in kwargs.items():
-            self.assertIsInstance(key, six.string_types)
-            self.assertIsInstance(arg, six.string_types + (six.binary_type,))
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(arg, (bytes, str))
 
     def test_emit_exception(self):
         l = log.getLogger('nova-exception.foo')
@@ -443,13 +438,13 @@ class OSJournalHandlerTestCase(BaseTestCase):
             self.journal.send.call_args)
         args, kwargs = self.journal.send.call_args
         self.assertEqual(len(args), 1)
-        self.assertIsInstance(args[0], six.string_types)
+        self.assertIsInstance(args[0], str)
         self.assertIsInstance(kwargs['CODE_LINE'], int)
         self.assertIsInstance(kwargs['PRIORITY'], int)
         del kwargs['CODE_LINE'], kwargs['PRIORITY']
         for key, arg in kwargs.items():
-            self.assertIsInstance(key, six.string_types)
-            self.assertIsInstance(arg, six.string_types + (six.binary_type,))
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(arg, (bytes, str))
 
 
 class LogLevelTestCase(BaseTestCase):
@@ -610,15 +605,14 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_can_process_strings(self):
         expected = b'\\u2622'
-        if six.PY3:
-            # see ContextFormatterTestCase.test_can_process_strings
-            expected = '\\\\xe2\\\\x98\\\\xa2'
+        # see ContextFormatterTestCase.test_can_process_strings
+        expected = '\\\\xe2\\\\x98\\\\xa2'
         self.log.info(b'%s', u'\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
     def test_exception(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         try:
             raise RuntimeError('test_exception')
         except RuntimeError:
@@ -630,7 +624,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_no_exception(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         self.log.info('testing', context=ctxt)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
@@ -638,7 +632,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_exception_without_exc_info_passed(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         try:
             raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
         except RuntimeError:
@@ -649,7 +643,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_exception_with_exc_info_passed(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         try:
             raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
         except RuntimeError:
@@ -836,14 +830,14 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_message_logging_3rd_party_log_records(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         sa_log = logging.getLogger('sqlalchemy.engine')
         sa_log.setLevel(logging.INFO)
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        message = self.trans_fixture.lazy('test ' + chr(128))
         sa_log.info(message)
 
         expected = ('HAS CONTEXT [%s]: %s\n' % (ctxt.request_id,
-                                                six.text_type(message)))
+                                                str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_debugging_log(self):
@@ -858,11 +852,11 @@ class ContextFormatterTestCase(LogTestBase):
         # the Message object, with a wrong encoding. This test case
         # tests that problem does not occur.
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        ctxt.request_id = str('99')
+        message = self.trans_fixture.lazy('test ' + chr(128))
         self.log.info(message, context=ctxt)
         expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
-                                               six.text_type(message))
+                                               str(message))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_exception_logging(self):
@@ -870,8 +864,8 @@ class ContextFormatterTestCase(LogTestBase):
         # does not appear in the format string, ensure that it is
         # appended to the end of the log lines.
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        ctxt.request_id = str('99')
+        message = self.trans_fixture.lazy('test ' + chr(128))
         try:
             raise RuntimeError('test_exception_logging')
         except RuntimeError:
@@ -883,8 +877,8 @@ class ContextFormatterTestCase(LogTestBase):
         # NOTE(dhellmann): Several of the built-in exception types
         # should not be automatically added to the log output.
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        ctxt.request_id = str('99')
+        message = self.trans_fixture.lazy('test ' + chr(128))
         ignored_exceptions = [
             ValueError, TypeError, KeyError, AttributeError, ImportError
         ]
@@ -902,8 +896,8 @@ class ContextFormatterTestCase(LogTestBase):
         # that position in the output.
         self.config(logging_context_format_string="A %(error_summary)s B")
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        ctxt.request_id = str('99')
+        message = self.trans_fixture.lazy('test ' + chr(128))
         try:
             raise RuntimeError('test_exception_logging')
         except RuntimeError:
@@ -917,32 +911,32 @@ class ContextFormatterTestCase(LogTestBase):
         # inserted.
         self.config(logging_context_format_string="%(error_summary)s")
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
-        message = self.trans_fixture.lazy('test ' + six.unichr(128))
+        ctxt.request_id = str('99')
+        message = self.trans_fixture.lazy('test ' + chr(128))
         self.log.info(message, context=ctxt)
         expected = '-\n'
         self.assertTrue(self.stream.getvalue().startswith(expected))
 
     def test_unicode_conversion_in_adapter(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         message = "Exception is (%s)"
-        ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
+        ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         self.log.debug(message, ex, context=ctxt)
-        message = six.text_type(message) % ex
+        message = str(message) % ex
         expected = "HAS CONTEXT [%s]: %s --DBG\n" % (ctxt.request_id,
                                                      message)
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_unicode_conversion_in_formatter(self):
         ctxt = _fake_context()
-        ctxt.request_id = six.text_type('99')
+        ctxt.request_id = str('99')
         no_adapt_log = logging.getLogger('no_adapt')
         no_adapt_log.setLevel(logging.INFO)
         message = "Exception is (%s)"
-        ex = Exception(self.trans_fixture.lazy('test' + six.unichr(128)))
+        ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         no_adapt_log.info(message, ex)
-        message = six.text_type(message) % ex
+        message = str(message) % ex
         expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
                                                message)
         self.assertEqual(expected, self.stream.getvalue())
@@ -959,7 +953,7 @@ class ContextFormatterTestCase(LogTestBase):
         expected = ("HAS CONTEXT [%s %s %s %s %s %s]: %s\n" %
                     (ctxt.request_id, ctxt.user, ctxt.tenant, ctxt.domain,
                      ctxt.user_domain, ctxt.project_domain,
-                     six.text_type(message)))
+                     str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_user_identity_logging_set_format(self):
@@ -975,7 +969,7 @@ class ContextFormatterTestCase(LogTestBase):
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
                     (ctxt.request_id, ctxt.user, ctxt.tenant,
-                     six.text_type(message)))
+                     str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
     @mock.patch("datetime.datetime",
@@ -1009,11 +1003,10 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_can_process_strings(self):
         expected = b'\xe2\x98\xa2'
-        if six.PY3:
-            # in PY3 logging format string should be unicode string
-            # or it will fail and inserting byte string in unicode string
-            # causes such formatting
-            expected = '\\xe2\\x98\\xa2'
+        # logging format string should be unicode string
+        # or it will fail and inserting byte string in unicode string
+        # causes such formatting
+        expected = '\\xe2\\x98\\xa2'
         self.log.info(b'%s', u'\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
@@ -1101,7 +1094,7 @@ class FancyRecordTestCase(LogTestBase):
         # and goes to stderr. Suggests on a better way to do this are
         # welcomed.
         error = sys.stderr
-        sys.stderr = six.StringIO()
+        sys.stderr = io.StringIO()
 
         self.colorlog.info("foo")
         self.assertNotEqual(-1,
@@ -1608,7 +1601,7 @@ keys=
         root = logging.getLogger()
         self.assertEqual(1, len(root.handlers))
         handler = root.handlers[0]
-        handler.stream = six.StringIO()
+        handler.stream = io.StringIO()
         return handler.stream
 
     def test_remove_handler(self):
@@ -1634,7 +1627,7 @@ keys=
                  'loggers': {'a.a': fake_logger}}
         conf2 = {'root': {'handlers': 'fake'},
                  'handlers': {'fake': fake_handler}}
-        stream = six.StringIO()
+        stream = io.StringIO()
         with self.mutate_conf(conf1, conf2) as (loginis, confs):
             stream = self.set_root_stream()
             log = logging.getLogger("a.a")
@@ -1653,7 +1646,7 @@ class LogConfigOptsTestCase(BaseTestCase):
         super(LogConfigOptsTestCase, self).setUp()
 
     def test_print_help(self):
-        f = six.StringIO()
+        f = io.StringIO()
         self.CONF([])
         self.CONF.print_help(file=f)
         for option in ['debug', 'log-config', 'watch-log-file']:
@@ -1920,20 +1913,20 @@ class UnicodeConversionTestCase(BaseTestCase):
         enc_msg = msg.encode('utf-8')
         result = formatters._ensure_unicode(enc_msg)
         self.assertEqual(msg, result)
-        self.assertIsInstance(result, six.text_type)
+        self.assertIsInstance(result, str)
 
     def test_unicode_to_unicode(self):
         msg = self._MSG
         result = formatters._ensure_unicode(msg)
         self.assertEqual(msg, result)
-        self.assertIsInstance(result, six.text_type)
+        self.assertIsInstance(result, str)
 
     def test_exception_to_unicode(self):
         msg = self._MSG
         exc = Exception(msg)
         result = formatters._ensure_unicode(exc)
         self.assertEqual(msg, result)
-        self.assertIsInstance(result, six.text_type)
+        self.assertIsInstance(result, str)
 
 
 class LoggerNameTestCase(LoggerTestCase):

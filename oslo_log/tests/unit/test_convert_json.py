@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
+import io
 
 from oslo_log.cmds import convert_json
 from oslo_serialization import jsonutils
@@ -45,7 +45,7 @@ class ConvertJsonTestCase(test_base.BaseTestCase):
         super(ConvertJsonTestCase, self).setUp()
 
     def _reformat(self, text):
-        fh = six.StringIO(text)
+        fh = io.StringIO(text)
         return list(convert_json.reformat_json(fh, lambda x: [x]))
 
     def test_reformat_json_single(self):
