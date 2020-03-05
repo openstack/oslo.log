@@ -74,6 +74,8 @@ _RELEASES = {
     'S': 'Stein',
     'T': 'Train',
     'U': 'Ussuri',
+    'V': 'Victoria',
+    'W': 'Wallaby',
 }
 
 
