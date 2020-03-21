@@ -12,11 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import io
 import logging
 
 import mock
 from oslotest import base as test_base
-import six
 
 from oslo_log import rate_limit
 
@@ -41,7 +41,7 @@ class LogRateLimitTestCase(test_base.BaseTestCase):
             logger.removeHandler(handler)
 
         # install our handler writing logs into a StringIO
-        stream = six.StringIO()
+        stream = io.StringIO()
         handler = logging.StreamHandler(stream)
         logger.addHandler(handler)
 

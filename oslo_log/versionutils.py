@@ -22,7 +22,6 @@ import inspect
 import logging
 
 from oslo_config import cfg
-import six
 
 from oslo_log._i18n import _
 
@@ -182,7 +181,7 @@ class deprecated(object):
 
         if inspect.isfunction(func_or_cls):
 
-            @six.wraps(func_or_cls)
+            @functools.wraps(func_or_cls)
             def wrapped(*args, **kwargs):
                 report_deprecated()
                 return func_or_cls(*args, **kwargs)
@@ -190,7 +189,7 @@ class deprecated(object):
         elif inspect.isclass(func_or_cls):
             orig_init = func_or_cls.__init__
 
-            @six.wraps(orig_init, assigned=('__name__', '__doc__'))
+            @functools.wraps(orig_init, assigned=('__name__', '__doc__'))
             def new_init(self, *args, **kwargs):
                 if self.__class__ in _DEPRECATED_EXCEPTIONS:
                     report_deprecated()
@@ -215,7 +214,7 @@ class deprecated(object):
                             report_deprecated()
                         return super(ExceptionMeta,
                                      self).__subclasscheck__(subclass)
-                func_or_cls = six.add_metaclass(ExceptionMeta)(func_or_cls)
+                func_or_cls.__meta__ = ExceptionMeta
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
             return func_or_cls

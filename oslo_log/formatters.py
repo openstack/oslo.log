@@ -13,6 +13,7 @@
 import datetime
 import debtcollector
 import functools
+import io
 import itertools
 import logging
 import logging.config
@@ -23,15 +24,10 @@ import sys
 import traceback
 
 from dateutil import tz
-import six
-from six import moves
 
 from oslo_context import context as context_utils
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-
-if six.PY3:
-    from functools import reduce
 
 
 def _dictify_context(context):
@@ -85,10 +81,10 @@ def _update_record_with_context(record):
 def _ensure_unicode(msg):
     """Do our best to turn the input argument into a unicode object.
     """
-    if isinstance(msg, six.text_type):
+    if isinstance(msg, str):
         return msg
-    if not isinstance(msg, six.binary_type):
-        return six.text_type(msg)
+    if not isinstance(msg, bytes):
+        return str(msg)
     return encodeutils.safe_decode(
         msg,
         incoming='utf-8',
@@ -157,7 +153,7 @@ def _get_error_summary(record):
                 error_summary = error_summary.split('\n', 1)[0]
         except TypeError as type_err:
             # Work around https://bugs.python.org/issue28603
-            error_summary = "<exception with %s>" % six.text_type(type_err)
+            error_summary = "<exception with %s>" % str(type_err)
         finally:
             # Remove the local reference to the exception and
             # traceback to avoid a memory leak through the frame
@@ -201,10 +197,10 @@ class JSONFormatter(logging.Formatter):
             lines = traceback.format_exception(*ei)
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
-            msg = six.text_type(type_error)
+            msg = str(type_error)
             lines = ['<Unprintable exception due to %s>\n' % msg]
         if strip_newlines:
-            lines = [moves.filter(
+            lines = [filter(
                 lambda x: x,
                 line.rstrip().splitlines()) for line in lines]
             lines = list(itertools.chain(*lines))
@@ -300,11 +296,12 @@ class FluentFormatter(logging.Formatter):
             lines = traceback.format_exception(*exc_info)
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
-            msg = six.text_type(type_error)
+            msg = str(type_error)
             lines = ['<Unprintable exception due to %s>\n' % msg]
         if strip_newlines:
-            lines = reduce(lambda a, line: a + line.rstrip().splitlines(),
-                           lines, [])
+            lines = functools.reduce(lambda a,
+                                     line: a + line.rstrip().splitlines(),
+                                     lines, [])
         return lines
 
     def format(self, record):
@@ -345,8 +342,7 @@ class FluentFormatter(logging.Formatter):
             message['context'] = {}
         extra.pop('context', None)
         # NOTE(vdrok): try to dump complex objects
-        primitive_types = six.string_types + six.integer_types + (
-            bool, type(None), float, list, dict)
+        primitive_types = (str, int, bool, type(None), float, list, dict)
         for key, value in extra.items():
             if not isinstance(value, primitive_types):
                 extra[key] = _json_dumps_with_fallback(value)
@@ -399,20 +395,6 @@ class ContextFormatter(logging.Formatter):
 
     def format(self, record):
         """Uses contextstring if request_id is set, otherwise default."""
-        if six.PY2:
-            should_use_unicode = True
-            args = (record.args.values() if isinstance(record.args, dict)
-                    else record.args)
-            for arg in args or []:
-                try:
-                    six.text_type(arg)
-                except UnicodeDecodeError:
-                    should_use_unicode = False
-                    break
-            if (not isinstance(record.msg, six.text_type)
-                    and should_use_unicode):
-                record.msg = _ensure_unicode(record.msg)
-
         # store project info
         record.project = self.project
         record.version = self.version
@@ -523,16 +505,16 @@ class ContextFormatter(logging.Formatter):
                 return logging.Formatter.formatException(self, exc_info)
             except TypeError as type_error:
                 # Work around https://bugs.python.org/issue28603
-                msg = six.text_type(type_error)
+                msg = str(type_error)
                 return '<Unprintable exception due to %s>\n' % msg
 
-        stringbuffer = moves.StringIO()
+        stringbuffer = io.StringIO()
         try:
             traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
                                       None, stringbuffer)
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
-            msg = six.text_type(type_error)
+            msg = str(type_error)
             stringbuffer.write('<Unprintable exception due to %s>\n' % msg)
 
         lines = stringbuffer.getvalue().split('\n')

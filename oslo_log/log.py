@@ -27,6 +27,7 @@ It also allows setting of formatting information through conf.
 
 """
 
+import configparser
 import logging
 import logging.config
 import logging.handlers
@@ -41,8 +42,6 @@ except ImportError:
 from oslo_config import cfg
 from oslo_utils import importutils
 from oslo_utils import units
-import six
-from six import moves
 
 from oslo_log._i18n import _
 from oslo_log import _options
@@ -232,8 +231,8 @@ def _load_log_config(log_config_append):
             logging.config.fileConfig(log_config_append,
                                       disable_existing_loggers=False)
             _load_log_config.old_time = new_time
-    except (moves.configparser.Error, KeyError, os.error) as exc:
-        raise LogConfigError(log_config_append, six.text_type(exc))
+    except (configparser.Error, KeyError, os.error) as exc:
+        raise LogConfigError(log_config_append, str(exc))
 
 
 def _mutate_hook(conf, fresh):

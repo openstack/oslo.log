@@ -21,7 +21,6 @@ import time
 
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
-import six
 
 from oslo_log import log
 
@@ -180,8 +179,8 @@ def console_format(prefix, locator, record, loggers=[], levels=[],
         # Thrown when a non-string format-specifier can't be filled in.
         # Dict comprehension cleans up the output
         yield warn('Missing non-string placeholder in record',
-                   {str(k): str(v) if isinstance(v, six.string_types) else v
-                    for k, v in six.iteritems(record)})
+                   {str(k): str(v) if isinstance(v, str) else v
+                    for k, v in record.items()})
         return
 
     locator = ''
