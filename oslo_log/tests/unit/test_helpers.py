@@ -10,9 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-from oslo_log import helpers
+from unittest import mock
+
 from oslotest import base as test_base
+
+from oslo_log import helpers
 
 
 class LogHelpersTestCase(test_base.BaseTestCase):

@@ -31,9 +31,9 @@ except ImportError:
     syslog = None
 import tempfile
 import time
+from unittest import mock
 
 from dateutil import tz
-import mock
 from oslo_config import cfg
 from oslo_config import fixture as fixture_config  # noqa
 from oslo_context import context
