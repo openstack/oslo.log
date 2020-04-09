@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Using systemd journal handler, logs ending up in kern.log because
+    SYSLOG_FACILITY is missing. This fix uses the same facility configuration
+    option 'syslog-log-facility' as from syslog handler to provide the
+    missing value. (Bug #1871840)
