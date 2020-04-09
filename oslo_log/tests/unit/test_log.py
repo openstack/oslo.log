@@ -398,6 +398,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
             mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
                       CODE_LINE=mock.ANY, LOGGER_LEVEL='INFO',
                       LOGGER_NAME='nova-test.foo', PRIORITY=6,
+                      SYSLOG_FACILITY=syslog.LOG_USER,
                       SYSLOG_IDENTIFIER=mock.ANY,
                       REQUEST_ID=mock.ANY,
                       PROJECT_NAME='mytenant',
@@ -410,7 +411,8 @@ class OSJournalHandlerTestCase(BaseTestCase):
         self.assertIsInstance(args[0], str)
         self.assertIsInstance(kwargs['CODE_LINE'], int)
         self.assertIsInstance(kwargs['PRIORITY'], int)
-        del kwargs['CODE_LINE'], kwargs['PRIORITY']
+        self.assertIsInstance(kwargs['SYSLOG_FACILITY'], int)
+        del kwargs['CODE_LINE'], kwargs['PRIORITY'], kwargs['SYSLOG_FACILITY']
         for key, arg in kwargs.items():
             self.assertIsInstance(key, str)
             self.assertIsInstance(arg, (bytes, str))
@@ -427,6 +429,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       CODE_FUNC='test_emit_exception',
                       CODE_LINE=mock.ANY, LOGGER_LEVEL='ERROR',
                       LOGGER_NAME='nova-exception.foo', PRIORITY=3,
+                      SYSLOG_FACILITY=syslog.LOG_USER,
                       SYSLOG_IDENTIFIER=mock.ANY,
                       REQUEST_ID=mock.ANY,
                       EXCEPTION_INFO=mock.ANY,
@@ -441,7 +444,8 @@ class OSJournalHandlerTestCase(BaseTestCase):
         self.assertIsInstance(args[0], str)
         self.assertIsInstance(kwargs['CODE_LINE'], int)
         self.assertIsInstance(kwargs['PRIORITY'], int)
-        del kwargs['CODE_LINE'], kwargs['PRIORITY']
+        self.assertIsInstance(kwargs['SYSLOG_FACILITY'], int)
+        del kwargs['CODE_LINE'], kwargs['PRIORITY'], kwargs['SYSLOG_FACILITY']
         for key, arg in kwargs.items():
             self.assertIsInstance(key, str)
             self.assertIsInstance(arg, (bytes, str))
