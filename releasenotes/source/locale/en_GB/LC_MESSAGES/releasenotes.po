@@ -1,15 +1,16 @@
 # Andi Chandler <andi@gowling.com>, 2016. #zanata
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
+# Andi Chandler <andi@gowling.com>, 2020. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: oslo.log Release Notes\n"
+"Project-Id-Version: oslo.log\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-26 22:58+0000\n"
+"POT-Creation-Date: 2020-04-14 15:41+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-08-08 09:51+0000\n"
+"PO-Revision-Date: 2020-04-16 12:37+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -49,8 +50,17 @@ msgstr "3.34.0"
 msgid "3.35.0"
 msgstr "3.35.0"
 
+msgid "3.41.0"
+msgstr "3.41.0"
+
+msgid "3.42.0"
+msgstr "3.42.0"
+
 msgid "3.8.0"
 msgstr "3.8.0"
+
+msgid "4.0.0"
+msgstr "4.0.0"
 
 msgid ""
 "A new ``oslo_log.log.is_debug_enabled`` helper function is added that allows "
@@ -58,6 +68,13 @@ msgid ""
 msgstr ""
 "A new ``oslo_log.log.is_debug_enabled`` helper function is added that allows "
 "to determine whether debug mode is enabled for logging."
+
+msgid ""
+"Added Windows EventLog functionality to oslo.log. Set use_eventlog to true "
+"in the service's configuration file to use it."
+msgstr ""
+"Added Windows EventLog functionality to oslo.log. Set use_eventlog to true "
+"in the service's configuration file to use it."
 
 msgid "Bug Fixes"
 msgstr "Bug Fixes"
@@ -103,11 +120,21 @@ msgstr "Other Notes"
 msgid "Pike Series Release Notes"
 msgstr "Pike Series Release Notes"
 
+msgid ""
+"Python 2.7 is no longer supported. The minimum supported version of Python "
+"is now Python 3.6."
+msgstr ""
+"Python 2.7 is no longer supported. The minimum supported version of Python "
+"is now Python 3.6."
+
 msgid "Queens Series Release Notes"
 msgstr "Queens Series Release Notes"
 
 msgid "Rocky Series Release Notes"
 msgstr "Rocky Series Release Notes"
+
+msgid "Stein Series Release Notes"
+msgstr "Stein Series Release Notes"
 
 msgid "Switch to reno for managing release notes."
 msgstr "Switch to reno for managing release notes."
@@ -158,6 +185,15 @@ msgstr ""
 "The deprecated use_syslog_rfc_format configuration option has been removed."
 
 msgid ""
+"The following new config options will allow rotating log files, especially "
+"useful on Windows: * ``log_rotate_interval`` * ``log_rotate_interval_type`` "
+"* ``max_logfile_count`` * ``max_logfile_size_mb`` * ``log_rotation_type``"
+msgstr ""
+"The following new config options will allow rotating log files, especially "
+"useful on Windows: * ``log_rotate_interval`` * ``log_rotate_interval_type`` "
+"* ``max_logfile_count`` * ``max_logfile_size_mb`` * ``log_rotation_type``"
+
+msgid ""
 "The log_config_append configuration option is now mutable and the logging "
 "settings it controls are reconfigured when the configuration file is reread. "
 "This can be used to, for example, change logger or handler levels."
@@ -175,11 +211,17 @@ msgstr ""
 "the logs when set to True. The option is also available through the command "
 "line via the ``--use-json`` flag."
 
+msgid "Train Series Release Notes"
+msgstr "Train Series Release Notes"
+
 msgid "Unreleased Release Notes"
 msgstr "Unreleased Release Notes"
 
 msgid "Upgrade Notes"
 msgstr "Upgrade Notes"
+
+msgid "Ussuri Series Release Notes"
+msgstr "Ussuri Series Release Notes"
 
 msgid ""
 "When removing the \"verbose\" option, the default logging level was set to "
