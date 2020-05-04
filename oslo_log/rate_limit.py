@@ -14,11 +14,7 @@
 
 
 import logging
-
-try:
-    from time import monotonic as monotonic_clock   # noqa
-except ImportError:
-    from monotonic import monotonic as monotonic_clock   # noqa
+from time import monotonic as monotonic_clock
 
 
 class _LogRateLimit(logging.Filter):
