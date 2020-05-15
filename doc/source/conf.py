@@ -28,9 +28,9 @@ extensions = [
 ]
 
 # openstackdocstheme options
-repository_name = 'openstack/oslo.log'
-bug_project = 'oslo.log'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/oslo.log'
+openstackdocs_bug_project = 'oslo.log'
+openstackdocs_bug_tag = ''
 
 # The master toctree document.
 master_doc = 'index'
