@@ -7,6 +7,8 @@ configuration for all openstack projects. It also provides custom
 formatters, handlers and support for context specific
 logging (like resource id's etc).
 
+Contents
+========
 .. toctree::
    :maxdepth: 1
 
@@ -16,6 +18,12 @@ logging (like resource id's etc).
    configuration/index
    admin/index
    contributor/index
+
+Release Notes
+=============
+
+Read also the `oslo.log Release Notes
+<https://docs.openstack.org/releasenotes/oslo.log/>`_.
 
 Indices and tables
 ==================
