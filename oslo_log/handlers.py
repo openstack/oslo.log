@@ -82,13 +82,20 @@ class OSJournalHandler(logging.Handler):
         'request_id',
     )
 
-    def __init__(self):
-        # Do not use super() unless type(logging.Handler) is 'type'
-        # (i.e. >= Python 2.7).
+    def __init__(self, facility):
         if not journal:
             raise RuntimeError("Systemd bindings do not exist")
+
+        if not facility:
+            if not syslog:
+                raise RuntimeError("syslog is not available on this platform")
+            facility = syslog.LOG_USER
+
+        # Do not use super() unless type(logging.Handler) is 'type'
+        # (i.e. >= Python 2.7).
         logging.Handler.__init__(self)
         self.binary_name = _get_binary_name()
+        self.facility = facility
 
     def emit(self, record):
         priority = SYSLOG_MAP.get(record.levelname, 7)
@@ -103,7 +110,8 @@ class OSJournalHandler(logging.Handler):
             'LOGGER_NAME': record.name,
             'LOGGER_LEVEL': record.levelname,
             'SYSLOG_IDENTIFIER': self.binary_name,
-            'PRIORITY': priority
+            'PRIORITY': priority,
+            'SYSLOG_FACILITY': self.facility,
         }
 
         if record.exc_info:

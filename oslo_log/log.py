@@ -387,7 +387,10 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(streamlog)
 
     if conf.use_journal:
-        journal = handlers.OSJournalHandler()
+        if syslog is None:
+            raise RuntimeError("syslog is not available on this platform")
+        facility = _find_facility(conf.syslog_log_facility)
+        journal = handlers.OSJournalHandler(facility=facility)
         log_root.addHandler(journal)
 
     if conf.use_eventlog:
@@ -412,7 +415,6 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(handler)
 
     if conf.use_syslog:
-        global syslog
         if syslog is None:
             raise RuntimeError("syslog is not available on this platform")
         facility = _find_facility(conf.syslog_log_facility)
