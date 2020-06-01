@@ -107,7 +107,7 @@ class OSJournalHandler(logging.Handler):
         'request_id',
     )
 
-    def __init__(self, facility):
+    def __init__(self, facility=None):
         if not journal:
             raise RuntimeError("Systemd bindings do not exist")
 
