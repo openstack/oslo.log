@@ -29,6 +29,10 @@ try:
     import syslog
 except ImportError:
     syslog = None
+try:
+    from systemd import journal
+except ImportError:
+    journal = None
 import tempfile
 import time
 from unittest import mock
@@ -389,6 +393,15 @@ class OSJournalHandlerTestCase(BaseTestCase):
         self.journal = mock.patch("oslo_log.handlers.journal").start()
         self.addCleanup(self.journal.stop)
         log.setup(self.CONF, 'testing')
+
+    @testtools.skipUnless(journal, "systemd journal binding is not available")
+    def test_handler(self):
+        handler = handlers.OSJournalHandler()
+        handler.emit(
+            logging.LogRecord("foo", logging.INFO,
+                              "path", 123, "hey!",
+                              None, None))
+        self.assertTrue(self.journal.send.called)
 
     def test_emit(self):
         logger = log.getLogger('nova-test.foo')
