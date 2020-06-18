@@ -153,6 +153,8 @@ class deprecated(object):
     STEIN = 'S'
     TRAIN = 'T'
     USSURI = 'U'
+    VICTORIA = 'V'
+    WALLABY = 'W'
 
     def __init__(self, as_of, in_favor_of=None, remove_in=2, what=None):
         """Initialize decorator
