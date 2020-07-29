@@ -1,17 +1,12 @@
 - job:
-    name: oslo.log-src-grenade-devstack
-    parent: legacy-dsvm-base
+    name: oslo.log-src-grenade
+    parent: grenade
     voting: false
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
-    post-run: playbooks/legacy/oslo.log-src-grenade-devstack/post.yaml
     required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/oslo.log
-    run: playbooks/legacy/oslo.log-src-grenade-devstack/run.yaml
-    timeout: 10800
+      - opendev.org/openstack/oslo.log
 
 - job:
     name: oslo.log-jsonformatter
@@ -44,7 +39,7 @@
 - project:
     check:
       jobs:
-        - oslo.log-src-grenade-devstack
+        - oslo.log-src-grenade
         - oslo.log-jsonformatter
     gate:
       jobs:
