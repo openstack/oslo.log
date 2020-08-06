@@ -290,6 +290,13 @@ class FluentFormatter(logging.Formatter):
         except socket.error:
             self.hostname = None
         self.cmdline = " ".join(sys.argv)
+        try:
+            # check if running under uwsgi
+            import uwsgi
+            svc_name = uwsgi.opt.get("name")
+            self.uwsgi_name = svc_name
+        except Exception:
+            self.uwsgi_name = None
 
     def formatException(self, exc_info, strip_newlines=True):
         try:
@@ -350,6 +357,9 @@ class FluentFormatter(logging.Formatter):
 
         if record.exc_info:
             message['traceback'] = self.formatException(record.exc_info)
+
+        if self.uwsgi_name:
+            message["uwsgi_name"] = self.uwsgi_name
 
         return message
 
