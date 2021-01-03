@@ -38,7 +38,7 @@ openstackdocs_bug_tag = ''
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2014, OpenStack Foundation'
+copyright = '2014, OpenStack Foundation'
 
 # -- Options for HTML output --------------------------------------------------
 

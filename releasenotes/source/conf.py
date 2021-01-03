@@ -31,7 +31,7 @@ extensions = [
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2016, oslo.log Developers'
+copyright = '2016, oslo.log Developers'
 
 # Release notes do not need a version in the title, they span
 # multiple versions.
