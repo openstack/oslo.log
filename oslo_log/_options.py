@@ -115,7 +115,7 @@ generic_log_opts = [
     cfg.IntOpt('log_rotate_interval',
                default=1,
                help='The amount of time before the log files are rotated. '
-                    'This option is ignored unless log_rotation_type is set'
+                    'This option is ignored unless log_rotation_type is set '
                     'to "interval".'),
     cfg.StrOpt('log_rotate_interval_type',
                choices=['Seconds', 'Minutes', 'Hours', 'Days', 'Weekday',
