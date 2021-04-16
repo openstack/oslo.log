@@ -624,7 +624,7 @@ class JSONFormatterTestCase(LogTestBase):
         expected = b'\\u2622'
         # see ContextFormatterTestCase.test_can_process_strings
         expected = '\\\\xe2\\\\x98\\\\xa2'
-        self.log.info(b'%s', u'\u2622'.encode('utf8'))
+        self.log.info(b'%s', '\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
     def test_exception(self):
@@ -964,7 +964,7 @@ class ContextFormatterTestCase(LogTestBase):
                                                   "%(user_identity)s]: "
                                                   "%(message)s")
         ctxt = _fake_context()
-        ctxt.request_id = u'99'
+        ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s %s %s %s]: %s\n" %
@@ -981,7 +981,7 @@ class ContextFormatterTestCase(LogTestBase):
                     logging_user_identity_format="%(user)s "
                                                  "%(tenant)s")
         ctxt = _fake_context()
-        ctxt.request_id = u'99'
+        ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
@@ -1024,7 +1024,7 @@ class ContextFormatterTestCase(LogTestBase):
         # or it will fail and inserting byte string in unicode string
         # causes such formatting
         expected = '\\xe2\\x98\\xa2'
-        self.log.info(b'%s', u'\u2622'.encode('utf8'))
+        self.log.info(b'%s', '\u2622'.encode('utf8'))
         self.assertIn(expected, self.stream.getvalue())
 
     def test_dict_args_with_unicode(self):
@@ -1923,7 +1923,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
 
 class UnicodeConversionTestCase(BaseTestCase):
 
-    _MSG = u'Message with unicode char \ua000 in the middle'
+    _MSG = 'Message with unicode char \ua000 in the middle'
 
     def test_ascii_to_unicode(self):
         msg = self._MSG
