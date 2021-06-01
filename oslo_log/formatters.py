@@ -493,11 +493,8 @@ class ContextFormatter(logging.Formatter):
 
         self._compute_iso_time(record)
 
-        if sys.version_info < (3, 2):
-            self._fmt = fmt
-        else:
-            self._style = logging.PercentStyle(fmt)
-            self._fmt = self._style._fmt
+        self._style = logging.PercentStyle(fmt)
+        self._fmt = self._style._fmt
 
         try:
             return logging.Formatter.format(self, record)
