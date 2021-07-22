@@ -28,10 +28,10 @@ from oslo_log import log
 
 
 def _fake_context():
-    ctxt = context.RequestContext(user="user",
-                                  tenant="tenant",
-                                  project_domain="pdomain",
-                                  user_domain="udomain",
+    ctxt = context.RequestContext(user_id="user",
+                                  project_id="tenant",
+                                  project_domain_id="pdomain",
+                                  user_domain_id="udomain",
                                   overwrite=True)
 
     return ctxt
