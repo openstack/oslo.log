@@ -69,26 +69,14 @@ handlers=
 
 
 def _fake_context():
-    ctxt = context.RequestContext(1, 1, overwrite=True)
-    ctxt.user = 'myuser'
-    ctxt.tenant = 'mytenant'
-    ctxt.domain = 'mydomain'
-    ctxt.project_domain = 'myprojectdomain'
-    ctxt.user_domain = 'myuserdomain'
-
-    return ctxt
-
-
-def _fake_new_context():
-    # New style contexts have a user_name / project_name, this is done
-    # distinctly from the above context to not have to rewrite all the
-    # other tests.
-    ctxt = context.RequestContext(1, 1, overwrite=True)
-    ctxt.user_name = 'myuser'
-    ctxt.project_name = 'mytenant'
-    ctxt.domain = 'mydomain'
-    ctxt.project_domain = 'myprojectdomain'
-    ctxt.user_domain = 'myuserdomain'
+    ctxt = context.RequestContext(user_id="myuser",
+                                  user_name="myuser",
+                                  domain="mydomain",
+                                  project_id="mytenant",
+                                  project_name="mytenant",
+                                  project_domain_id="mydomain",
+                                  user_domain_id="myuserdomain",
+                                  overwrite=True)
 
     return ctxt
 
@@ -108,7 +96,7 @@ class CommonLoggerTestsMixIn(object):
         log.register_options(self.config_fixture.conf)
         self.config(logging_context_format_string='%(asctime)s %(levelname)s '
                                                   '%(name)s [%(request_id)s '
-                                                  '%(user)s %(tenant)s] '
+                                                  '%(user)s %(project)s] '
                                                   '%(message)s')
         self.log = None
         log._setup_logging_from_conf(self.config_fixture.conf, 'test', 'test')
@@ -405,7 +393,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
 
     def test_emit(self):
         logger = log.getLogger('nova-test.foo')
-        local_context = _fake_new_context()
+        local_context = _fake_context()
         logger.info("Foo", context=local_context)
         self.assertEqual(
             mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
@@ -414,6 +402,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       SYSLOG_FACILITY=syslog.LOG_USER,
                       SYSLOG_IDENTIFIER=mock.ANY,
                       REQUEST_ID=mock.ANY,
+                      PROJECT_ID='mytenant',
                       PROJECT_NAME='mytenant',
                       PROCESS_NAME='MainProcess',
                       THREAD_NAME='MainThread',
@@ -432,7 +421,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
 
     def test_emit_exception(self):
         logger = log.getLogger('nova-exception.foo')
-        local_context = _fake_new_context()
+        local_context = _fake_context()
         try:
             raise Exception("Some exception")
         except Exception:
@@ -447,6 +436,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
                       REQUEST_ID=mock.ANY,
                       EXCEPTION_INFO=mock.ANY,
                       EXCEPTION_TEXT=mock.ANY,
+                      PROJECT_ID='mytenant',
                       PROJECT_NAME='mytenant',
                       PROCESS_NAME='MainProcess',
                       THREAD_NAME='MainThread',
@@ -968,7 +958,7 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s %s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user, ctxt.tenant, ctxt.domain,
+                    (ctxt.request_id, ctxt.user, ctxt.project_id, ctxt.domain,
                      ctxt.user_domain, ctxt.project_domain,
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
@@ -979,13 +969,13 @@ class ContextFormatterTestCase(LogTestBase):
                                                   "%(user_identity)s]: "
                                                   "%(message)s",
                     logging_user_identity_format="%(user)s "
-                                                 "%(tenant)s")
+                                                 "%(project)s")
         ctxt = _fake_context()
         ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user, ctxt.tenant,
+                    (ctxt.request_id, ctxt.user, ctxt.project_id,
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 

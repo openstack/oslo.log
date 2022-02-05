@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``logging_user_identity_format`` option's default value is updated to
+    replace the obsolete ``tenant`` argument with ``project``.

@@ -167,7 +167,7 @@ log_opts = [
                help='Prefix each line of exception output with this format. '
                     'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_user_identity_format',
-               default='%(user)s %(tenant)s '
+               default='%(user)s %(project)s '
                        '%(domain)s %(user_domain)s %(project_domain)s',
                help='Defines the format string for %(user_identity)s that '
                     'is used in logging_context_format_string. '
