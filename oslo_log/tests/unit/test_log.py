@@ -71,6 +71,7 @@ handlers=
 def _fake_context():
     ctxt = context.RequestContext(user_id="myuser",
                                   user_name="myuser",
+                                  system_scope="myscope",
                                   domain="mydomain",
                                   project_id="mytenant",
                                   project_name="mytenant",
@@ -957,9 +958,9 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
-        expected = ("HAS CONTEXT [%s %s %s %s %s %s]: %s\n" %
+        expected = ("HAS CONTEXT [%s %s %s %s %s %s %s]: %s\n" %
                     (ctxt.request_id, ctxt.user, ctxt.project_id, ctxt.domain,
-                     ctxt.user_domain, ctxt.project_domain,
+                     ctxt.system_scope, ctxt.user_domain, ctxt.project_domain,
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
@@ -1254,7 +1255,11 @@ class DomainTestCase(LogTestBase):
         super(DomainTestCase, self).setUp()
         self.config(logging_context_format_string="[%(request_id)s]: "
                                                   "%(user_identity)s "
-                                                  "%(message)s")
+                                                  "%(message)s",
+                    logging_user_identity_format="%(user)s %(project)s "
+                                                 "%(user_domain)s "
+                                                 "%(project_domain)s "
+                                                 "%(domain)s")
         self.mylog = log.getLogger()
         self._add_handler_with_cleanup(self.mylog)
         self._set_log_level_with_cleanup(self.mylog, logging.DEBUG)
@@ -1273,7 +1278,8 @@ class DomainTestCase(LogTestBase):
 
     def test_domain_in_log_msg(self):
         ctxt = _fake_context()
-        user_identity = ctxt.get_logging_values()['user_identity']
+        user_identity = (self.CONF.logging_user_identity_format %
+                         ctxt.get_logging_values())
         self.assertIn(ctxt.domain, user_identity)
         self.assertIn(ctxt.project_domain, user_identity)
         self.assertIn(ctxt.user_domain, user_identity)
