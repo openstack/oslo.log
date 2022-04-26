@@ -146,8 +146,8 @@ generic_log_opts = [
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
-                       '%(name)s [%(request_id)s %(user_identity)s] '
-                       '%(instance)s%(message)s',
+                       '%(name)s [%(global_request_id)s %(request_id)s '
+                       '%(user_identity)s] %(instance)s%(message)s',
                help='Format string to use for log messages with context. '
                     'Used by oslo_log.formatters.ContextFormatter'),
     cfg.StrOpt('logging_default_format_string',
