@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Initialize the ``global_request_id`` context variable with a default
+    value if the key is not passed in the context.

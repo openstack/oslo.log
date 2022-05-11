@@ -964,6 +964,18 @@ class ContextFormatterTestCase(LogTestBase):
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
+    def test_global_request_id_logging(self):
+        fmt_str = "HAS CONTEXT [%(request_id)s %(global_request_id)s]: " \
+                  "%(message)s"
+        self.config(logging_context_format_string=fmt_str)
+        ctxt = _fake_context()
+        ctxt.request_id = '99'
+        message = 'test'
+        self.log.info(message, context=ctxt)
+        expected = ("HAS CONTEXT [%s %s]: %s\n" %
+                    (ctxt.request_id, ctxt.global_request_id, str(message)))
+        self.assertEqual(expected, self.stream.getvalue())
+
     def test_user_identity_logging_set_format(self):
         self.config(logging_context_format_string="HAS CONTEXT "
                                                   "[%(request_id)s "
