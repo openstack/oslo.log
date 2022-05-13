@@ -452,7 +452,7 @@ class ContextFormatter(logging.Formatter):
         # to an empty string so we don't throw an exception if
         # they get used
         for key in ('instance', 'color', 'user_identity', 'resource',
-                    'user_name', 'project_name'):
+                    'user_name', 'project_name', 'global_request_id'):
             if key not in record.__dict__:
                 record.__dict__[key] = ''
 
