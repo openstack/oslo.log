@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    `Bug #1983863
+    <https://bugs.launchpad.net/oslo.log/+bug/1983863>`_: Fixed logging in
+    eventlet native threads.
