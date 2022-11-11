@@ -281,9 +281,10 @@ def _fix_eventlet_logging():
         logging.Handler.createLock = pipe_mutex.pipe_createLock
 
 
-def setup(conf, product_name, version='unknown'):
+def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
     """Setup logging for the current application."""
-    _fix_eventlet_logging()
+    if fix_eventlet:
+        _fix_eventlet_logging()
     if conf.log_config_append:
         _load_log_config(conf.log_config_append)
     else:
