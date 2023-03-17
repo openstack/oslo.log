@@ -1,0 +1,8 @@
+---
+other:
+  - |
+    This release reverts fix for `Bug #1983863
+    <https://bugs.launchpad.net/oslo.log/+bug/1983863>`_: Fixed logging in
+    eventlet native threads.
+    This fix caused gate problems during cross-project testing and needed
+    to be removed from 2023.1 Antelope release.
