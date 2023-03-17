@@ -265,25 +265,8 @@ def register_options(conf):
     conf.register_mutate_hook(_mutate_hook)
 
 
-def _fix_eventlet_logging():
-    """Properly setup logging with eventlet on native threads.
-
-    Workaround for: https://github.com/eventlet/eventlet/issues/432
-    """
-
-    # If eventlet was not loaded before call to setup assume it's not used.
-    eventlet = sys.modules.get('eventlet')
-    if eventlet:
-        import eventlet.green.threading
-        from oslo_log import pipe_mutex
-        logging.threading = eventlet.green.threading
-        logging._lock = logging.threading.RLock()
-        logging.Handler.createLock = pipe_mutex.pipe_createLock
-
-
 def setup(conf, product_name, version='unknown'):
     """Setup logging for the current application."""
-    _fix_eventlet_logging()
     if conf.log_config_append:
         _load_log_config(conf.log_config_append)
     else:
