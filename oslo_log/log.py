@@ -231,7 +231,7 @@ def _load_log_config(log_config_append):
             logging.config.fileConfig(log_config_append,
                                       disable_existing_loggers=False)
             _load_log_config.old_time = new_time
-    except (configparser.Error, KeyError, os.error) as exc:
+    except (configparser.Error, KeyError, os.error, RuntimeError) as exc:
         raise LogConfigError(log_config_append, str(exc))
 
 
