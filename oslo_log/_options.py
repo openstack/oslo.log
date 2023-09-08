@@ -111,6 +111,8 @@ generic_log_opts = [
                      + _IGNORE_MESSAGE),
     cfg.BoolOpt('use_eventlog',
                 default=False,
+                deprecated_for_removal=True,
+                deprecated_reason='Windows support is no longer maintained.',
                 help='Log output to Windows Event Log.'),
     cfg.IntOpt('log_rotate_interval',
                default=1,

@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    Windows support has been deprecated, because of the retiremenet of
+    the Winstackers project.
