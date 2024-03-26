@@ -40,6 +40,7 @@ except ImportError:
     syslog = None
 
 from oslo_config import cfg
+from oslo_utils import eventletutils
 from oslo_utils import importutils
 from oslo_utils import units
 
@@ -272,8 +273,7 @@ def _fix_eventlet_logging():
     """
 
     # If eventlet was not loaded before call to setup assume it's not used.
-    eventlet = sys.modules.get('eventlet')
-    if eventlet:
+    if eventletutils.is_monkey_patched('thread'):
         import eventlet.green.threading
         from oslo_log import pipe_mutex
         logging.threading = eventlet.green.threading
