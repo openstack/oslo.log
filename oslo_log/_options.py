@@ -74,6 +74,10 @@ logging_cli_opts = [
                     + _IGNORE_MESSAGE),
     cfg.BoolOpt('watch-log-file',
                 default=False,
+                deprecated_for_removal=True,
+                deprecated_reason=('This function is known to have bene '
+                                   'broken for long time, and depends on '
+                                   'the unmaintained library'),
                 help='Uses logging handler designed to watch file '
                      'system. When log file is moved or removed this handler '
                      'will open a new log file with specified path '

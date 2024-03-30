@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The ``watch_log_file`` option has been deprecated and will be removed in
+    a future release.
