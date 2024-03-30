@@ -11,7 +11,6 @@
 #    under the License.
 
 import datetime
-import debtcollector
 import functools
 import io
 import itertools
@@ -33,13 +32,6 @@ from oslo_utils import encodeutils
 def _dictify_context(context):
     if getattr(context, 'get_logging_values', None):
         return context.get_logging_values()
-    elif getattr(context, 'to_dict', None):
-        debtcollector.deprecate(
-            'The RequestContext.get_logging_values() '
-            'method should be defined for logging context specific '
-            'information.  The to_dict() method is deprecated '
-            'for oslo.log use.', version='3.8.0', removal_version='5.0.0')
-        return context.to_dict()
     # This dict only style logging format will become deprecated
     # when projects using a dictionary object for context are updated
     elif isinstance(context, dict):
