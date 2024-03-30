@@ -70,6 +70,8 @@ LOG_ROTATE_INTERVAL_MAPPING = {
     'midnight': 'midnight'
 }
 
+_EVENTLET_FIX_APPLIED = False
+
 
 def _get_log_file_path(conf, binary=None):
     logfile = conf.log_file
@@ -272,13 +274,16 @@ def _fix_eventlet_logging():
     Workaround for: https://github.com/eventlet/eventlet/issues/432
     """
 
+    global _EVENTLET_FIX_APPLIED
+
     # If eventlet was not loaded before call to setup assume it's not used.
-    if eventletutils.is_monkey_patched('thread'):
+    if eventletutils.is_monkey_patched('thread') and not _EVENTLET_FIX_APPLIED:
         import eventlet.green.threading
         from oslo_log import pipe_mutex
         logging.threading = eventlet.green.threading
         logging._lock = logging.threading.RLock()
         logging.Handler.createLock = pipe_mutex.pipe_createLock
+        _EVENTLET_FIX_APPLIED = True
 
 
 def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
