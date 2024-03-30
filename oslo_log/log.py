@@ -472,7 +472,7 @@ def _setup_logging_from_conf(conf, project, version):
         from oslo_log import rate_limit
         rate_limit.install_filter(conf.rate_limit_burst,
                                   conf.rate_limit_interval,
-                                  conf.rate_limit_except)
+                                  conf.rate_limit_except_level)
 
 
 _loggers = {}
