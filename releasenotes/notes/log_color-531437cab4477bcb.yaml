@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The new ``log_color`` option has been added. When this option is set to
+    ``False``, color keys are not set.

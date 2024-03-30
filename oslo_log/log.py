@@ -401,7 +401,10 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(filelog)
 
     if conf.use_stderr:
-        streamlog = handlers.ColorHandler()
+        if conf.log_color:
+            streamlog = handlers.ColorHandler()
+        else:
+            streamlog = logging.StreamHandler()
         log_root.addHandler(streamlog)
 
     if conf.use_journal:
@@ -421,9 +424,10 @@ def _setup_logging_from_conf(conf, project, version):
 
     # if None of the above are True, then fall back to standard out
     if not logpath and not conf.use_stderr and not conf.use_journal:
-        # pass sys.stdout as a positional argument
-        # python2.6 calls the argument strm, in 2.7 it's stream
-        streamlog = handlers.ColorHandler(sys.stdout)
+        if conf.log_color:
+            streamlog = handlers.ColorHandler(sys.stdout)
+        else:
+            streamlog = logging.StreamHandler(sys.stdout)
         log_root.addHandler(streamlog)
 
     if conf.publish_errors:
