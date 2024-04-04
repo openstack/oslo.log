@@ -22,7 +22,6 @@ import datetime
 import io
 import logging
 import os
-import platform
 import shutil
 import sys
 try:
@@ -153,24 +152,6 @@ class CommonLoggerTestsMixIn(object):
         handler_mock.assert_called_once_with('test')
         mock_logger = loggers_mock.return_value.logger
         mock_logger.addHandler.assert_any_call(handler_mock.return_value)
-
-    @mock.patch('oslo_log.watchers.FastWatchedFileHandler')
-    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
-    @mock.patch('platform.system', return_value='Linux')
-    def test_watchlog_on_linux(self, platfotm_mock, path_mock, handler_mock):
-        self.config(watch_log_file=True)
-        log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        handler_mock.assert_called_once_with(path_mock.return_value)
-        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
-
-    @mock.patch('logging.handlers.WatchedFileHandler')
-    @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
-    @mock.patch('platform.system', return_value='Windows')
-    def test_watchlog_on_windows(self, platform_mock, path_mock, handler_mock):
-        self.config(watch_log_file=True)
-        log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        handler_mock.assert_called_once_with(path_mock.return_value)
-        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
 
     @mock.patch('logging.handlers.TimedRotatingFileHandler')
     @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
@@ -1361,54 +1342,6 @@ class SetDefaultsTestCase(BaseTestCase):
         log.set_defaults()
         self.conf([])
         self.assertIsNone(self.conf.log_file)
-
-
-@testtools.skipIf(platform.system() != 'Linux',
-                  'pyinotify library works on Linux platform only.')
-class FastWatchedFileHandlerTestCase(BaseTestCase):
-
-    def setUp(self):
-        super(FastWatchedFileHandlerTestCase, self).setUp()
-
-    def _config(self):
-        os_level, log_path = tempfile.mkstemp()
-        log_dir_path = os.path.dirname(log_path)
-        log_file_path = os.path.basename(log_path)
-        self.CONF(['--log-dir', log_dir_path, '--log-file', log_file_path])
-        self.config(use_stderr=False)
-        self.config(watch_log_file=True)
-        log.setup(self.CONF, 'test', 'test')
-        return log_path
-
-    def test_instantiate(self):
-        self._config()
-        logger = log._loggers[None].logger
-        self.assertEqual(1, len(logger.handlers))
-        from oslo_log import watchers
-        self.assertIsInstance(logger.handlers[0],
-                              watchers.FastWatchedFileHandler)
-
-    def test_log(self):
-        log_path = self._config()
-        logger = log._loggers[None].logger
-        text = 'Hello World!'
-        logger.info(text)
-        with open(log_path, 'r') as f:
-            file_content = f.read()
-        self.assertIn(text, file_content)
-
-    def test_move(self):
-        log_path = self._config()
-        os_level_dst, log_path_dst = tempfile.mkstemp()
-        os.rename(log_path, log_path_dst)
-        time.sleep(6)
-        self.assertTrue(os.path.exists(log_path))
-
-    def test_remove(self):
-        log_path = self._config()
-        os.remove(log_path)
-        time.sleep(6)
-        self.assertTrue(os.path.exists(log_path))
 
 
 class MutateTestCase(BaseTestCase):
