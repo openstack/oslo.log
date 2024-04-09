@@ -207,8 +207,8 @@ log_opts = [
                     'rate_limit_interval.'),
     cfg.StrOpt('rate_limit_except_level',
                default='CRITICAL',
-               help='Log level name used by rate limiting: CRITICAL, ERROR, '
-                    'INFO, WARNING, DEBUG or empty string. Logs with level '
+               choices=['CRITICAL', 'ERROR', 'INFO', 'WARNING', 'DEBUG', ''],
+               help='Log level name used by rate limiting. Logs with level '
                     'greater or equal to rate_limit_except_level are not '
                     'filtered. An empty string means that all levels are '
                     'filtered.'),
