@@ -3,3 +3,9 @@ deprecations:
   - |
     The ``watch_log_file`` option has been deprecated and will be removed in
     a future release.
+
+upgrade:
+  - |
+    Setting ``[DEFAULT] watch_log_file = True`` now raises RuntimeError while
+    configuring logger. The feature has been broken for multiple cycles and
+    depends on pyinotify library which is not maintained now.
