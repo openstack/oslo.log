@@ -4,11 +4,11 @@ fixes:
     Remove the usage of the Eventlet debug feature from oslo.log
     Then hub_prevent_multiple_readers is a debug convenience. This
     feature is a debug convenience. The problem with disabling this
-    procedure is that it exposes you to risk. Deactivation applies
-    to the entire stack. If a project uses oslo.log, for example nova,
-    then it exposes all threads to concurrent access on the process file
-    descriptors. When several greenlets are reading from the same socket,
-    it's difficult to predict which greenlet will receive which data. That
-    services using oslo.log should prefer using tpool rather than un-monkey
-    patched version of stdlib threading module which is not compatible with
-    eventlet.
+    procedure is that `it exposes you to risks <https://eventlet.readthedocs.io/en/latest/reference/api/eventlet.html#eventlet.debug.hub_prevent_multiple_readers>`_.
+    Deactivation applies to the entire stack. If a project uses oslo.log,
+    for example nova, then it exposes all threads to concurrent access on
+    the process file descriptors. When several greenlets are reading from
+    the same socket, it's difficult to predict which greenlet will receive
+    which data. That services using oslo.log should prefer using tpool
+    rather than un-monkey patched version of stdlib threading module which
+    is not compatible with eventlet.
