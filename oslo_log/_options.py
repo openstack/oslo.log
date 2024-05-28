@@ -118,6 +118,11 @@ generic_log_opts = [
                 deprecated_for_removal=True,
                 deprecated_reason='Windows support is no longer maintained.',
                 help='Log output to Windows Event Log.'),
+    cfg.BoolOpt('log_color',
+                default=False,
+                help='(Optional) Set the \'color\' key according to log '
+                     'levels. This option takes effect only when logging '
+                     'to stderr or stdout is used. ' + _IGNORE_MESSAGE),
     cfg.IntOpt('log_rotate_interval',
                default=1,
                help='The amount of time before the log files are rotated. '
