@@ -1115,7 +1115,7 @@ class FancyRecordTestCase(LogTestBase):
         self.assertIn(infoexpected, self.stream.getvalue())
         self.assertEqual('\033[00;36m', infocolor)
 
-        self.colorlog.warn(warn_msg, context=ctxt)
+        self.colorlog.warning(warn_msg, context=ctxt)
         self.assertIn(infoexpected, self.stream.getvalue())
         self.assertIn(warnexpected, self.stream.getvalue())
         self.assertEqual('\033[01;33m', warncolor)
@@ -1266,7 +1266,7 @@ class DomainTestCase(LogTestBase):
         self.mylog.info(info_message, context=ctxt)
         self.assertEqual(infoexpected, self.stream.getvalue())
 
-        self.mylog.warn(warn_message, context=ctxt)
+        self.mylog.warning(warn_message, context=ctxt)
         self.assertEqual(infoexpected + warnexpected, self.stream.getvalue())
 
     def test_domain_in_log_msg(self):
@@ -1590,11 +1590,11 @@ keys=
             stream = self.set_root_stream()
             log = logging.getLogger("a.a")
             log.info("info")
-            log.warn("warn")
+            log.warning("warn")
             self.assertEqual("warn\n", stream.getvalue())
         stream = self.set_root_stream()
         log.info("info")
-        log.warn("warn")
+        log.warning("warn")
         self.assertEqual("info\nwarn\n", stream.getvalue())
 
 
