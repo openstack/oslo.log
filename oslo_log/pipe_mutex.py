@@ -43,6 +43,21 @@ class PipeMutex(object):
         self.owner = None
 
         self.recursion_depth = 0
+        # Usually, it's an error to have multiple greenthreads all waiting
+        # to read the same file descriptor. It's often a sign of inadequate
+        # concurrency control; for example, if you have two greenthreads
+        # trying to use the same memcache connection, they'll end up writing
+        # interleaved garbage to the socket or stealing part of each others'
+        # responses.
+        #
+        # In this case, we have multiple greenthreads waiting on the same
+        # file descriptor by design. This lets greenthreads in real thread A
+        # wait with greenthreads in real thread B for the same mutex.
+        # Therefore, we must turn off eventlet's multiple-reader detection.
+        #
+        # It would be better to turn off multiple-reader detection for only
+        # our calls to trampoline(), but eventlet does not support that.
+        eventlet.debug.hub_prevent_multiple_readers(False)
 
     def acquire(self, blocking=True):
         """Acquire the mutex.

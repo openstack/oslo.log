@@ -20,7 +20,6 @@ from unittest import mock
 import eventlet
 from eventlet import debug as eventlet_debug
 from eventlet import greenpool
-from eventlet import tpool
 
 from oslo_log import pipe_mutex
 
@@ -36,7 +35,7 @@ def quiet_eventlet_exceptions():
 
 
 class TestPipeMutex(unittest.TestCase):
-    """From Swift's test/unit/common/test_utils.py"""
+    """From  Swift's test/unit/common/test_utils.py"""
     def setUp(self):
         self.mutex = pipe_mutex.PipeMutex()
 
@@ -142,11 +141,18 @@ class TestPipeMutex(unittest.TestCase):
         greenthread1 = eventlet.spawn(do_stuff)
         greenthread2 = eventlet.spawn(do_stuff)
 
-        _ = tpool.execute(do_stuff)
-        _ = tpool.execute(do_stuff)
+        real_thread1 = eventlet.patcher.original('threading').Thread(
+            target=do_stuff)
+        real_thread1.start()
+
+        real_thread2 = eventlet.patcher.original('threading').Thread(
+            target=do_stuff)
+        real_thread2.start()
 
         greenthread1.wait()
         greenthread2.wait()
+        real_thread1.join()
+        real_thread2.join()
 
         self.assertEqual(''.join(sequence), "<>" * 40)
 
