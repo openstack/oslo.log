@@ -991,6 +991,8 @@ class ContextFormatterTestCase(LogTestBase):
                 get_fake_datetime(
                     datetime.datetime(2015, 12, 16, 13, 54, 26)))
     @mock.patch("time.time", new=mock.Mock(return_value=1450274066.000000))
+    @mock.patch("time.time_ns",
+                new=mock.Mock(return_value=1450274066000000000))
     @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
     def test_rfc5424_isotime_format_no_microseconds(self):
         self.config(logging_default_format_string="%(isotime)s %(message)s")
