@@ -71,7 +71,7 @@ def _fake_context():
     ctxt = context.RequestContext(user_id="myuser",
                                   user_name="myuser",
                                   system_scope="myscope",
-                                  domain="mydomain",
+                                  domain_id="mydomain",
                                   project_id="mytenant",
                                   project_name="mytenant",
                                   project_domain_id="mydomain",
@@ -940,8 +940,9 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s %s %s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user, ctxt.project_id, ctxt.domain,
-                     ctxt.system_scope, ctxt.user_domain, ctxt.project_domain,
+                    (ctxt.request_id, ctxt.user_id, ctxt.project_id,
+                     ctxt.domain_id, ctxt.system_scope,
+                     ctxt.user_domain_id, ctxt.project_domain_id,
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
@@ -969,7 +970,7 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'test'
         self.log.info(message, context=ctxt)
         expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user, ctxt.project_id,
+                    (ctxt.request_id, ctxt.user_id, ctxt.project_id,
                      str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
@@ -1275,9 +1276,9 @@ class DomainTestCase(LogTestBase):
         ctxt = _fake_context()
         user_identity = (self.CONF.logging_user_identity_format %
                          ctxt.get_logging_values())
-        self.assertIn(ctxt.domain, user_identity)
-        self.assertIn(ctxt.project_domain, user_identity)
-        self.assertIn(ctxt.user_domain, user_identity)
+        self.assertIn(ctxt.domain_id, user_identity)
+        self.assertIn(ctxt.project_domain_id, user_identity)
+        self.assertIn(ctxt.user_domain_id, user_identity)
         self._validate_keys(ctxt, ('[%s]: %s' %
                                    (ctxt.request_id, user_identity)))
 
