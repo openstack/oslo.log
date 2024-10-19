@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2011 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -81,13 +79,13 @@ def _fake_context():
     return ctxt
 
 
-class CommonLoggerTestsMixIn(object):
+class CommonLoggerTestsMixIn:
     """These tests are shared between LoggerTestCase and
     LazyLoggerTestCase.
     """
 
     def setUp(self):
-        super(CommonLoggerTestsMixIn, self).setUp()
+        super().setUp()
         # common context has different fields to the defaults in log.py
         self.config_fixture = self.useFixture(
             fixture_config.Config(cfg.ConfigOpts()))
@@ -190,13 +188,13 @@ class CommonLoggerTestsMixIn(object):
 
 class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
     def setUp(self):
-        super(LoggerTestCase, self).setUp()
+        super().setUp()
         self.log = log.getLogger(None)
 
 
 class BaseTestCase(test_base.BaseTestCase):
     def setUp(self):
-        super(BaseTestCase, self).setUp()
+        super().setUp()
         self.context_fixture = self.useFixture(
             fixture_context.ClearRequestContext())
         self.config_fixture = self.useFixture(
@@ -294,7 +292,7 @@ class LogHandlerTestCase(BaseTestCase):
 class SysLogHandlersTestCase(BaseTestCase):
     """Test the standard Syslog handler."""
     def setUp(self):
-        super(SysLogHandlersTestCase, self).setUp()
+        super().setUp()
         self.facility = logging.handlers.SysLogHandler.LOG_USER
         self.logger = logging.handlers.SysLogHandler(facility=self.facility)
 
@@ -337,7 +335,7 @@ class OSSysLogHandlerTestCase(BaseTestCase):
                           "fougere")
 
     def test_syslog(self):
-        msg_unicode = u"Benoît Knecht & François Deppierraz login failure"
+        msg_unicode = "Benoît Knecht & François Deppierraz login failure"
         handler = handlers.OSSysLogHandler()
         syslog.syslog = mock.Mock()
         handler.emit(
@@ -358,7 +356,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
 
     """
     def setUp(self):
-        super(OSJournalHandlerTestCase, self).setUp()
+        super().setUp()
         self.config(use_journal=True)
         self.journal = mock.patch("oslo_log.handlers.journal").start()
         self.addCleanup(self.journal.stop)
@@ -438,7 +436,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
 
 class LogLevelTestCase(BaseTestCase):
     def setUp(self):
-        super(LogLevelTestCase, self).setUp()
+        super().setUp()
         levels = self.CONF.default_log_levels
         info_level = 'nova-test'
         warn_level = 'nova-not-debug'
@@ -484,7 +482,7 @@ class LogLevelTestCase(BaseTestCase):
 
 class JSONFormatterTestCase(LogTestBase):
     def setUp(self):
-        super(JSONFormatterTestCase, self).setUp()
+        super().setUp()
         self.log = log.getLogger('test-json')
         self._add_handler_with_cleanup(self.log,
                                        formatter=formatters.JSONFormatter)
@@ -596,12 +594,12 @@ class JSONFormatterTestCase(LogTestBase):
         expected = b'\\u2622'
         # see ContextFormatterTestCase.test_can_process_strings
         expected = '\\\\xe2\\\\x98\\\\xa2'
-        self.log.info(b'%s', '\u2622'.encode('utf8'))
+        self.log.info(b'%s', '\u2622'.encode())
         self.assertIn(expected, self.stream.getvalue())
 
     def test_exception(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         try:
             raise RuntimeError('test_exception')
         except RuntimeError:
@@ -613,7 +611,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_no_exception(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         self.log.info('testing', context=ctxt)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
@@ -621,7 +619,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_exception_without_exc_info_passed(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         try:
             raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
         except RuntimeError:
@@ -632,7 +630,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_exception_with_exc_info_passed(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         try:
             raise RuntimeError('test_exception\ntraceback\nfrom\nremote error')
         except RuntimeError:
@@ -645,7 +643,7 @@ class JSONFormatterTestCase(LogTestBase):
 
     def test_fallback(self):
 
-        class MyObject(object):
+        class MyObject:
             def __str__(self):
                 return 'str'
 
@@ -702,7 +700,7 @@ class DictStreamHandler(logging.StreamHandler):
 
 class FluentFormatterTestCase(LogTestBase):
     def setUp(self):
-        super(FluentFormatterTestCase, self).setUp()
+        super().setUp()
         self.log = log.getLogger('test-fluent')
         self._add_handler_with_cleanup(self.log,
                                        handler=DictStreamHandler,
@@ -777,7 +775,7 @@ class FluentFormatterTestCase(LogTestBase):
 
 class ContextFormatterTestCase(LogTestBase):
     def setUp(self):
-        super(ContextFormatterTestCase, self).setUp()
+        super().setUp()
         self.config(logging_context_format_string="HAS CONTEXT "
                                                   "[%(request_id)s]: "
                                                   "%(message)s",
@@ -797,14 +795,14 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt = _fake_context()
         message = 'bar'
         self.log.info(message, context=ctxt)
-        expected = 'HAS CONTEXT [%s]: %s\n' % (ctxt.request_id, message)
+        expected = 'HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id, message)
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_context_is_taken_from_tls_variable(self):
         ctxt = _fake_context()
         message = 'bar'
         self.log.info(message)
-        expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id, message)
+        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id, message)
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_contextual_information_is_imparted_to_3rd_party_log_records(self):
@@ -814,19 +812,19 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'emulate logging within sqlalchemy'
         sa_log.info(message)
 
-        expected = ('HAS CONTEXT [%s]: %s\n' % (ctxt.request_id, message))
+        expected = ('HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id, message))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_message_logging_3rd_party_log_records(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         sa_log = logging.getLogger('sqlalchemy.engine')
         sa_log.setLevel(logging.INFO)
         message = self.trans_fixture.lazy('test ' + chr(128))
         sa_log.info(message)
 
-        expected = ('HAS CONTEXT [%s]: %s\n' % (ctxt.request_id,
-                                                str(message)))
+        expected = ('HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id,
+                                                    str(message)))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_debugging_log(self):
@@ -841,11 +839,11 @@ class ContextFormatterTestCase(LogTestBase):
         # the Message object, with a wrong encoding. This test case
         # tests that problem does not occur.
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         self.log.info(message, context=ctxt)
-        expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
-                                               str(message))
+        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id,
+                                                   str(message))
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_exception_logging(self):
@@ -853,7 +851,7 @@ class ContextFormatterTestCase(LogTestBase):
         # does not appear in the format string, ensure that it is
         # appended to the end of the log lines.
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         try:
             raise RuntimeError('test_exception_logging')
@@ -866,7 +864,7 @@ class ContextFormatterTestCase(LogTestBase):
         # NOTE(dhellmann): Several of the built-in exception types
         # should not be automatically added to the log output.
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         ignored_exceptions = [
             ValueError, TypeError, KeyError, AttributeError, ImportError
@@ -885,7 +883,7 @@ class ContextFormatterTestCase(LogTestBase):
         # that position in the output.
         self.config(logging_context_format_string="A %(error_summary)s B")
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         try:
             raise RuntimeError('test_exception_logging')
@@ -900,7 +898,7 @@ class ContextFormatterTestCase(LogTestBase):
         # inserted.
         self.config(logging_context_format_string="%(error_summary)s")
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         self.log.info(message, context=ctxt)
         expected = '-\n'
@@ -908,26 +906,26 @@ class ContextFormatterTestCase(LogTestBase):
 
     def test_unicode_conversion_in_adapter(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         message = "Exception is (%s)"
         ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         self.log.debug(message, ex, context=ctxt)
         message = str(message) % ex
-        expected = "HAS CONTEXT [%s]: %s --DBG\n" % (ctxt.request_id,
-                                                     message)
+        expected = "HAS CONTEXT [{}]: {} --DBG\n".format(ctxt.request_id,
+                                                         message)
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_unicode_conversion_in_formatter(self):
         ctxt = _fake_context()
-        ctxt.request_id = str('99')
+        ctxt.request_id = '99'
         no_adapt_log = logging.getLogger('no_adapt')
         no_adapt_log.setLevel(logging.INFO)
         message = "Exception is (%s)"
         ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         no_adapt_log.info(message, ex)
         message = str(message) % ex
-        expected = "HAS CONTEXT [%s]: %s\n" % (ctxt.request_id,
-                                               message)
+        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id,
+                                                   message)
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_user_identity_logging(self):
@@ -1011,7 +1009,7 @@ class ContextFormatterTestCase(LogTestBase):
         # or it will fail and inserting byte string in unicode string
         # causes such formatting
         expected = '\\xe2\\x98\\xa2'
-        self.log.info(b'%s', '\u2622'.encode('utf8'))
+        self.log.info(b'%s', '\u2622'.encode())
         self.assertIn(expected, self.stream.getvalue())
 
     def test_dict_args_with_unicode(self):
@@ -1079,7 +1077,7 @@ class FancyRecordTestCase(LogTestBase):
     """
 
     def setUp(self):
-        super(FancyRecordTestCase, self).setUp()
+        super().setUp()
         # NOTE(sdague): use the different formatters to demonstrate format
         # string with valid fancy keys and without. Slightly hacky, but given
         # the way log objects layer up seemed to be most concise approach
@@ -1111,8 +1109,8 @@ class FancyRecordTestCase(LogTestBase):
         warncolor = handlers.ColorHandler.LEVEL_COLORS[logging.WARN]
         info_msg = 'info'
         warn_msg = 'warn'
-        infoexpected = "%s %s %s" % (infocolor, keyed_log_string, info_msg)
-        warnexpected = "%s %s %s" % (warncolor, keyed_log_string, warn_msg)
+        infoexpected = "{} {} {}".format(infocolor, keyed_log_string, info_msg)
+        warnexpected = "{} {} {}".format(warncolor, keyed_log_string, warn_msg)
 
         self.colorlog.info(info_msg, context=ctxt)
         self.assertIn(infoexpected, self.stream.getvalue())
@@ -1160,7 +1158,7 @@ class FancyRecordTestCase(LogTestBase):
 
 class InstanceRecordTestCase(LogTestBase):
     def setUp(self):
-        super(InstanceRecordTestCase, self).setUp()
+        super().setUp()
         self.config(logging_context_format_string="[%(request_id)s]: "
                                                   "%(instance)s"
                                                   "%(resource)s"
@@ -1233,7 +1231,7 @@ class InstanceRecordTestCase(LogTestBase):
 
 class TraceLevelTestCase(LogTestBase):
     def setUp(self):
-        super(TraceLevelTestCase, self).setUp()
+        super().setUp()
         self.config(logging_context_format_string="%(message)s")
         self.mylog = log.getLogger()
         self._add_handler_with_cleanup(self.mylog)
@@ -1248,7 +1246,7 @@ class TraceLevelTestCase(LogTestBase):
 
 class DomainTestCase(LogTestBase):
     def setUp(self):
-        super(DomainTestCase, self).setUp()
+        super().setUp()
         self.config(logging_context_format_string="[%(request_id)s]: "
                                                   "%(user_identity)s "
                                                   "%(message)s",
@@ -1262,9 +1260,9 @@ class DomainTestCase(LogTestBase):
 
     def _validate_keys(self, ctxt, keyed_log_string):
         info_message = 'info'
-        infoexpected = "%s %s\n" % (keyed_log_string, info_message)
+        infoexpected = "{} {}\n".format(keyed_log_string, info_message)
         warn_message = 'warn'
-        warnexpected = "%s %s\n" % (keyed_log_string, warn_message)
+        warnexpected = "{} {}\n".format(keyed_log_string, warn_message)
 
         self.mylog.info(info_message, context=ctxt)
         self.assertEqual(infoexpected, self.stream.getvalue())
@@ -1294,13 +1292,13 @@ class SetDefaultsTestCase(BaseTestCase):
                                            default_config_files=[])
 
     def setUp(self):
-        super(SetDefaultsTestCase, self).setUp()
+        super().setUp()
         self.conf = self.TestConfigOpts()
         self.conf.register_opts(_options.log_opts)
         self.conf.register_cli_opts(_options.logging_cli_opts)
 
-        self._orig_defaults = dict([(o.dest, o.default)
-                                    for o in _options.log_opts])
+        self._orig_defaults = {o.dest: o.default
+                               for o in _options.log_opts}
         self.addCleanup(self._restore_log_defaults)
 
     def _restore_log_defaults(self):
@@ -1349,7 +1347,7 @@ class SetDefaultsTestCase(BaseTestCase):
 
 class MutateTestCase(BaseTestCase):
     def setUp(self):
-        super(MutateTestCase, self).setUp()
+        super().setUp()
         if hasattr(log._load_log_config, 'old_time'):
             del log._load_log_config.old_time
 
@@ -1445,9 +1443,9 @@ class MutateTestCase(BaseTestCase):
                           "keys=%s" % skeys])
             for key in keys:
                 lines.extend(["",
-                              "[%s_%s]" % (section[:-1], key)])
+                              "[{}_{}]".format(section[:-1], key)])
                 item = items[key]
-                lines.extend("%s=%s" % (k, item[k]) for k in sorted(item))
+                lines.extend("{}={}".format(k, item[k]) for k in sorted(item))
                 if section == 'handlers':
                     if 'args' not in item:
                         lines.append("args=()")
@@ -1459,7 +1457,7 @@ class MutateTestCase(BaseTestCase):
         root = data.get('root', {})
         if root:
             lines.extend(["[logger_root]"])
-            lines.extend("%s=%s" % (k, root[k]) for k in sorted(root))
+            lines.extend("{}={}".format(k, root[k]) for k in sorted(root))
             if 'handlers' not in root:
                 lines.append("handlers=")
         return "\n".join(lines)
@@ -1604,7 +1602,7 @@ keys=
 class LogConfigOptsTestCase(BaseTestCase):
 
     def setUp(self):
-        super(LogConfigOptsTestCase, self).setUp()
+        super().setUp()
 
     def test_print_help(self):
         f = io.StringIO()
@@ -1718,7 +1716,7 @@ class LogConfigOptsTestCase(BaseTestCase):
 
 class LogConfigTestCase(BaseTestCase):
     def setUp(self):
-        super(LogConfigTestCase, self).setUp()
+        super().setUp()
         names = self.create_tempfiles([('logging', MIN_LOG_INI)])
         self.log_config_append = names[0]
         if hasattr(log._load_log_config, 'old_time'):
@@ -1768,7 +1766,7 @@ class SavingAdapter(log.KeywordArgumentAdapter):
     def process(self, msg, kwargs):
         # Run the real adapter and save the inputs and outputs
         # before returning them so the test can examine both.
-        results = super(SavingAdapter, self).process(msg, kwargs)
+        results = super().process(msg, kwargs)
         self.results.append((msg, kwargs, results))
         return results
 
@@ -1776,7 +1774,7 @@ class SavingAdapter(log.KeywordArgumentAdapter):
 class KeywordArgumentAdapterTestCase(BaseTestCase):
 
     def setUp(self):
-        super(KeywordArgumentAdapterTestCase, self).setUp()
+        super().setUp()
         # Construct a mock that will look like a Logger configured to
         # emit messages at DEBUG or higher.
         self.mock_log = mock.Mock()
@@ -1906,7 +1904,7 @@ class LoggerNameTestCase(LoggerTestCase):
 
 class IsDebugEnabledTestCase(test_base.BaseTestCase):
     def setUp(self):
-        super(IsDebugEnabledTestCase, self).setUp()
+        super().setUp()
         self.config_fixture = self.useFixture(
             fixture_config.Config(cfg.ConfigOpts()))
         self.config = self.config_fixture.config

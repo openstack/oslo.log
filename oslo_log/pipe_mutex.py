@@ -23,7 +23,7 @@ import eventlet.greenthread
 import eventlet.hubs
 
 
-class PipeMutex(object):
+class PipeMutex:
     """Mutex using a pipe.
 
     Works across both greenlets and real threads, even at the same time.

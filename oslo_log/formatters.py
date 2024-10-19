@@ -181,7 +181,7 @@ class JSONFormatter(logging.Formatter):
         self.datefmt = datefmt
         try:
             self.hostname = socket.gethostname()
-        except socket.error:
+        except OSError:
             self.hostname = None
 
     def formatException(self, ei, strip_newlines=True):
@@ -279,7 +279,7 @@ class FluentFormatter(logging.Formatter):
         self.datefmt = datefmt
         try:
             self.hostname = socket.gethostname()
-        except socket.error:
+        except OSError:
             self.hostname = None
         self.cmdline = " ".join(sys.argv)
         try:
@@ -527,7 +527,7 @@ class ContextFormatter(logging.Formatter):
         formatted_lines = []
         for line in lines:
             pl = self.conf.logging_exception_prefix % record.__dict__
-            fl = '%s%s' % (pl, line)
+            fl = '{}{}'.format(pl, line)
             formatted_lines.append(fl)
         return '\n'.join(formatted_lines)
 
@@ -543,5 +543,5 @@ class ContextFormatter(logging.Formatter):
             # a result, in literally one in a million cases
             # isoformat() looks different. This adds microseconds when
             # that happens.
-            record.isotime = "%s.000000%s" % (record.isotime[:-6],
-                                              record.isotime[-6:])
+            record.isotime = "{}.000000{}".format(record.isotime[:-6],
+                                                  record.isotime[-6:])

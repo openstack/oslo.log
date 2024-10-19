@@ -127,7 +127,7 @@ def colorise(key, text=None):
 
 
 def warn(prefix, msg):
-    return "%s: %s" % (colorise('exc', prefix), msg)
+    return "{}: {}".format(colorise('exc', prefix), msg)
 
 
 def reformat_json(fh, formatter, follow=False):
@@ -148,8 +148,7 @@ def reformat_json(fh, formatter, follow=False):
         except ValueError:
             yield warn("Not JSON", line)
             continue
-        for out_line in formatter(record):
-            yield out_line
+        yield from formatter(record)
 
 
 def console_format(prefix, locator, record, loggers=[], levels=[],

@@ -23,7 +23,7 @@ from oslo_log import rate_limit
 
 class LogRateLimitTestCase(test_base.BaseTestCase):
     def tearDown(self):
-        super(LogRateLimitTestCase, self).tearDown()
+        super().tearDown()
         rate_limit.uninstall_filter()
 
     def install_filter(self, *args):

@@ -42,7 +42,7 @@ EXCEPTION_RECORD = {
 
 class ConvertJsonTestCase(test_base.BaseTestCase):
     def setUp(self):
-        super(ConvertJsonTestCase, self).setUp()
+        super().setUp()
 
     def _reformat(self, text):
         fh = io.StringIO(text)

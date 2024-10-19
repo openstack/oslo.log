@@ -19,7 +19,7 @@ from oslotest import base as test_base
 class TestLoggingFixture(test_base.BaseTestCase):
 
     def setUp(self):
-        super(TestLoggingFixture, self).setUp()
+        super().setUp()
         self.log = logging.getLogger(__name__)
 
     def test_logging_handle_error(self):

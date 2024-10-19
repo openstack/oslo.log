@@ -30,12 +30,12 @@ class CustomLogHandler(logging.StreamHandler):
         # Make args None; this was the error, which broke oslo_log formatting
         record.args = None  # This is intentionally wrong
 
-        super(CustomLogHandler, self).emit(record)
+        super().emit(record)
 
 
 class CustomLogHandlerTestCase(LogTestBase):
     def setUp(self):
-        super(CustomLogHandlerTestCase, self).setUp()
+        super().setUp()
         self.config(logging_context_format_string="HAS CONTEXT "
                                                   "[%(request_id)s]: "
                                                   "%(message)s",

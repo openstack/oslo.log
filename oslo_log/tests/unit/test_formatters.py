@@ -39,7 +39,7 @@ def _fake_context():
 class FormatterTest(test_base.BaseTestCase):
 
     def setUp(self):
-        super(FormatterTest, self).setUp()
+        super().setUp()
 
     def test_replace_false_value_exists(self):
         d = {"user": "user1"}
@@ -67,7 +67,7 @@ class FormatterTest(test_base.BaseTestCase):
 # Test for https://bugs.python.org/issue28603
 class FormatUnhashableExceptionTest(test_base.BaseTestCase):
     def setUp(self):
-        super(FormatUnhashableExceptionTest, self).setUp()
+        super().setUp()
         self.config_fixture = self.useFixture(
             config_fixture.Config(cfg.ConfigOpts()))
         self.conf = self.config_fixture.conf
