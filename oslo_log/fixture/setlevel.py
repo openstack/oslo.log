@@ -40,7 +40,7 @@ class SetLogLevel(fixtures.Fixture):
         self.level = level
 
     def setUp(self):
-        super(SetLogLevel, self).setUp()
+        super().setUp()
         for name in self.logger_names:
             # NOTE(dhellmann): Use the stdlib version of getLogger()
             # so we get the logger and not any adaptor wrapping it.

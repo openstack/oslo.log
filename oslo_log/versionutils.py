@@ -91,7 +91,7 @@ def register_options():
     CONF.register_opts(deprecated_opts)
 
 
-class deprecated(object):
+class deprecated:
     """A decorator to mark callables as deprecated.
 
     This decorator logs a deprecation message when the callable it decorates is
@@ -220,8 +220,7 @@ class deprecated(object):
                     def __subclasscheck__(self, subclass):
                         if self in _DEPRECATED_EXCEPTIONS:
                             report_deprecated()
-                        return super(ExceptionMeta,
-                                     self).__subclasscheck__(subclass)
+                        return super().__subclasscheck__(subclass)
                 func_or_cls.__meta__ = ExceptionMeta
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 

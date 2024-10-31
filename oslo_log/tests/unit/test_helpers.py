@@ -22,7 +22,7 @@ class LogHelpersTestCase(test_base.BaseTestCase):
     def test_log_decorator(self):
         '''Test that LOG.debug is called with proper arguments.'''
 
-        class test_class(object):
+        class test_class:
             @helpers.log_method_call
             def test_method(self, arg1, arg2, arg3, *args, **kwargs):
                 pass
@@ -54,7 +54,7 @@ class LogHelpersTestCase(test_base.BaseTestCase):
         def _static_method():
             pass
 
-        class test_class(object):
+        class test_class:
             @staticmethod
             @helpers.log_method_call
             def test_staticmethod(arg1, arg2, arg3, *args, **kwargs):

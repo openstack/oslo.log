@@ -59,7 +59,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
     @mock.patch('oslo_log.versionutils.report_deprecated_feature')
     def test_deprecating_a_method_returns_correct_value(self, mock_reporter):
 
-        class C(object):
+        class C:
             @versionutils.deprecated(as_of=versionutils.deprecated.ICEHOUSE)
             def outdated_method(self, *args):
                 return args
@@ -210,7 +210,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.JUNO,
                                  remove_in=+1)
-        class OutdatedClass(object):
+        class OutdatedClass:
             pass
         obj = OutdatedClass()
 
@@ -228,12 +228,12 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.JUNO,
                                  remove_in=+1)
-        class OutdatedClass(object):
+        class OutdatedClass:
             def __init__(self, *args, **kwargs):
                 """It is __init__ method."""
                 mock_arguments.args = args
                 mock_arguments.kwargs = kwargs
-                super(OutdatedClass, self).__init__()
+                super().__init__()
         obj = OutdatedClass(*args, **kwargs)
 
         self.assertIsInstance(obj, OutdatedClass)
@@ -309,7 +309,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.MITAKA,
                                  remove_in=+2)
-        class OutdatedClass(object):
+        class OutdatedClass:
             pass
         obj = OutdatedClass()
 
@@ -324,7 +324,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.NEWTON,
                                  remove_in=+2)
-        class OutdatedClass(object):
+        class OutdatedClass:
             pass
         obj = OutdatedClass()
 
@@ -339,7 +339,7 @@ class DeprecatedTestCase(test_base.BaseTestCase):
 
         @versionutils.deprecated(as_of=versionutils.deprecated.OCATA,
                                  remove_in=+2)
-        class OutdatedClass(object):
+        class OutdatedClass:
             pass
         obj = OutdatedClass()
 

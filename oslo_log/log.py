@@ -85,7 +85,7 @@ def _get_log_file_path(conf, binary=None):
 
     if logdir:
         binary = binary or handlers._get_binary_name()
-        return '%s.log' % (os.path.join(logdir, binary),)
+        return '{}.log'.format(os.path.join(logdir, binary))
 
     return None
 
@@ -234,7 +234,7 @@ def _load_log_config(log_config_append):
             logging.config.fileConfig(log_config_append,
                                       disable_existing_loggers=False)
             _load_log_config.old_time = new_time
-    except (configparser.Error, KeyError, os.error, RuntimeError) as exc:
+    except (configparser.Error, KeyError, OSError, RuntimeError) as exc:
         raise LogConfigError(log_config_append, str(exc))
 
 

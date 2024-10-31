@@ -20,8 +20,8 @@ import logging
 
 
 def _get_full_class_name(cls):
-    return '%s.%s' % (cls.__module__,
-                      getattr(cls, '__qualname__', cls.__name__))
+    return '{}.{}'.format(cls.__module__,
+                          getattr(cls, '__qualname__', cls.__name__))
 
 
 def _is_method(obj, method):
