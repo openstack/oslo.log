@@ -136,6 +136,13 @@ class PipeMutex(object):
         # do, so nobody does it and that's okay.
         self.close()
 
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.release()
+
 
 def pipe_createLock(self):
     """Replacement for logging.Handler.createLock method."""
