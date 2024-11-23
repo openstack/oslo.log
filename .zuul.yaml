@@ -38,14 +38,23 @@
       - ^releasenotes/.*$
       - ^\.pre-commit-config\.yaml$
 
+- job:
+    name: oslo.log-tox-py312-eventlet-patched
+    parent: openstack-tox-py312
+    vars:
+      tox_environment:
+        OSLO_LOG_TEST_EVENTLET: 1
+
 - project:
     check:
       jobs:
         - oslo.log-src-grenade
         - oslo.log-jsonformatter
+        - oslo.log-tox-py312-eventlet-patched
     gate:
       jobs:
         - oslo.log-jsonformatter
+        - oslo.log-tox-py312-eventlet-patched
     templates:
       - check-requirements
       - lib-forward-testing-python3
