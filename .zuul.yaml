@@ -5,6 +5,9 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
       - ^\.pre-commit-config\.yaml$
     required-projects:
       - opendev.org/openstack/oslo.log
@@ -33,7 +36,6 @@
               use_json: True
     irrelevant-files:
       - ^.*\.rst$
-      - ^api-ref/.*$
       - ^doc/.*$
       - ^releasenotes/.*$
       - ^\.pre-commit-config\.yaml$
