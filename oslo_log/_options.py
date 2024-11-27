@@ -113,11 +113,6 @@ generic_log_opts = [
                 default=False,
                 help='Log output to standard error. '
                      + _IGNORE_MESSAGE),
-    cfg.BoolOpt('use_eventlog',
-                default=False,
-                deprecated_for_removal=True,
-                deprecated_reason='Windows support is no longer maintained.',
-                help='Log output to Windows Event Log.'),
     cfg.BoolOpt('log_color',
                 default=False,
                 help='(Optional) Set the \'color\' key according to log '

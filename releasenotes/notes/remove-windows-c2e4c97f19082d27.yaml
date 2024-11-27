@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    Support for Windows operating systems has been removed. Because of
+    the removal, the deprecated ``[DEFAULT] use_eventlog`` option has been
+    removed.
