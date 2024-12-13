@@ -46,6 +46,15 @@
     vars:
       tox_environment:
         OSLO_LOG_TEST_EVENTLET: 1
+        EVENTLET_HUB: epolls
+
+- job:
+    name: oslo.log-tox-py312-eventlet-patched-asyncio
+    parent: openstack-tox-py312
+    vars:
+      tox_environment:
+        OSLO_LOG_TEST_EVENTLET: 1
+        EVENTLET_HUB: asyncio
 
 - project:
     check:
@@ -53,10 +62,12 @@
         - oslo.log-src-grenade
         - oslo.log-jsonformatter
         - oslo.log-tox-py312-eventlet-patched
+        - oslo.log-tox-py312-eventlet-patched-asyncio
     gate:
       jobs:
         - oslo.log-jsonformatter
         - oslo.log-tox-py312-eventlet-patched
+        - oslo.log-tox-py312-eventlet-patched-asyncio
     templates:
       - check-requirements
       - lib-forward-testing-python3
