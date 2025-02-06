@@ -38,6 +38,7 @@ try:
 except ImportError:
     syslog = None
 
+import debtcollector
 from oslo_config import cfg
 from oslo_utils import eventletutils
 from oslo_utils import importutils
@@ -275,14 +276,18 @@ def _fix_eventlet_logging():
 
     global _EVENTLET_FIX_APPLIED
 
-    # If eventlet was not loaded before call to setup assume it's not used.
-    if eventletutils.is_monkey_patched('thread') and not _EVENTLET_FIX_APPLIED:
-        import eventlet.green.threading
-        from oslo_log import pipe_mutex
-        logging.threading = eventlet.green.threading
-        logging._lock = logging.threading.RLock()
-        logging.Handler.createLock = pipe_mutex.pipe_createLock
-        _EVENTLET_FIX_APPLIED = True
+    if eventletutils.is_monkey_patched('thread'):
+        debtcollector.deprecate(
+            "Eventlet support is deprecated and will be removed")
+
+        # If eventlet was not loaded before call to setup assume it's not used.
+        if not _EVENTLET_FIX_APPLIED:
+            import eventlet.green.threading
+            from oslo_log import pipe_mutex
+            logging.threading = eventlet.green.threading
+            logging._lock = logging.threading.RLock()
+            logging.Handler.createLock = pipe_mutex.pipe_createLock
+            _EVENTLET_FIX_APPLIED = True
 
 
 def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
