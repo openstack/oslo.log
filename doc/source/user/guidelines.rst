@@ -281,7 +281,7 @@ REST API deprecation warnings
 - Should **not** be logged any higher than ``DEBUG``, since these are
   not operator-facing messages.
 
-- Should be logged no more than once per REST API usage / tenant,
+- Should be logged no more than once per REST API usage / project,
   definitely not on *every* REST API call.
 
 **Rationale:** The users of the REST API don't have access to the
