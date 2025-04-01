@@ -127,14 +127,14 @@ oslo.context.*
      * The name of the authenticated user, if available.
    - * ``%(user)s``
      * The ID of the authenticated user, if available.
-   - * ``%(tenant_name)s``
-     * The name of the authenticated tenant, if available.
-   - * ``%(tenant)s``
-     * The ID of the authenticated tenant, if available.
+   - * ``%(project_name)s``
+     * The name of the authenticated project, if available.
+   - * ``%(project)s``
+     * The ID of the authenticated project, if available.
    - * ``%(user_domain)s``
      * The ID of the authenticated user domain, if available.
    - * ``%(project_domain)s``
-     * The ID of the authenticated project/tenant, if available.
+     * The ID of the authenticated project, if available.
    - * ``%(request_id)s``
      * The ID of the current request. This value can be used to tie
        multiple log messages together as relating to the same

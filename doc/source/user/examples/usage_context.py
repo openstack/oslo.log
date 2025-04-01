@@ -80,6 +80,6 @@ if __name__ == '__main__':
     LOG.info("Welcome to Oslo Logging")
     LOG.info("Without context")
     context.RequestContext(user='6ce90b4d',
-                           tenant='d6134462',
+                           project='d6134462',
                            domain='a6b9360e')
     LOG.info("With context")
