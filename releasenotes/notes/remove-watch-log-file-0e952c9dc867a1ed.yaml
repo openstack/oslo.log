@@ -1,0 +1,4 @@
+---
+upgrade:
+  - |
+    The ``watch_log_file`` option has been removed.
