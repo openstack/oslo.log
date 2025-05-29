@@ -322,7 +322,6 @@ Currently proposed settings for 3rd party libraries:
 
 - ``amqp=WARN``
 - ``boto=WARN``
-- ``qpid=WARN``
 - ``sqlalchemy=WARN``
 - ``suds=INFO``
 - ``iso8601=WARN``

@@ -16,8 +16,7 @@ from oslo_log import versionutils
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
-                      'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
+DEFAULT_LOG_LEVELS = ['amqp=WARN', 'boto=WARN', 'sqlalchemy=WARN', 'suds=INFO',
                       'oslo.messaging=INFO', 'oslo_messaging=INFO',
                       'iso8601=WARN',
                       'requests.packages.urllib3.connectionpool=WARN',
