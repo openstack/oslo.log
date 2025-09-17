@@ -381,10 +381,7 @@ def _setup_logging_from_conf(conf, project, version):
     logpath = _get_log_file_path(conf)
     if logpath:
         # On Windows, in-use files cannot be moved or deleted.
-        if conf.watch_log_file:
-            raise RuntimeError('watch_log_file feature was removed because '
-                               'it has been broken for multiple releases.')
-        elif conf.log_rotation_type.lower() == "interval":
+        if conf.log_rotation_type.lower() == "interval":
             file_handler = logging.handlers.TimedRotatingFileHandler
             when = conf.log_rotate_interval_type.lower()
             interval_type = LOG_ROTATE_INTERVAL_MAPPING[when]

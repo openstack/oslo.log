@@ -1589,7 +1589,7 @@ class LogConfigOptsTestCase(BaseTestCase):
         f = io.StringIO()
         self.CONF([])
         self.CONF.print_help(file=f)
-        for option in ['debug', 'log-config', 'watch-log-file']:
+        for option in ['debug', 'log-config']:
             self.assertIn(option, f.getvalue())
 
     def test_debug(self):
