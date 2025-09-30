@@ -48,5 +48,19 @@ convert-json = "oslo_log.cmds.convert_json:main"
 [tool.setuptools]
 packages = ["oslo_log"]
 
-[tool.bandit]
-exclude_dirs = ["tests"]
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.format]
+quote-style = "preserve"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["E4", "E5", "E7", "E9", "F", "S", "UP"]
+ignore = [
+    # we want to test printf-style formatting
+    "UP031"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"oslo_log/tests/*" = ["S"]

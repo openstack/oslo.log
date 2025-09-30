@@ -36,6 +36,7 @@ def quiet_eventlet_exceptions():
 
 class TestPipeMutex(unittest.TestCase):
     """From  Swift's test/unit/common/test_utils.py"""
+
     def setUp(self):
         self.mutex = pipe_mutex.PipeMutex()
 
@@ -86,8 +87,9 @@ class TestPipeMutex(unittest.TestCase):
     def test_wrong_releaser(self):
         self.mutex.acquire()
         with quiet_eventlet_exceptions():
-            self.assertRaises(RuntimeError,
-                              eventlet.spawn(self.mutex.release).wait)
+            self.assertRaises(
+                RuntimeError, eventlet.spawn(self.mutex.release).wait
+            )
 
     def test_blocking(self):
         evt = eventlet.event.Event()
@@ -116,11 +118,15 @@ class TestPipeMutex(unittest.TestCase):
         c1.wait()
         c2.wait()
 
-        self.assertEqual(sequence, [
-            'coro1 acquire',
-            'coro1 release',
-            'coro2 acquire',
-            'coro2 release'])
+        self.assertEqual(
+            sequence,
+            [
+                'coro1 acquire',
+                'coro1 release',
+                'coro2 acquire',
+                'coro2 release',
+            ],
+        )
 
     def test_blocking_tpool(self):
         # Note: this test's success isn't a guarantee that the mutex is
@@ -142,11 +148,13 @@ class TestPipeMutex(unittest.TestCase):
         greenthread2 = eventlet.spawn(do_stuff)
 
         real_thread1 = eventlet.patcher.original('threading').Thread(
-            target=do_stuff)
+            target=do_stuff
+        )
         real_thread1.start()
 
         real_thread2 = eventlet.patcher.original('threading').Thread(
-            target=do_stuff)
+            target=do_stuff
+        )
         real_thread2.start()
 
         greenthread1.wait()
@@ -191,11 +199,13 @@ class TestPipeMutex(unittest.TestCase):
             self.mutex.release()
 
         real_thread1 = eventlet.patcher.original('threading').Thread(
-            target=pthread1)
+            target=pthread1
+        )
         real_thread1.start()
 
         real_thread2 = eventlet.patcher.original('threading').Thread(
-            target=pthread2)
+            target=pthread2
+        )
         real_thread2.start()
 
         real_thread1.join()

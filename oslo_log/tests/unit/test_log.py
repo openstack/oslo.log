@@ -22,6 +22,7 @@ import logging
 import os
 import shutil
 import sys
+
 try:
     import syslog
 except ImportError:
@@ -66,15 +67,17 @@ handlers=
 
 
 def _fake_context():
-    ctxt = context.RequestContext(user_id="myuser",
-                                  user_name="myuser",
-                                  system_scope="myscope",
-                                  domain_id="mydomain",
-                                  project_id="mytenant",
-                                  project_name="mytenant",
-                                  project_domain_id="mydomain",
-                                  user_domain_id="myuserdomain",
-                                  overwrite=True)
+    ctxt = context.RequestContext(
+        user_id="myuser",
+        user_name="myuser",
+        system_scope="myscope",
+        domain_id="mydomain",
+        project_id="mytenant",
+        project_name="mytenant",
+        project_domain_id="mydomain",
+        user_domain_id="myuserdomain",
+        overwrite=True,
+    )
 
     return ctxt
 
@@ -88,14 +91,17 @@ class CommonLoggerTestsMixIn:
         super().setUp()
         # common context has different fields to the defaults in log.py
         self.config_fixture = self.useFixture(
-            fixture_config.Config(cfg.ConfigOpts()))
+            fixture_config.Config(cfg.ConfigOpts())
+        )
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.config_fixture.conf)
-        self.config(logging_context_format_string='%(asctime)s %(levelname)s '
-                                                  '%(name)s [%(request_id)s '
-                                                  '%(user)s %(project)s] '
-                                                  '%(message)s')
+        self.config(
+            logging_context_format_string='%(asctime)s %(levelname)s '
+            '%(name)s [%(request_id)s '
+            '%(user)s %(project)s] '
+            '%(message)s'
+        )
         self.log = None
         log._setup_logging_from_conf(self.config_fixture.conf, 'test', 'test')
         self.log_handlers = log.getLogger(None).logger.handlers
@@ -128,8 +134,16 @@ class CommonLoggerTestsMixIn:
         self.assertEqual(logging.INFO, logger.getEffectiveLevel())
 
     def test_no_logging_via_module(self):
-        for func in ('critical', 'error', 'exception', 'warning', 'warn',
-                     'info', 'debug', 'log'):
+        for func in (
+            'critical',
+            'error',
+            'exception',
+            'warning',
+            'warn',
+            'info',
+            'debug',
+            'log',
+        ):
             self.assertRaises(AttributeError, getattr, log, func)
 
     @mock.patch('logging.handlers.TimedRotatingFileHandler')
@@ -139,15 +153,19 @@ class CommonLoggerTestsMixIn:
         when = 'weekday'
         interval = 2
         backup_count = 2
-        self.config(log_rotation_type=rotation_type,
-                    log_rotate_interval=interval,
-                    log_rotate_interval_type=when,
-                    max_logfile_count=backup_count)
+        self.config(
+            log_rotation_type=rotation_type,
+            log_rotate_interval=interval,
+            log_rotate_interval_type=when,
+            max_logfile_count=backup_count,
+        )
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        handler_mock.assert_called_once_with(path_mock.return_value,
-                                             when='w2',
-                                             interval=interval,
-                                             backupCount=backup_count)
+        handler_mock.assert_called_once_with(
+            path_mock.return_value,
+            when='w2',
+            interval=interval,
+            backupCount=backup_count,
+        )
         self.assertEqual(self.log_handlers[0], handler_mock.return_value)
 
     @mock.patch('logging.handlers.RotatingFileHandler')
@@ -157,13 +175,15 @@ class CommonLoggerTestsMixIn:
         max_logfile_size_mb = 100
         maxBytes = max_logfile_size_mb * units.Mi
         backup_count = 2
-        self.config(log_rotation_type=rotation_type,
-                    max_logfile_size_mb=max_logfile_size_mb,
-                    max_logfile_count=backup_count)
+        self.config(
+            log_rotation_type=rotation_type,
+            max_logfile_size_mb=max_logfile_size_mb,
+            max_logfile_count=backup_count,
+        )
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        handler_mock.assert_called_once_with(path_mock.return_value,
-                                             maxBytes=maxBytes,
-                                             backupCount=backup_count)
+        handler_mock.assert_called_once_with(
+            path_mock.return_value, maxBytes=maxBytes, backupCount=backup_count
+        )
         self.assertEqual(self.log_handlers[0], handler_mock.return_value)
 
 
@@ -177,9 +197,11 @@ class BaseTestCase(test_base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.context_fixture = self.useFixture(
-            fixture_context.ClearRequestContext())
+            fixture_context.ClearRequestContext()
+        )
         self.config_fixture = self.useFixture(
-            fixture_config.Config(cfg.ConfigOpts()))
+            fixture_config.Config(cfg.ConfigOpts())
+        )
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.CONF)
@@ -188,8 +210,10 @@ class BaseTestCase(test_base.BaseTestCase):
 
 class LogTestBase(BaseTestCase):
     """Base test class that provides some convenience functions."""
-    def _add_handler_with_cleanup(self, log_instance, handler=None,
-                                  formatter=None):
+
+    def _add_handler_with_cleanup(
+        self, log_instance, handler=None, formatter=None
+    ):
         """Add a log handler to a log instance.
 
         This function should be used to add handlers to loggers in test cases
@@ -232,36 +256,41 @@ class LogHandlerTestCase(BaseTestCase):
     def test_log_path_logdir(self):
         path = os.path.join('some', 'path')
         binary = 'foo-bar'
-        expected = os.path.join(path, '%s.log' % binary)
+        expected = os.path.join(path, f'{binary}.log')
         self.config(log_dir=path, log_file=None)
-        self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
-                         binary=binary),
-                         expected)
+        self.assertEqual(
+            log._get_log_file_path(self.config_fixture.conf, binary=binary),
+            expected,
+        )
 
     def test_log_path_logfile(self):
         path = os.path.join('some', 'path')
         binary = 'foo-bar'
-        expected = os.path.join(path, '%s.log' % binary)
+        expected = os.path.join(path, f'{binary}.log')
         self.config(log_file=expected)
-        self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
-                         binary=binary),
-                         expected)
+        self.assertEqual(
+            log._get_log_file_path(self.config_fixture.conf, binary=binary),
+            expected,
+        )
 
     def test_log_path_none(self):
         prefix = 'foo-bar'
         self.config(log_dir=None, log_file=None)
-        self.assertIsNone(log._get_log_file_path(self.config_fixture.conf,
-                          binary=prefix))
+        self.assertIsNone(
+            log._get_log_file_path(self.config_fixture.conf, binary=prefix)
+        )
 
     def test_log_path_logfile_overrides_logdir(self):
         path = os.path.join(os.sep, 'some', 'path')
         prefix = 'foo-bar'
-        expected = os.path.join(path, '%s.log' % prefix)
-        self.config(log_dir=os.path.join('some', 'other', 'path'),
-                    log_file=expected)
-        self.assertEqual(log._get_log_file_path(self.config_fixture.conf,
-                         binary=prefix),
-                         expected)
+        expected = os.path.join(path, f'{prefix}.log')
+        self.config(
+            log_dir=os.path.join('some', 'other', 'path'), log_file=expected
+        )
+        self.assertEqual(
+            log._get_log_file_path(self.config_fixture.conf, binary=prefix),
+            expected,
+        )
 
     def test_iter_loggers(self):
         mylog = logging.getLogger("abc.cde")
@@ -272,6 +301,7 @@ class LogHandlerTestCase(BaseTestCase):
 
 class SysLogHandlersTestCase(BaseTestCase):
     """Test the standard Syslog handler."""
+
     def setUp(self):
         super().setUp()
         self.facility = logging.handlers.SysLogHandler.LOG_USER
@@ -279,11 +309,11 @@ class SysLogHandlersTestCase(BaseTestCase):
 
     def test_standard_format(self):
         """Ensure syslog msg isn't modified for standard handler."""
-        logrecord = logging.LogRecord('name', logging.WARNING, '/tmp', 1,
-                                      'Message', None, None)
+        logrecord = logging.LogRecord(
+            'name', logging.WARNING, '/tmp', 1, 'Message', None, None
+        )
         expected = logrecord
-        self.assertEqual(expected.getMessage(),
-                         self.logger.format(logrecord))
+        self.assertEqual(expected.getMessage(), self.logger.format(logrecord))
 
 
 @testtools.skipUnless(syslog, "syslog is not available")
@@ -292,9 +322,10 @@ class OSSysLogHandlerTestCase(BaseTestCase):
         handler = handlers.OSSysLogHandler()
         syslog.syslog = mock.Mock()
         handler.emit(
-            logging.LogRecord("foo", logging.INFO,
-                              "path", 123, "hey!",
-                              None, None))
+            logging.LogRecord(
+                "foo", logging.INFO, "path", 123, "hey!", None, None
+            )
+        )
         self.assertTrue(syslog.syslog.called)
 
     def test_syslog_binary_name(self):
@@ -303,25 +334,26 @@ class OSSysLogHandlerTestCase(BaseTestCase):
         # is actually present
         syslog.openlog = mock.Mock()
         handlers.OSSysLogHandler()
-        syslog.openlog.assert_called_with(handlers._get_binary_name(),
-                                          0, syslog.LOG_USER)
+        syslog.openlog.assert_called_with(
+            handlers._get_binary_name(), 0, syslog.LOG_USER
+        )
 
     def test_find_facility(self):
         self.assertEqual(syslog.LOG_USER, log._find_facility("user"))
         self.assertEqual(syslog.LOG_LPR, log._find_facility("LPR"))
         self.assertEqual(syslog.LOG_LOCAL3, log._find_facility("log_local3"))
         self.assertEqual(syslog.LOG_UUCP, log._find_facility("LOG_UUCP"))
-        self.assertRaises(TypeError,
-                          log._find_facility,
-                          "fougere")
+        self.assertRaises(TypeError, log._find_facility, "fougere")
 
     def test_syslog(self):
         msg_unicode = "Benoît Knecht & François Deppierraz login failure"
         handler = handlers.OSSysLogHandler()
         syslog.syslog = mock.Mock()
         handler.emit(
-            logging.LogRecord("name", logging.INFO, "path", 123,
-                              msg_unicode, None, None))
+            logging.LogRecord(
+                "name", logging.INFO, "path", 123, msg_unicode, None, None
+            )
+        )
         syslog.syslog.assert_called_once_with(syslog.LOG_INFO, msg_unicode)
 
 
@@ -336,6 +368,7 @@ class OSJournalHandlerTestCase(BaseTestCase):
     Real world testing is also encouraged.
 
     """
+
     def setUp(self):
         super().setUp()
         self.config(use_journal=True)
@@ -347,9 +380,10 @@ class OSJournalHandlerTestCase(BaseTestCase):
     def test_handler(self):
         handler = handlers.OSJournalHandler()
         handler.emit(
-            logging.LogRecord("foo", logging.INFO,
-                              "path", 123, "hey!",
-                              None, None))
+            logging.LogRecord(
+                "foo", logging.INFO, "path", 123, "hey!", None, None
+            )
+        )
         self.assertTrue(self.journal.send.called)
 
     def test_emit(self):
@@ -357,18 +391,25 @@ class OSJournalHandlerTestCase(BaseTestCase):
         local_context = _fake_context()
         logger.info("Foo", context=local_context)
         self.assertEqual(
-            mock.call(mock.ANY, CODE_FILE=mock.ANY, CODE_FUNC='test_emit',
-                      CODE_LINE=mock.ANY, LOGGER_LEVEL='INFO',
-                      LOGGER_NAME='nova-test.foo', PRIORITY=6,
-                      SYSLOG_FACILITY=syslog.LOG_USER,
-                      SYSLOG_IDENTIFIER=mock.ANY,
-                      REQUEST_ID=mock.ANY,
-                      PROJECT_ID='mytenant',
-                      PROJECT_NAME='mytenant',
-                      PROCESS_NAME='MainProcess',
-                      THREAD_NAME='MainThread',
-                      USER_NAME='myuser'),
-            self.journal.send.call_args)
+            mock.call(
+                mock.ANY,
+                CODE_FILE=mock.ANY,
+                CODE_FUNC='test_emit',
+                CODE_LINE=mock.ANY,
+                LOGGER_LEVEL='INFO',
+                LOGGER_NAME='nova-test.foo',
+                PRIORITY=6,
+                SYSLOG_FACILITY=syslog.LOG_USER,
+                SYSLOG_IDENTIFIER=mock.ANY,
+                REQUEST_ID=mock.ANY,
+                PROJECT_ID='mytenant',
+                PROJECT_NAME='mytenant',
+                PROCESS_NAME='MainProcess',
+                THREAD_NAME='MainThread',
+                USER_NAME='myuser',
+            ),
+            self.journal.send.call_args,
+        )
         args, kwargs = self.journal.send.call_args
         self.assertEqual(len(args), 1)
         self.assertIsInstance(args[0], str)
@@ -388,21 +429,27 @@ class OSJournalHandlerTestCase(BaseTestCase):
         except Exception:
             logger.exception("Foo", context=local_context)
         self.assertEqual(
-            mock.call(mock.ANY, CODE_FILE=mock.ANY,
-                      CODE_FUNC='test_emit_exception',
-                      CODE_LINE=mock.ANY, LOGGER_LEVEL='ERROR',
-                      LOGGER_NAME='nova-exception.foo', PRIORITY=3,
-                      SYSLOG_FACILITY=syslog.LOG_USER,
-                      SYSLOG_IDENTIFIER=mock.ANY,
-                      REQUEST_ID=mock.ANY,
-                      EXCEPTION_INFO=mock.ANY,
-                      EXCEPTION_TEXT=mock.ANY,
-                      PROJECT_ID='mytenant',
-                      PROJECT_NAME='mytenant',
-                      PROCESS_NAME='MainProcess',
-                      THREAD_NAME='MainThread',
-                      USER_NAME='myuser'),
-            self.journal.send.call_args)
+            mock.call(
+                mock.ANY,
+                CODE_FILE=mock.ANY,
+                CODE_FUNC='test_emit_exception',
+                CODE_LINE=mock.ANY,
+                LOGGER_LEVEL='ERROR',
+                LOGGER_NAME='nova-exception.foo',
+                PRIORITY=3,
+                SYSLOG_FACILITY=syslog.LOG_USER,
+                SYSLOG_IDENTIFIER=mock.ANY,
+                REQUEST_ID=mock.ANY,
+                EXCEPTION_INFO=mock.ANY,
+                EXCEPTION_TEXT=mock.ANY,
+                PROJECT_ID='mytenant',
+                PROJECT_NAME='mytenant',
+                PROCESS_NAME='MainProcess',
+                THREAD_NAME='MainThread',
+                USER_NAME='myuser',
+            ),
+            self.journal.send.call_args,
+        )
         args, kwargs = self.journal.send.call_args
         self.assertEqual(len(args), 1)
         self.assertIsInstance(args[0], str)
@@ -465,8 +512,9 @@ class JSONFormatterTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
         self.log = log.getLogger('test-json')
-        self._add_handler_with_cleanup(self.log,
-                                       formatter=formatters.JSONFormatter)
+        self._add_handler_with_cleanup(
+            self.log, formatter=formatters.JSONFormatter
+        )
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
 
     def test_json_w_context_in_extras(self):
@@ -474,8 +522,9 @@ class JSONFormatterTestCase(LogTestBase):
         test_data = {'test': 'log'}
         local_context = _fake_context()
         self.log.debug(test_msg, test_data, key='value', context=local_context)
-        self._validate_json_data('test_json_w_context_in_extras', test_msg,
-                                 test_data, local_context)
+        self._validate_json_data(
+            'test_json_w_context_in_extras', test_msg, test_data, local_context
+        )
 
     def test_json_w_fetched_global_context(self):
         test_msg = 'This is a %(test)s line'
@@ -486,8 +535,12 @@ class JSONFormatterTestCase(LogTestBase):
         # context to the thread. The context will be fetched with the
         # _update_record_with_context call that's done in the formatter.
         self.log.debug(test_msg, test_data, key='value')
-        self._validate_json_data('test_json_w_fetched_global_context',
-                                 test_msg, test_data, local_context)
+        self._validate_json_data(
+            'test_json_w_fetched_global_context',
+            test_msg,
+            test_data,
+            local_context,
+        )
 
     def _validate_json_data(self, testname, test_msg, test_data, ctx):
         data = jsonutils.loads(self.stream.getvalue())
@@ -542,8 +595,7 @@ class JSONFormatterTestCase(LogTestBase):
     def test_json_with_extra(self):
         test_msg = 'This is a %(test)s line'
         test_data = {'test': 'log'}
-        extra_data = {'special_user': 'user1',
-                      'special_tenant': 'unicorns'}
+        extra_data = {'special_user': 'user1', 'special_tenant': 'unicorns'}
         self.log.debug(test_msg, test_data, key='value', extra=extra_data)
 
         data = jsonutils.loads(self.stream.getvalue())
@@ -559,9 +611,14 @@ class JSONFormatterTestCase(LogTestBase):
         extra_keys = ['special_tenant', 'special_user']
         special_tenant = 'unicorns'
         special_user = 'user2'
-        self.log.debug(test_msg, test_data, key='value',
-                       extra_keys=extra_keys, special_tenant=special_tenant,
-                       special_user=special_user)
+        self.log.debug(
+            test_msg,
+            test_data,
+            key='value',
+            extra_keys=extra_keys,
+            special_tenant=special_tenant,
+            special_user=special_user,
+        )
 
         data = jsonutils.loads(self.stream.getvalue())
         self.assertTrue(data)
@@ -587,8 +644,7 @@ class JSONFormatterTestCase(LogTestBase):
             self.log.warning('testing', context=ctxt)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
-        self.assertEqual('RuntimeError: test_exception',
-                         data['error_summary'])
+        self.assertEqual('RuntimeError: test_exception', data['error_summary'])
 
     def test_no_exception(self):
         ctxt = _fake_context()
@@ -618,12 +674,12 @@ class JSONFormatterTestCase(LogTestBase):
             self.log.exception('testing', context=ctxt)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
-        self.assertEqual('RuntimeError: test_exception'
-                         '\ntraceback\nfrom\nremote error',
-                         data['error_summary'])
+        self.assertEqual(
+            'RuntimeError: test_exception\ntraceback\nfrom\nremote error',
+            data['error_summary'],
+        )
 
     def test_fallback(self):
-
         class MyObject:
             def __str__(self):
                 return 'str'
@@ -670,6 +726,7 @@ class DictStreamHandler(logging.StreamHandler):
     """Serialize dict in order to avoid TypeError in python 3. It is needed for
     FluentFormatterTestCase.
     """
+
     def emit(self, record):
         try:
             msg = self.format(record)
@@ -683,9 +740,11 @@ class FluentFormatterTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
         self.log = log.getLogger('test-fluent')
-        self._add_handler_with_cleanup(self.log,
-                                       handler=DictStreamHandler,
-                                       formatter=formatters.FluentFormatter)
+        self._add_handler_with_cleanup(
+            self.log,
+            handler=DictStreamHandler,
+            formatter=formatters.FluentFormatter,
+        )
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
 
     def test_fluent(self):
@@ -706,8 +765,9 @@ class FluentFormatterTestCase(LogTestBase):
         self.assertIn('request_id', context)
         self.assertEqual(local_context.request_id, context['request_id'])
         self.assertIn('global_request_id', context)
-        self.assertEqual(local_context.global_request_id,
-                         context['global_request_id'])
+        self.assertEqual(
+            local_context.global_request_id, context['global_request_id']
+        )
 
         self.assertEqual(test_msg % test_data, data['message'])
 
@@ -725,8 +785,7 @@ class FluentFormatterTestCase(LogTestBase):
             self.log.warning('testing', context=local_context)
         data = jsonutils.loads(self.stream.getvalue())
         self.assertIn('error_summary', data)
-        self.assertEqual('RuntimeError: test_exception',
-                         data['error_summary'])
+        self.assertEqual('RuntimeError: test_exception', data['error_summary'])
 
     def test_no_exception(self):
         local_context = _fake_context()
@@ -757,11 +816,13 @@ class FluentFormatterTestCase(LogTestBase):
 class ContextFormatterTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
-        self.config(logging_context_format_string="HAS CONTEXT "
-                                                  "[%(request_id)s]: "
-                                                  "%(message)s",
-                    logging_default_format_string="NOCTXT: %(message)s",
-                    logging_debug_format_suffix="--DBG")
+        self.config(
+            logging_context_format_string="HAS CONTEXT "
+            "[%(request_id)s]: "
+            "%(message)s",
+            logging_default_format_string="NOCTXT: %(message)s",
+            logging_debug_format_suffix="--DBG",
+        )
         self.log = log.getLogger('')  # obtain root logger instead of 'unknown'
         self._add_handler_with_cleanup(self.log)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
@@ -770,7 +831,7 @@ class ContextFormatterTestCase(LogTestBase):
     def test_uncontextualized_log(self):
         message = 'foo'
         self.log.info(message)
-        self.assertEqual("NOCTXT: %s\n" % message, self.stream.getvalue())
+        self.assertEqual(f"NOCTXT: {message}\n", self.stream.getvalue())
 
     def test_contextualized_log(self):
         ctxt = _fake_context()
@@ -793,7 +854,7 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'emulate logging within sqlalchemy'
         sa_log.info(message)
 
-        expected = (f'HAS CONTEXT [{ctxt.request_id}]: {message}\n')
+        expected = f'HAS CONTEXT [{ctxt.request_id}]: {message}\n'
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_message_logging_3rd_party_log_records(self):
@@ -804,15 +865,13 @@ class ContextFormatterTestCase(LogTestBase):
         message = self.trans_fixture.lazy('test ' + chr(128))
         sa_log.info(message)
 
-        expected = ('HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id,
-                                                    str(message)))
+        expected = f'HAS CONTEXT [{ctxt.request_id}]: {str(message)}\n'
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_debugging_log(self):
         message = 'baz'
         self.log.debug(message)
-        self.assertEqual("NOCTXT: %s --DBG\n" % message,
-                         self.stream.getvalue())
+        self.assertEqual(f"NOCTXT: {message} --DBG\n", self.stream.getvalue())
 
     def test_message_logging(self):
         # NOTE(luisg): Logging message objects with unicode objects
@@ -823,8 +882,7 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         self.log.info(message, context=ctxt)
-        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id,
-                                                   str(message))
+        expected = f"HAS CONTEXT [{ctxt.request_id}]: {str(message)}\n"
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_exception_logging(self):
@@ -848,7 +906,11 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
         ignored_exceptions = [
-            ValueError, TypeError, KeyError, AttributeError, ImportError
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            ImportError,
         ]
         for ignore in ignored_exceptions:
             try:
@@ -892,8 +954,7 @@ class ContextFormatterTestCase(LogTestBase):
         ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         self.log.debug(message, ex, context=ctxt)
         message = str(message) % ex
-        expected = "HAS CONTEXT [{}]: {} --DBG\n".format(ctxt.request_id,
-                                                         message)
+        expected = f"HAS CONTEXT [{ctxt.request_id}]: {message} --DBG\n"
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_unicode_conversion_in_formatter(self):
@@ -905,80 +966,89 @@ class ContextFormatterTestCase(LogTestBase):
         ex = Exception(self.trans_fixture.lazy('test' + chr(128)))
         no_adapt_log.info(message, ex)
         message = str(message) % ex
-        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id,
-                                                   message)
+        expected = f"HAS CONTEXT [{ctxt.request_id}]: {message}\n"
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_user_identity_logging(self):
-        self.config(logging_context_format_string="HAS CONTEXT "
-                                                  "[%(request_id)s "
-                                                  "%(user_identity)s]: "
-                                                  "%(message)s")
+        self.config(
+            logging_context_format_string="HAS CONTEXT "
+            "[%(request_id)s "
+            "%(user_identity)s]: "
+            "%(message)s"
+        )
         ctxt = _fake_context()
         ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
-        expected = ("HAS CONTEXT [%s %s %s %s %s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user_id, ctxt.project_id,
-                     ctxt.domain_id, ctxt.system_scope,
-                     ctxt.user_domain_id, ctxt.project_domain_id,
-                     str(message)))
+        expected = (
+            f"HAS CONTEXT [{ctxt.request_id} {ctxt.user_id} {ctxt.project_id} "
+            f"{ctxt.domain_id} {ctxt.system_scope} {ctxt.user_domain_id} "
+            f"{ctxt.project_domain_id}]: {str(message)}\n"
+        )
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_global_request_id_logging(self):
-        fmt_str = "HAS CONTEXT [%(request_id)s %(global_request_id)s]: " \
-                  "%(message)s"
+        fmt_str = (
+            "HAS CONTEXT [%(request_id)s %(global_request_id)s]: %(message)s"
+        )
         self.config(logging_context_format_string=fmt_str)
         ctxt = _fake_context()
         ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
-        expected = ("HAS CONTEXT [%s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.global_request_id, str(message)))
+        expected = (
+            f"HAS CONTEXT [{ctxt.request_id} {ctxt.global_request_id}]: "
+            f"{str(message)}\n"
+        )
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_user_identity_logging_set_format(self):
-        self.config(logging_context_format_string="HAS CONTEXT "
-                                                  "[%(request_id)s "
-                                                  "%(user_identity)s]: "
-                                                  "%(message)s",
-                    logging_user_identity_format="%(user)s "
-                                                 "%(project)s")
+        self.config(
+            logging_context_format_string="HAS CONTEXT "
+            "[%(request_id)s "
+            "%(user_identity)s]: "
+            "%(message)s",
+            logging_user_identity_format="%(user)s %(project)s",
+        )
         ctxt = _fake_context()
         ctxt.request_id = '99'
         message = 'test'
         self.log.info(message, context=ctxt)
-        expected = ("HAS CONTEXT [%s %s %s]: %s\n" %
-                    (ctxt.request_id, ctxt.user_id, ctxt.project_id,
-                     str(message)))
+        expected = (
+            f"HAS CONTEXT [{ctxt.request_id} {ctxt.user_id} "
+            f"{ctxt.project_id}]: {str(message)}\n"
+        )
         self.assertEqual(expected, self.stream.getvalue())
 
-    @mock.patch("datetime.datetime",
-                get_fake_datetime(
-                    datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)))
+    @mock.patch(
+        "datetime.datetime",
+        get_fake_datetime(datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)),
+    )
     @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
     def test_rfc5424_isotime_format(self):
         self.config(logging_default_format_string="%(isotime)s %(message)s")
 
         message = "test"
-        expected = "2015-12-16T13:54:26.517893+00:00 %s\n" % message
+        expected = f"2015-12-16T13:54:26.517893+00:00 {message}\n"
 
         self.log.info(message)
 
         self.assertEqual(expected, self.stream.getvalue())
 
-    @mock.patch("datetime.datetime",
-                get_fake_datetime(
-                    datetime.datetime(2015, 12, 16, 13, 54, 26)))
+    @mock.patch(
+        "datetime.datetime",
+        get_fake_datetime(datetime.datetime(2015, 12, 16, 13, 54, 26)),
+    )
     @mock.patch("time.time", new=mock.Mock(return_value=1450274066.000000))
-    @mock.patch("time.time_ns",
-                new=mock.Mock(return_value=1450274066000000000))
+    @mock.patch(
+        "time.time_ns", new=mock.Mock(return_value=1450274066000000000)
+    )
     @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
     def test_rfc5424_isotime_format_no_microseconds(self):
         self.config(logging_default_format_string="%(isotime)s %(message)s")
 
         message = "test"
-        expected = "2015-12-16T13:54:26.000000+00:00 %s\n" % message
+        expected = f"2015-12-16T13:54:26.000000+00:00 {message}\n"
 
         self.log.info(message)
 
@@ -1015,18 +1085,24 @@ class ExceptionLoggingTestCase(LogTestBase):
         except Exception:
             excepthook(*sys.exc_info())
 
-        expected_string = ("CRITICAL somename [-] Unhandled error: "
-                           "Exception: Some error happened")
-        self.assertIn(expected_string, self.stream.getvalue(),
-                      message="Exception is not logged")
+        expected_string = (
+            "CRITICAL somename [-] Unhandled error: "
+            "Exception: Some error happened"
+        )
+        self.assertIn(
+            expected_string,
+            self.stream.getvalue(),
+            message="Exception is not logged",
+        )
 
     def test_excepthook_installed(self):
         log.setup(self.CONF, "test_excepthook_installed")
         self.assertTrue(sys.excepthook != sys.__excepthook__)
 
-    @mock.patch("datetime.datetime",
-                get_fake_datetime(
-                    datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)))
+    @mock.patch(
+        "datetime.datetime",
+        get_fake_datetime(datetime.datetime(2015, 12, 16, 13, 54, 26, 517893)),
+    )
     @mock.patch("dateutil.tz.tzlocal", new=mock.Mock(return_value=tz.tzutc()))
     def test_rfc5424_isotime_format(self):
         self.config(
@@ -1046,10 +1122,10 @@ class ExceptionLoggingTestCase(LogTestBase):
         except Exception:
             excepthook(*sys.exc_info())
 
-        expected_string = ("2015-12-16T13:54:26.517893+00:00 "
-                           "Exception: %s" % message)
-        self.assertIn(expected_string,
-                      self.stream.getvalue())
+        expected_string = (
+            f"2015-12-16T13:54:26.517893+00:00 Exception: {message}"
+        )
+        self.assertIn(expected_string, self.stream.getvalue())
 
 
 class FancyRecordTestCase(LogTestBase):
@@ -1062,12 +1138,14 @@ class FancyRecordTestCase(LogTestBase):
         # NOTE(sdague): use the different formatters to demonstrate format
         # string with valid fancy keys and without. Slightly hacky, but given
         # the way log objects layer up seemed to be most concise approach
-        self.config(logging_context_format_string="%(color)s "
-                                                  "[%(request_id)s]: "
-                                                  "%(instance)s"
-                                                  "%(resource)s"
-                                                  "%(message)s",
-                    logging_default_format_string="%(missing)s: %(message)s")
+        self.config(
+            logging_context_format_string="%(color)s "
+            "[%(request_id)s]: "
+            "%(instance)s"
+            "%(resource)s"
+            "%(message)s",
+            logging_default_format_string="%(missing)s: %(message)s",
+        )
         self.colorlog = log.getLogger()
         self._add_handler_with_cleanup(self.colorlog, handlers.ColorHandler)
         self._set_log_level_with_cleanup(self.colorlog, logging.DEBUG)
@@ -1080,8 +1158,9 @@ class FancyRecordTestCase(LogTestBase):
         sys.stderr = io.StringIO()
 
         self.colorlog.info("foo")
-        self.assertNotEqual(-1,
-                            sys.stderr.getvalue().find("KeyError: 'missing'"))
+        self.assertNotEqual(
+            -1, sys.stderr.getvalue().find("KeyError: 'missing'")
+        )
 
         sys.stderr = error
 
@@ -1104,13 +1183,14 @@ class FancyRecordTestCase(LogTestBase):
 
     def test_fancy_key_in_log_msg(self):
         ctxt = _fake_context()
-        self._validate_keys(ctxt, '[%s]:' % ctxt.request_id)
+        self._validate_keys(ctxt, f'[{ctxt.request_id}]:')
 
     def test_instance_key_in_log_msg(self):
         ctxt = _fake_context()
         ctxt.resource_uuid = '1234'
-        self._validate_keys(ctxt, ('[%s]: [instance: %s]' %
-                                   (ctxt.request_id, ctxt.resource_uuid)))
+        self._validate_keys(
+            ctxt, (f'[{ctxt.request_id}]: [instance: {ctxt.resource_uuid}]')
+        )
 
     def test_resource_key_in_log_msg(self):
         color = handlers.ColorHandler.LEVEL_COLORS[logging.INFO]
@@ -1119,8 +1199,9 @@ class FancyRecordTestCase(LogTestBase):
         fake_resource = {'name': resource}
         message = 'info'
         self.colorlog.info(message, context=ctxt, resource=fake_resource)
-        expected = ('%s [%s]: [%s] %s\033[00m\n' %
-                    (color, ctxt.request_id, resource, message))
+        expected = (
+            f'{color} [{ctxt.request_id}]: [{resource}] {message}\033[00m\n'
+        )
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_resource_key_dict_in_log_msg(self):
@@ -1128,25 +1209,28 @@ class FancyRecordTestCase(LogTestBase):
         ctxt = _fake_context()
         type = 'fake_resource'
         resource_id = '202260f9-1224-490d-afaf-6a744c13141f'
-        fake_resource = {'type': type,
-                         'id': resource_id}
+        fake_resource = {'type': type, 'id': resource_id}
         message = 'info'
         self.colorlog.info(message, context=ctxt, resource=fake_resource)
-        expected = ('%s [%s]: [%s-%s] %s\033[00m\n' %
-                    (color, ctxt.request_id, type, resource_id, message))
+        expected = (
+            f'{color} [{ctxt.request_id}]: [{type}-{resource_id}] '
+            f'{message}\033[00m\n'
+        )
         self.assertEqual(expected, self.stream.getvalue())
 
 
 class InstanceRecordTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
-        self.config(logging_context_format_string="[%(request_id)s]: "
-                                                  "%(instance)s"
-                                                  "%(resource)s"
-                                                  "%(message)s",
-                    logging_default_format_string="%(instance)s"
-                                                  "%(resource)s"
-                                                  "%(message)s")
+        self.config(
+            logging_context_format_string="[%(request_id)s]: "
+            "%(instance)s"
+            "%(resource)s"
+            "%(message)s",
+            logging_default_format_string="%(instance)s"
+            "%(resource)s"
+            "%(message)s",
+        )
         self.log = log.getLogger()
         self._add_handler_with_cleanup(self.log)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
@@ -1157,7 +1241,7 @@ class InstanceRecordTestCase(LogTestBase):
         fake_resource = {'uuid': uuid}
         message = 'info'
         self.log.info(message, context=ctxt, instance=fake_resource)
-        expected = '[instance: %s]' % uuid
+        expected = f'[instance: {uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_dict_in_default_log_msg(self):
@@ -1165,7 +1249,7 @@ class InstanceRecordTestCase(LogTestBase):
         fake_resource = {'uuid': uuid}
         message = 'info'
         self.log.info(message, instance=fake_resource)
-        expected = '[instance: %s]' % uuid
+        expected = f'[instance: {uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_as_arg_in_context_log_msg(self):
@@ -1173,14 +1257,14 @@ class InstanceRecordTestCase(LogTestBase):
         uuid = 'C9B7CCC6-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt, instance_uuid=uuid)
-        expected = '[instance: %s]' % uuid
+        expected = f'[instance: {uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_as_arg_in_default_log_msg(self):
         uuid = 'C9B7CCC6-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, instance_uuid=uuid)
-        expected = '[instance: %s]' % uuid
+        expected = f'[instance: {uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_uuid_from_context_in_context_log_msg(self):
@@ -1188,7 +1272,7 @@ class InstanceRecordTestCase(LogTestBase):
         ctxt.instance_uuid = 'CCCCCCCC-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        expected = '[instance: %s]' % ctxt.instance_uuid
+        expected = f'[instance: {ctxt.instance_uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_resource_uuid_from_context_in_context_log_msg(self):
@@ -1196,7 +1280,7 @@ class InstanceRecordTestCase(LogTestBase):
         ctxt.resource_uuid = 'RRRRRRRR-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        expected = '[instance: %s]' % ctxt.resource_uuid
+        expected = f'[instance: {ctxt.resource_uuid}]'
         self.assertIn(expected, self.stream.getvalue())
 
     def test_instance_from_context_in_context_log_msg(self):
@@ -1206,7 +1290,7 @@ class InstanceRecordTestCase(LogTestBase):
         ctxt.instance = 'IIIIIIII-8A12-4C53-A736-D7A1C36A62F3'
         message = 'info'
         self.log.info(message, context=ctxt)
-        expected = '[instance: %s]' % ctxt.instance
+        expected = f'[instance: {ctxt.instance}]'
         self.assertIn(expected, self.stream.getvalue())
 
 
@@ -1222,19 +1306,21 @@ class TraceLevelTestCase(LogTestBase):
         ctxt = _fake_context()
         message = 'my trace message'
         self.mylog.trace(message, context=ctxt)
-        self.assertEqual('%s\n' % message, self.stream.getvalue())
+        self.assertEqual(f'{message}\n', self.stream.getvalue())
 
 
 class DomainTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
-        self.config(logging_context_format_string="[%(request_id)s]: "
-                                                  "%(user_identity)s "
-                                                  "%(message)s",
-                    logging_user_identity_format="%(user)s %(project)s "
-                                                 "%(user_domain)s "
-                                                 "%(project_domain)s "
-                                                 "%(domain)s")
+        self.config(
+            logging_context_format_string="[%(request_id)s]: "
+            "%(user_identity)s "
+            "%(message)s",
+            logging_user_identity_format="%(user)s %(project)s "
+            "%(user_domain)s "
+            "%(project_domain)s "
+            "%(domain)s",
+        )
         self.mylog = log.getLogger()
         self._add_handler_with_cleanup(self.mylog)
         self._set_log_level_with_cleanup(self.mylog, logging.DEBUG)
@@ -1253,24 +1339,26 @@ class DomainTestCase(LogTestBase):
 
     def test_domain_in_log_msg(self):
         ctxt = _fake_context()
-        user_identity = (self.CONF.logging_user_identity_format %
-                         ctxt.get_logging_values())
+        user_identity = (
+            self.CONF.logging_user_identity_format % ctxt.get_logging_values()
+        )
         self.assertIn(ctxt.domain_id, user_identity)
         self.assertIn(ctxt.project_domain_id, user_identity)
         self.assertIn(ctxt.user_domain_id, user_identity)
-        self._validate_keys(ctxt, ('[%s]: %s' %
-                                   (ctxt.request_id, user_identity)))
+        self._validate_keys(ctxt, (f'[{ctxt.request_id}]: {user_identity}'))
 
 
 class SetDefaultsTestCase(BaseTestCase):
     class TestConfigOpts(cfg.ConfigOpts):
         def __call__(self, args=None):
-            return cfg.ConfigOpts.__call__(self,
-                                           args=args,
-                                           prog='test',
-                                           version='1.0',
-                                           usage='%(prog)s FOO BAR',
-                                           default_config_files=[])
+            return cfg.ConfigOpts.__call__(
+                self,
+                args=args,
+                prog='test',
+                version='1.0',
+                usage='%(prog)s FOO BAR',
+                default_config_files=[],
+            )
 
     def setUp(self):
         super().setUp()
@@ -1278,8 +1366,7 @@ class SetDefaultsTestCase(BaseTestCase):
         self.conf.register_opts(_options.log_opts)
         self.conf.register_cli_opts(_options.logging_cli_opts)
 
-        self._orig_defaults = {o.dest: o.default
-                               for o in _options.log_opts}
+        self._orig_defaults = {o.dest: o.default for o in _options.log_opts}
         self.addCleanup(self._restore_log_defaults)
 
     def _restore_log_defaults(self):
@@ -1287,20 +1374,25 @@ class SetDefaultsTestCase(BaseTestCase):
             opt.default = self._orig_defaults[opt.dest]
 
     def test_default_log_level_to_none(self):
-        log.set_defaults(logging_context_format_string=None,
-                         default_log_levels=None)
+        log.set_defaults(
+            logging_context_format_string=None, default_log_levels=None
+        )
         self.conf([])
-        self.assertEqual(_options.DEFAULT_LOG_LEVELS,
-                         self.conf.default_log_levels)
+        self.assertEqual(
+            _options.DEFAULT_LOG_LEVELS, self.conf.default_log_levels
+        )
 
     def test_default_log_level_method(self):
-        self.assertEqual(_options.DEFAULT_LOG_LEVELS,
-                         log.get_default_log_levels())
+        self.assertEqual(
+            _options.DEFAULT_LOG_LEVELS, log.get_default_log_levels()
+        )
 
     def test_change_default(self):
-        my_default = '%(asctime)s %(levelname)s %(name)s [%(request_id)s '\
-                     '%(user_id)s %(project)s] %(instance)s'\
-                     '%(message)s'
+        my_default = (
+            '%(asctime)s %(levelname)s %(name)s [%(request_id)s '
+            '%(user_id)s %(project)s] %(instance)s'
+            '%(message)s'
+        )
         log.set_defaults(logging_context_format_string=my_default)
         self.conf([])
         self.assertEqual(self.conf.logging_context_format_string, my_default)
@@ -1334,14 +1426,15 @@ class MutateTestCase(BaseTestCase):
 
     def setup_confs(self, *confs):
         paths = self.create_tempfiles(
-            ('conf_%d' % i, conf) for i, conf in enumerate(confs))
+            (f'conf_{i}', conf) for i, conf in enumerate(confs)
+        )
         self.CONF(['--config-file', paths[0]])
         return paths
 
     def test_debug(self):
         paths = self.setup_confs(
-            "[DEFAULT]\ndebug = false\n",
-            "[DEFAULT]\ndebug = true\n")
+            "[DEFAULT]\ndebug = false\n", "[DEFAULT]\ndebug = true\n"
+        )
         log_root = log.getLogger(None).logger
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
         self.assertEqual(False, self.CONF.debug)
@@ -1358,7 +1451,8 @@ class MutateTestCase(BaseTestCase):
         logini = self.create_tempfiles([('log.ini', MIN_LOG_INI)])[0]
         paths = self.setup_confs(
             "[DEFAULT]\nlog_config_append = no_exist\n",
-            "[DEFAULT]\nlog_config_append = %s\n" % logini)
+            f"[DEFAULT]\nlog_config_append = {logini}\n",
+        )
         self.assertRaises(log.LogConfigError, log.setup, self.CONF, '')
         self.assertFalse(mock_fileConfig.called)
 
@@ -1366,15 +1460,17 @@ class MutateTestCase(BaseTestCase):
         self.CONF.mutate_config_files()
 
         mock_fileConfig.assert_called_once_with(
-            logini, disable_existing_loggers=False)
+            logini, disable_existing_loggers=False
+        )
 
     @mock.patch.object(logging.config, "fileConfig")
     def test_log_config_append_no_touch(self, mock_fileConfig):
         logini = self.create_tempfiles([('log.ini', MIN_LOG_INI)])[0]
-        self.setup_confs("[DEFAULT]\nlog_config_append = %s\n" % logini)
+        self.setup_confs(f"[DEFAULT]\nlog_config_append = {logini}\n")
         log.setup(self.CONF, '')
         mock_fileConfig.assert_called_once_with(
-            logini, disable_existing_loggers=False)
+            logini, disable_existing_loggers=False
+        )
         mock_fileConfig.reset_mock()
 
         self.CONF.mutate_config_files()
@@ -1384,10 +1480,11 @@ class MutateTestCase(BaseTestCase):
     @mock.patch.object(logging.config, "fileConfig")
     def test_log_config_append_touch(self, mock_fileConfig):
         logini = self.create_tempfiles([('log.ini', MIN_LOG_INI)])[0]
-        self.setup_confs("[DEFAULT]\nlog_config_append = %s\n" % logini)
+        self.setup_confs(f"[DEFAULT]\nlog_config_append = {logini}\n")
         log.setup(self.CONF, '')
         mock_fileConfig.assert_called_once_with(
-            logini, disable_existing_loggers=False)
+            logini, disable_existing_loggers=False
+        )
         mock_fileConfig.reset_mock()
 
         # No thread sync going on here, just ensure the mtimes are different
@@ -1396,7 +1493,8 @@ class MutateTestCase(BaseTestCase):
         self.CONF.mutate_config_files()
 
         mock_fileConfig.assert_called_once_with(
-            logini, disable_existing_loggers=False)
+            logini, disable_existing_loggers=False
+        )
 
     def mk_log_config(self, data):
         """Turns a dictConfig-like structure into one suitable for fileConfig.
@@ -1420,18 +1518,16 @@ class MutateTestCase(BaseTestCase):
             skeys = ",".join(keys)
             if section == 'loggers' and 'root' in data:
                 skeys = ("root," + skeys) if skeys else "root"
-            lines.extend(["[%s]" % section,
-                          "keys=%s" % skeys])
+            lines.extend([f"[{section}]", f"keys={skeys}"])
             for key in keys:
-                lines.extend(["",
-                              f"[{section[:-1]}_{key}]"])
+                lines.extend(["", f"[{section[:-1]}_{key}]"])
                 item = items[key]
                 lines.extend(f"{k}={item[k]}" for k in sorted(item))
                 if section == 'handlers':
                     if 'args' not in item:
                         lines.append("args=()")
                 elif section == 'loggers':
-                    lines.append("qualname=%s" % key)
+                    lines.append(f"qualname={key}")
                     if 'handlers' not in item:
                         lines.append("handlers=")
             lines.append("")
@@ -1444,19 +1540,21 @@ class MutateTestCase(BaseTestCase):
         return "\n".join(lines)
 
     def test_mk_log_config_full(self):
-        data = {'loggers': {'aaa': {'level': 'INFO'},
-                            'bbb': {'level': 'WARN',
-                                    'propagate': False}},
-                'handlers': {'aaa': {'level': 'INFO'},
-                             'bbb': {'level': 'WARN',
-                                     'propagate': False,
-                                     'args': (1, 2)}},
-                'formatters': {'aaa': {'level': 'INFO'},
-                               'bbb': {'level': 'WARN',
-                                       'propagate': False}},
-                'root': {'level': 'INFO',
-                         'handlers': 'aaa'},
-                }
+        data = {
+            'loggers': {
+                'aaa': {'level': 'INFO'},
+                'bbb': {'level': 'WARN', 'propagate': False},
+            },
+            'handlers': {
+                'aaa': {'level': 'INFO'},
+                'bbb': {'level': 'WARN', 'propagate': False, 'args': (1, 2)},
+            },
+            'formatters': {
+                'aaa': {'level': 'INFO'},
+                'bbb': {'level': 'WARN', 'propagate': False},
+            },
+            'root': {'level': 'INFO', 'handlers': 'aaa'},
+        }
         full = """[formatters]
 keys=aaa,bbb
 
@@ -1513,12 +1611,16 @@ keys=
 
     @contextmanager
     def mutate_conf(self, conf1, conf2):
-        loginis = self.create_tempfiles([
-            ('log1.ini', self.mk_log_config(conf1)),
-            ('log2.ini', self.mk_log_config(conf2))])
+        loginis = self.create_tempfiles(
+            [
+                ('log1.ini', self.mk_log_config(conf1)),
+                ('log2.ini', self.mk_log_config(conf2)),
+            ]
+        )
         confs = self.setup_confs(
-            "[DEFAULT]\nlog_config_append = %s\n" % loginis[0],
-            "[DEFAULT]\nlog_config_append = %s\n" % loginis[1])
+            f"[DEFAULT]\nlog_config_append = {loginis[0]}\n",
+            f"[DEFAULT]\nlog_config_append = {loginis[1]}\n",
+        )
         log.setup(self.CONF, '')
 
         yield loginis, confs
@@ -1531,11 +1633,13 @@ keys=
     def test_log_config_append_change_file(self, mock_fileConfig):
         with self.mutate_conf({}, {}) as (loginis, confs):
             mock_fileConfig.assert_called_once_with(
-                loginis[0], disable_existing_loggers=False)
+                loginis[0], disable_existing_loggers=False
+            )
             mock_fileConfig.reset_mock()
 
         mock_fileConfig.assert_called_once_with(
-            loginis[1], disable_existing_loggers=False)
+            loginis[1], disable_existing_loggers=False
+        )
 
     def set_root_stream(self):
         root = logging.getLogger()
@@ -1545,10 +1649,11 @@ keys=
         return handler.stream
 
     def test_remove_handler(self):
-        fake_handler = {'class': 'logging.StreamHandler',
-                        'args': ()}
-        conf1 = {'root': {'handlers': 'fake'},
-                 'handlers': {'fake': fake_handler}}
+        fake_handler = {'class': 'logging.StreamHandler', 'args': ()}
+        conf1 = {
+            'root': {'handlers': 'fake'},
+            'handlers': {'fake': fake_handler},
+        }
         conf2 = {'root': {'handlers': ''}}
         with self.mutate_conf(conf1, conf2) as (loginis, confs):
             stream = self.set_root_stream()
@@ -1562,11 +1667,15 @@ keys=
     def test_remove_logger(self):
         fake_handler = {'class': 'logging.StreamHandler'}
         fake_logger = {'level': 'WARN'}
-        conf1 = {'root': {'handlers': 'fake'},
-                 'handlers': {'fake': fake_handler},
-                 'loggers': {'a.a': fake_logger}}
-        conf2 = {'root': {'handlers': 'fake'},
-                 'handlers': {'fake': fake_handler}}
+        conf1 = {
+            'root': {'handlers': 'fake'},
+            'handlers': {'fake': fake_handler},
+            'loggers': {'a.a': fake_logger},
+        }
+        conf2 = {
+            'root': {'handlers': 'fake'},
+            'handlers': {'fake': fake_handler},
+        }
         stream = io.StringIO()
         with self.mutate_conf(conf1, conf2) as (loginis, confs):
             stream = self.set_root_stream()
@@ -1581,7 +1690,6 @@ keys=
 
 
 class LogConfigOptsTestCase(BaseTestCase):
-
     def setUp(self):
         super().setUp()
 
@@ -1603,8 +1711,9 @@ class LogConfigOptsTestCase(BaseTestCase):
         self.assertIsNone(self.CONF.log_file)
         self.assertIsNone(self.CONF.log_dir)
 
-        self.assertEqual(_options._DEFAULT_LOG_DATE_FORMAT,
-                         self.CONF.log_date_format)
+        self.assertEqual(
+            _options._DEFAULT_LOG_DATE_FORMAT, self.CONF.log_date_format
+        )
 
         self.assertEqual(False, self.CONF.use_syslog)
         self.assertEqual(False, self.CONF.use_json)
@@ -1621,13 +1730,15 @@ class LogConfigOptsTestCase(BaseTestCase):
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
         logger = log._loggers[None].logger
         self.assertEqual(1, len(logger.handlers))
-        self.assertIsInstance(logger.handlers[0],
-                              logging.handlers.WatchedFileHandler)
+        self.assertIsInstance(
+            logger.handlers[0], logging.handlers.WatchedFileHandler
+        )
 
     def test_log_publish_errors_handlers(self):
         fake_handler = mock.MagicMock()
-        with mock.patch('oslo_utils.importutils.import_object',
-                        return_value=fake_handler) as mock_import:
+        with mock.patch(
+            'oslo_utils.importutils.import_object', return_value=fake_handler
+        ) as mock_import:
             log_dir = tempfile.mkdtemp()
             self.CONF(['--log-dir', log_dir])
             self.CONF.set_default('use_stderr', False)
@@ -1635,12 +1746,14 @@ class LogConfigOptsTestCase(BaseTestCase):
             log._setup_logging_from_conf(self.CONF, 'test', 'test')
             logger = log._loggers[None].logger
             self.assertEqual(2, len(logger.handlers))
-            self.assertIsInstance(logger.handlers[0],
-                                  logging.handlers.WatchedFileHandler)
+            self.assertIsInstance(
+                logger.handlers[0], logging.handlers.WatchedFileHandler
+            )
             self.assertEqual(fake_handler, logger.handlers[1])
             mock_import.assert_called_once_with(
                 'oslo_messaging.notify.log_handler.PublishErrorsHandler',
-                logging.ERROR)
+                logging.ERROR,
+            )
 
     def test_logfile_deprecated(self):
         logfile = '/some/other/path/foo-bar.log'
@@ -1662,8 +1775,7 @@ class LogConfigOptsTestCase(BaseTestCase):
         logger = log._loggers[None].logger
         for handler in logger.handlers:
             formatter = handler.formatter
-            self.assertIsInstance(formatter,
-                                  formatters.ContextFormatter)
+            self.assertIsInstance(formatter, formatters.ContextFormatter)
 
     def test_json_formatter(self):
         self.CONF(['--use-json'])
@@ -1671,13 +1783,14 @@ class LogConfigOptsTestCase(BaseTestCase):
         logger = log._loggers[None].logger
         for handler in logger.handlers:
             formatter = handler.formatter
-            self.assertIsInstance(formatter,
-                                  formatters.JSONFormatter)
+            self.assertIsInstance(formatter, formatters.JSONFormatter)
 
     def test_handlers_cleanup(self):
         """Test that all old handlers get removed from log_root."""
-        old_handlers = [log.handlers.ColorHandler(),
-                        log.handlers.ColorHandler()]
+        old_handlers = [
+            log.handlers.ColorHandler(),
+            log.handlers.ColorHandler(),
+        ]
         log._loggers[None].logger.handlers = list(old_handlers)
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
         handlers = log._loggers[None].logger.handlers
@@ -1688,11 +1801,16 @@ class LogConfigOptsTestCase(BaseTestCase):
         all_options = _options.list_opts()
         (group, options) = all_options[0]
         self.assertIsNone(group)
-        self.assertEqual((_options.common_cli_opts +
-                          _options.logging_cli_opts +
-                          _options.generic_log_opts +
-                          _options.log_opts +
-                          _options.versionutils.deprecated_opts), options)
+        self.assertEqual(
+            (
+                _options.common_cli_opts
+                + _options.logging_cli_opts
+                + _options.generic_log_opts
+                + _options.log_opts
+                + _options.versionutils.deprecated_opts
+            ),
+            options,
+        )
 
 
 class LogConfigTestCase(BaseTestCase):
@@ -1710,36 +1828,36 @@ class LogConfigTestCase(BaseTestCase):
     def test_log_config_append_not_exist(self):
         os.remove(self.log_config_append)
         self.config(log_config_append=self.log_config_append)
-        self.assertRaises(log.LogConfigError, log.setup,
-                          self.CONF,
-                          'test_log_config_append')
+        self.assertRaises(
+            log.LogConfigError, log.setup, self.CONF, 'test_log_config_append'
+        )
 
     def test_log_config_append_invalid(self):
         names = self.create_tempfiles([('logging', 'squawk')])
         self.log_config_append = names[0]
         self.config(log_config_append=self.log_config_append)
-        self.assertRaises(log.LogConfigError, log.setup,
-                          self.CONF,
-                          'test_log_config_append')
+        self.assertRaises(
+            log.LogConfigError, log.setup, self.CONF, 'test_log_config_append'
+        )
 
     def test_log_config_append_unreadable(self):
         os.chmod(self.log_config_append, 0)
         self.config(log_config_append=self.log_config_append)
-        self.assertRaises(log.LogConfigError, log.setup,
-                          self.CONF,
-                          'test_log_config_append')
+        self.assertRaises(
+            log.LogConfigError, log.setup, self.CONF, 'test_log_config_append'
+        )
 
     def test_log_config_append_disable_existing_loggers(self):
         self.config(log_config_append=self.log_config_append)
         with mock.patch('logging.config.fileConfig') as fileConfig:
             log.setup(self.CONF, 'test_log_config_append')
 
-        fileConfig.assert_called_once_with(self.log_config_append,
-                                           disable_existing_loggers=False)
+        fileConfig.assert_called_once_with(
+            self.log_config_append, disable_existing_loggers=False
+        )
 
 
 class SavingAdapter(log.KeywordArgumentAdapter):
-
     def __init__(self, *args, **kwds):
         super(log.KeywordArgumentAdapter, self).__init__(*args, **kwds)
         self.results = []
@@ -1753,7 +1871,6 @@ class SavingAdapter(log.KeywordArgumentAdapter):
 
 
 class KeywordArgumentAdapterTestCase(BaseTestCase):
-
     def setUp(self):
         super().setUp()
         # Construct a mock that will look like a Logger configured to
@@ -1774,34 +1891,39 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         data = {key: val}
         a = log.KeywordArgumentAdapter(self.mock_log, data)
         msg, kwargs = a.process('message', {})
-        self.assertEqual({'extra': {key: val, 'extra_keys': [key]}},
-                         kwargs)
+        self.assertEqual({'extra': {key: val, 'extra_keys': [key]}}, kwargs)
 
     def test_pass_through_exc_info(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
         exc_message = 'exception'
         msg, kwargs = a.process('message', {'exc_info': exc_message})
         self.assertEqual(
-            {'extra': {'extra_keys': []},
-             'exc_info': exc_message},
-            kwargs)
+            {'extra': {'extra_keys': []}, 'exc_info': exc_message}, kwargs
+        )
 
     def test_update_extras(self):
         a = log.KeywordArgumentAdapter(self.mock_log, {})
-        data = {'context': 'some context object',
-                'instance': 'instance identifier',
-                'resource_uuid': 'UUID for instance',
-                'anything': 'goes'}
+        data = {
+            'context': 'some context object',
+            'instance': 'instance identifier',
+            'resource_uuid': 'UUID for instance',
+            'anything': 'goes',
+        }
         expected = copy.copy(data)
 
         msg, kwargs = a.process('message', data)
         self.assertEqual(
-            {'extra': {'anything': expected['anything'],
-                       'context': expected['context'],
-                       'extra_keys': sorted(expected.keys()),
-                       'instance': expected['instance'],
-                       'resource_uuid': expected['resource_uuid']}},
-            kwargs)
+            {
+                'extra': {
+                    'anything': expected['anything'],
+                    'context': expected['context'],
+                    'extra_keys': sorted(expected.keys()),
+                    'instance': expected['instance'],
+                    'resource_uuid': expected['resource_uuid'],
+                }
+            },
+            kwargs,
+        )
 
     def test_pass_args_to_log(self):
         a = SavingAdapter(self.mock_log, {})
@@ -1824,7 +1946,6 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         self.assertEqual(expected, results[1])
 
     def test_pass_args_via_debug(self):
-
         a = SavingAdapter(self.mock_log, {})
         message = 'message'
         exc_message = 'exception'
@@ -1845,7 +1966,6 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
 
 
 class UnicodeConversionTestCase(BaseTestCase):
-
     _MSG = 'Message with unicode char \ua000 in the middle'
 
     def test_ascii_to_unicode(self):
@@ -1870,7 +1990,6 @@ class UnicodeConversionTestCase(BaseTestCase):
 
 
 class LoggerNameTestCase(LoggerTestCase):
-
     def test_oslo_dot(self):
         logger_name = 'oslo.subname'
         logger = log.getLogger(logger_name)
@@ -1887,7 +2006,8 @@ class IsDebugEnabledTestCase(test_base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.config_fixture = self.useFixture(
-            fixture_config.Config(cfg.ConfigOpts()))
+            fixture_config.Config(cfg.ConfigOpts())
+        )
         self.config = self.config_fixture.config
         self.CONF = self.config_fixture.conf
         log.register_options(self.config_fixture.conf)

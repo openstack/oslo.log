@@ -90,6 +90,7 @@ class _ReallyPipeMutex(_BaseMutex):
     Class code copied from Swift's swift/common/utils.py
     Related eventlet bug: https://github.com/eventlet/eventlet/issues/432
     """
+
     def __init__(self):
         super().__init__()
 
@@ -188,6 +189,7 @@ class _AsyncioMutex(_BaseMutex):
         2. An ``asyncio.Lock`` for locking across greenlets within a single OS
            thread (each OS thread running greenlets has its own asyncio loop)
     """
+
     def __init__(self):
         super().__init__()
         self._asyncio_lock = asyncio.Lock()
@@ -253,8 +255,7 @@ class _AsyncioMutex(_BaseMutex):
 _HUB = eventlet.hubs.get_hub()
 if isinstance(_HUB, eventlet.hubs.asyncio.Hub):
     major, minor, patch = map(
-        int,
-        importlib.metadata.version("eventlet").split(".")[:3]
+        int, importlib.metadata.version("eventlet").split(".")[:3]
     )
     if (major, minor, patch) < (0, 38, 2):
         raise RuntimeError(

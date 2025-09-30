@@ -72,7 +72,6 @@ class OSSysLogHandler(logging.Handler):
 
 
 class OSJournalHandler(logging.Handler):
-
     custom_fields = (
         'project_name',
         'project_id',
@@ -118,7 +117,8 @@ class OSJournalHandler(logging.Handler):
             # (it's constant anyway)
             if not record.exc_text:
                 record.exc_text = self.formatter.formatException(
-                    record.exc_info)
+                    record.exc_info
+                )
         if record.exc_text:
             extras['EXCEPTION_INFO'] = record.exc_text
             # Leave EXCEPTION_TEXT for backward compatibility
@@ -139,6 +139,7 @@ class ColorHandler(logging.StreamHandler):
     There is also a '%(reset_color)s' key that can be used to manually reset
     the color within a log line.
     """
+
     LEVEL_COLORS = {
         _TRACE: '\033[00;35m',  # MAGENTA
         logging.DEBUG: '\033[00;32m',  # GREEN

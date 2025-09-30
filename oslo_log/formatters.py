@@ -56,10 +56,7 @@ def _update_record_with_context(record):
     The request context, if there is one, will either be passed with the
     incoming record or in the global thread-local store.
     """
-    context = record.__dict__.get(
-        'context',
-        context_utils.get_current()
-    )
+    context = record.__dict__.get('context', context_utils.get_current())
     if context:
         d = _dictify_context(context)
         # Copy the context values directly onto the record so they can be
@@ -71,16 +68,14 @@ def _update_record_with_context(record):
 
 
 def _ensure_unicode(msg):
-    """Do our best to turn the input argument into a unicode object.
-    """
+    """Do our best to turn the input argument into a unicode object."""
     if isinstance(msg, str):
         return msg
     if not isinstance(msg, bytes):
         return str(msg)
     return encodeutils.safe_decode(
-        msg,
-        incoming='utf-8',
-        errors='xmlcharrefreplace')
+        msg, incoming='utf-8', errors='xmlcharrefreplace'
+    )
 
 
 def _get_error_summary(record):
@@ -113,8 +108,13 @@ def _get_error_summary(record):
         # that uses the value simpler.
         if not exc_info[0]:
             exc_info = None
-        elif exc_info[0] in (TypeError, ValueError,
-                             KeyError, AttributeError, ImportError):
+        elif exc_info[0] in (
+            TypeError,
+            ValueError,
+            KeyError,
+            AttributeError,
+            ImportError,
+        ):
             # NOTE(dhellmann): Do not include information about
             # common built-in exceptions used to detect cases of
             # bad or missing data. We don't use isinstance() here
@@ -145,7 +145,7 @@ def _get_error_summary(record):
                 error_summary = error_summary.split('\n', 1)[0]
         except TypeError as type_err:
             # Work around https://bugs.python.org/issue28603
-            error_summary = "<exception with %s>" % str(type_err)
+            error_summary = f"<exception with {str(type_err)}>"
         finally:
             # Remove the local reference to the exception and
             # traceback to avoid a memory leak through the frame
@@ -190,11 +190,12 @@ class JSONFormatter(logging.Formatter):
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
             msg = str(type_error)
-            lines = ['<Unprintable exception due to %s>\n' % msg]
+            lines = [f'<Unprintable exception due to {msg}>\n']
         if strip_newlines:
-            lines = [filter(
-                lambda x: x,
-                line.rstrip().splitlines()) for line in lines]
+            lines = [
+                filter(lambda x: x, line.rstrip().splitlines())
+                for line in lines
+            ]
             lines = list(itertools.chain(*lines))
         return lines
 
@@ -210,28 +211,30 @@ class JSONFormatter(logging.Formatter):
             # the value to be formatted.  Don't filter anything.
             if msg_keys:
                 args = {k: v for k, v in args.items() if k in msg_keys}
-        message = {'message': record.getMessage(),
-                   'asctime': self.formatTime(record, self.datefmt),
-                   'name': record.name,
-                   'msg': record.msg,
-                   'args': args,
-                   'levelname': record.levelname,
-                   'levelno': record.levelno,
-                   'pathname': record.pathname,
-                   'filename': record.filename,
-                   'module': record.module,
-                   'lineno': record.lineno,
-                   'funcname': record.funcName,
-                   'created': record.created,
-                   'msecs': record.msecs,
-                   'relative_created': record.relativeCreated,
-                   'thread': record.thread,
-                   'thread_name': record.threadName,
-                   'process_name': record.processName,
-                   'process': record.process,
-                   'traceback': None,
-                   'hostname': self.hostname,
-                   'error_summary': _get_error_summary(record)}
+        message = {
+            'message': record.getMessage(),
+            'asctime': self.formatTime(record, self.datefmt),
+            'name': record.name,
+            'msg': record.msg,
+            'args': args,
+            'levelname': record.levelname,
+            'levelno': record.levelno,
+            'pathname': record.pathname,
+            'filename': record.filename,
+            'module': record.module,
+            'lineno': record.lineno,
+            'funcname': record.funcName,
+            'created': record.created,
+            'msecs': record.msecs,
+            'relative_created': record.relativeCreated,
+            'thread': record.thread,
+            'thread_name': record.threadName,
+            'process_name': record.processName,
+            'process': record.process,
+            'traceback': None,
+            'hostname': self.hostname,
+            'error_summary': _get_error_summary(record),
+        }
 
         # Build the extra values that were given to us, including
         # the context.
@@ -285,6 +288,7 @@ class FluentFormatter(logging.Formatter):
         try:
             # check if running under uwsgi
             import uwsgi
+
             svc_name = uwsgi.opt.get("name")
             self.uwsgi_name = svc_name
         except Exception:
@@ -296,27 +300,29 @@ class FluentFormatter(logging.Formatter):
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
             msg = str(type_error)
-            lines = ['<Unprintable exception due to %s>\n' % msg]
+            lines = [f'<Unprintable exception due to {msg}>\n']
         if strip_newlines:
-            lines = functools.reduce(lambda a,
-                                     line: a + line.rstrip().splitlines(),
-                                     lines, [])
+            lines = functools.reduce(
+                lambda a, line: a + line.rstrip().splitlines(), lines, []
+            )
         return lines
 
     def format(self, record):
-        message = {'message': record.getMessage(),
-                   'time': self.formatTime(record, self.datefmt),
-                   'name': record.name,
-                   'level': record.levelname,
-                   'filename': record.filename,
-                   'lineno': record.lineno,
-                   'module': record.module,
-                   'funcname': record.funcName,
-                   'process_name': record.processName,
-                   'cmdline': self.cmdline,
-                   'hostname': self.hostname,
-                   'traceback': None,
-                   'error_summary': _get_error_summary(record)}
+        message = {
+            'message': record.getMessage(),
+            'time': self.formatTime(record, self.datefmt),
+            'name': record.name,
+            'level': record.levelname,
+            'filename': record.filename,
+            'lineno': record.lineno,
+            'module': record.module,
+            'funcname': record.funcName,
+            'process_name': record.processName,
+            'cmdline': self.cmdline,
+            'hostname': self.hostname,
+            'traceback': None,
+            'error_summary': _get_error_summary(record),
+        }
 
         # Build the extra values that were given to us, including
         # the context.
@@ -410,13 +416,13 @@ class ContextFormatter(logging.Formatter):
         context = _update_record_with_context(record)
         if instance:
             try:
-                instance_extra = (self.conf.instance_format
-                                  % instance)
+                instance_extra = self.conf.instance_format % instance
             except TypeError:
                 instance_extra = instance
         elif instance_uuid:
-            instance_extra = (self.conf.instance_uuid_format
-                              % {'uuid': instance_uuid})
+            instance_extra = self.conf.instance_uuid_format % {
+                'uuid': instance_uuid
+            }
         elif context:
             # FIXME(dhellmann): We should replace these nova-isms with
             # more generic handling in the Context class.  See the
@@ -429,22 +435,30 @@ class ContextFormatter(logging.Formatter):
             resource_uuid = getattr(context, 'resource_uuid', None)
 
             if instance:
-                instance_extra = (self.conf.instance_format
-                                  % {'uuid': instance})
+                instance_extra = self.conf.instance_format % {'uuid': instance}
             elif instance_uuid:
-                instance_extra = (self.conf.instance_uuid_format
-                                  % {'uuid': instance_uuid})
+                instance_extra = self.conf.instance_uuid_format % {
+                    'uuid': instance_uuid
+                }
             elif resource_uuid:
-                instance_extra = (self.conf.instance_uuid_format
-                                  % {'uuid': resource_uuid})
+                instance_extra = self.conf.instance_uuid_format % {
+                    'uuid': resource_uuid
+                }
 
         record.instance = instance_extra
 
         # NOTE(sdague): default the fancier formatting params
         # to an empty string so we don't throw an exception if
         # they get used
-        for key in ('instance', 'color', 'user_identity', 'resource',
-                    'user_name', 'project_name', 'global_request_id'):
+        for key in (
+            'instance',
+            'color',
+            'user_identity',
+            'resource',
+            'user_name',
+            'project_name',
+            'global_request_id',
+        ):
             if key not in record.__dict__:
                 record.__dict__[key] = ''
 
@@ -453,8 +467,8 @@ class ContextFormatter(logging.Formatter):
         # get_logging_values of oslo.context.
         if context:
             record.user_identity = (
-                self.conf.logging_user_identity_format %
-                _ReplaceFalseValue(_dictify_context(context))
+                self.conf.logging_user_identity_format
+                % _ReplaceFalseValue(_dictify_context(context))
             )
 
         if record.__dict__.get('request_id'):
@@ -479,8 +493,10 @@ class ContextFormatter(logging.Formatter):
             # string includes the bits we need to include it.
             fmt += ': %(error_summary)s'
 
-        if (record.levelno == logging.DEBUG and
-                self.conf.logging_debug_format_suffix):
+        if (
+            record.levelno == logging.DEBUG
+            and self.conf.logging_debug_format_suffix
+        ):
             fmt += " " + self.conf.logging_debug_format_suffix
 
         self._compute_iso_time(record)
@@ -493,8 +509,9 @@ class ContextFormatter(logging.Formatter):
         except TypeError as err:
             # Something went wrong, report that instead so we at least
             # get the error message.
-            record.msg = 'Error formatting log line msg={!r} err={!r}'.format(
-                record.msg, err).replace('%', '*')
+            record.msg = (
+                f'Error formatting log line msg={record.msg!r} err={err!r}'
+            ).replace('%', '*')
             return logging.Formatter.format(self, record)
 
     def formatException(self, exc_info, record=None):
@@ -505,16 +522,17 @@ class ContextFormatter(logging.Formatter):
             except TypeError as type_error:
                 # Work around https://bugs.python.org/issue28603
                 msg = str(type_error)
-                return '<Unprintable exception due to %s>\n' % msg
+                return f'<Unprintable exception due to {msg}>\n'
 
         stringbuffer = io.StringIO()
         try:
-            traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
-                                      None, stringbuffer)
+            traceback.print_exception(
+                exc_info[0], exc_info[1], exc_info[2], None, stringbuffer
+            )
         except TypeError as type_error:
             # Work around https://bugs.python.org/issue28603
             msg = str(type_error)
-            stringbuffer.write('<Unprintable exception due to %s>\n' % msg)
+            stringbuffer.write(f'<Unprintable exception due to {msg}>\n')
 
         lines = stringbuffer.getvalue().split('\n')
         stringbuffer.close()
@@ -534,8 +552,11 @@ class ContextFormatter(logging.Formatter):
     def _compute_iso_time(self, record):
         # set iso8601 timestamp
         localtz = tz.tzlocal()
-        record.isotime = datetime.datetime.fromtimestamp(
-            record.created).replace(tzinfo=localtz).isoformat()
+        record.isotime = (
+            datetime.datetime.fromtimestamp(record.created)
+            .replace(tzinfo=localtz)
+            .isoformat()
+        )
         if record.created == int(record.created):
             # NOTE(stpierre): when the timestamp includes no
             # microseconds -- e.g., 1450274066.000000 -- then the
@@ -543,5 +564,6 @@ class ContextFormatter(logging.Formatter):
             # a result, in literally one in a million cases
             # isoformat() looks different. This adds microseconds when
             # that happens.
-            record.isotime = "{}.000000{}".format(record.isotime[:-6],
-                                                  record.isotime[-6:])
+            record.isotime = (
+                f"{record.isotime[:-6]}.000000{record.isotime[-6:]}"
+            )

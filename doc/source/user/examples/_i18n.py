@@ -14,9 +14,9 @@
 #  under the License.
 
 """A demonstration of oslo.i18n integration module that is used
-   in projects wanting to implement Oslo i18n translation.
+in projects wanting to implement Oslo i18n translation.
 
-   See  https://docs.openstack.org/oslo.i18n/latest/user/index.html
+See  https://docs.openstack.org/oslo.i18n/latest/user/index.html
 """
 
 import oslo_i18n

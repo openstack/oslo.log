@@ -59,14 +59,12 @@ def prepare():
     #  oslo_log._options.log_opts[0].default
     #
 
-    extra_log_level_defaults = [
-        'dogpile=INFO',
-        'routes=INFO'
-        ]
+    extra_log_level_defaults = ['dogpile=INFO', 'routes=INFO']
 
     logging.set_defaults(
-        default_log_levels=logging.get_default_log_levels() +
-        extra_log_level_defaults)
+        default_log_levels=logging.get_default_log_levels()
+        + extra_log_level_defaults
+    )
 
     # Required setup based on configuration and domain
     logging.setup(CONF, DOMAIN)

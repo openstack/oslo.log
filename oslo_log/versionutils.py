@@ -32,25 +32,31 @@ _DEPRECATED_EXCEPTIONS = set()
 
 
 deprecated_opts = [
-    cfg.BoolOpt('fatal_deprecations',
-                default=False,
-                help='Enables or disables fatal status of deprecations.'),
+    cfg.BoolOpt(
+        'fatal_deprecations',
+        default=False,
+        help='Enables or disables fatal status of deprecations.',
+    ),
 ]
 
 
 _deprecated_msg_with_alternative = _(
     '%(what)s is deprecated as of %(as_of)s in favor of '
-    '%(in_favor_of)s and may be removed in %(remove_in)s.')
+    '%(in_favor_of)s and may be removed in %(remove_in)s.'
+)
 
 _deprecated_msg_no_alternative = _(
     '%(what)s is deprecated as of %(as_of)s and may be '
-    'removed in %(remove_in)s. It will not be superseded.')
+    'removed in %(remove_in)s. It will not be superseded.'
+)
 
 _deprecated_msg_with_alternative_no_removal = _(
-    '%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s.')
+    '%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s.'
+)
 
 _deprecated_msg_with_no_alternative_no_removal = _(
-    '%(what)s is deprecated as of %(as_of)s. It will not be superseded.')
+    '%(what)s is deprecated as of %(as_of)s. It will not be superseded.'
+)
 
 
 _RELEASES = {
@@ -106,28 +112,34 @@ class deprecated:
     1. Specifying the required deprecated release
 
     >>> @deprecated(as_of=deprecated.ICEHOUSE)
-    ... def a(): pass
+    ... def a():
+    ...     pass
 
     2. Specifying a replacement:
 
     >>> @deprecated(as_of=deprecated.ICEHOUSE, in_favor_of='f()')
-    ... def b(): pass
+    ... def b():
+    ...     pass
 
     3. Specifying the release where the functionality may be removed:
 
     >>> @deprecated(as_of=deprecated.ICEHOUSE, remove_in=+1)
-    ... def c(): pass
+    ... def c():
+    ...     pass
 
     4. Specifying the deprecated functionality will not be removed:
 
     >>> @deprecated(as_of=deprecated.ICEHOUSE, remove_in=None)
-    ... def d(): pass
+    ... def d():
+    ...     pass
 
     5. Specifying a replacement, deprecated functionality will not be removed:
 
-    >>> @deprecated(as_of=deprecated.ICEHOUSE, in_favor_of='f()',
-    ...             remove_in=None)
-    ... def e(): pass
+    >>> @deprecated(
+    ...     as_of=deprecated.ICEHOUSE, in_favor_of='f()', remove_in=None
+    ... )
+    ... def e():
+    ...     pass
 
     .. warning::
 
@@ -185,7 +197,8 @@ class deprecated:
             what=self.what or func_or_cls.__name__ + '()',
             as_of=self.as_of,
             in_favor_of=self.in_favor_of,
-            remove_in=self.remove_in)
+            remove_in=self.remove_in,
+        )
 
         if inspect.isfunction(func_or_cls):
 
@@ -193,6 +206,7 @@ class deprecated:
             def wrapped(*args, **kwargs):
                 report_deprecated()
                 return func_or_cls(*args, **kwargs)
+
             return wrapped
         elif inspect.isclass(func_or_cls):
             orig_init = func_or_cls.__init__
@@ -202,6 +216,7 @@ class deprecated:
                 if self.__class__ in _DEPRECATED_EXCEPTIONS:
                     report_deprecated()
                 orig_init(self, *args, **kwargs)
+
             func_or_cls.__init__ = new_init
             _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
@@ -221,13 +236,15 @@ class deprecated:
                         if self in _DEPRECATED_EXCEPTIONS:
                             report_deprecated()
                         return super().__subclasscheck__(subclass)
+
                 func_or_cls.__meta__ = ExceptionMeta
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
             return func_or_cls
         else:
-            raise TypeError('deprecated can be used only with functions or '
-                            'classes')
+            raise TypeError(
+                'deprecated can be used only with functions or classes'
+            )
 
 
 def _get_safe_to_remove_release(release, remove_in):
@@ -243,8 +260,9 @@ def _get_safe_to_remove_release(release, remove_in):
         return new_release
 
 
-def deprecation_warning(what, as_of, in_favor_of=None,
-                        remove_in=2, logger=LOG):
+def deprecation_warning(
+    what, as_of, in_favor_of=None, remove_in=2, logger=LOG
+):
     """Warn about the deprecation of a feature.
 
     :param what: name of the thing being deprecated.
@@ -254,9 +272,11 @@ def deprecation_warning(what, as_of, in_favor_of=None,
         before removing (default: 2)
     :param logger: the logging object to use for reporting (optional).
     """
-    details = dict(what=what,
-                   as_of=_RELEASES[as_of],
-                   remove_in=_get_safe_to_remove_release(as_of, remove_in))
+    details = dict(
+        what=what,
+        as_of=_RELEASES[as_of],
+        remove_in=_get_safe_to_remove_release(as_of, remove_in),
+    )
 
     if in_favor_of:
         details['in_favor_of'] = in_favor_of

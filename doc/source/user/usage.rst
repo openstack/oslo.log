@@ -50,7 +50,7 @@ change default logging levels if necessary.
 
 .. literalinclude:: examples/usage.py
    :linenos:
-   :lines: 51-53,61-69
+   :lines: 51-53,61-67
    :emphasize-lines: 10
 
 Call :func:`~oslo_log.log.setup` with the oslo.config CONF object used
@@ -59,7 +59,7 @@ to configure logging for the application.
 
 .. literalinclude:: examples/usage.py
    :linenos:
-   :lines: 34,36-37,70-72
+   :lines: 33-34,36-37,70-72
    :emphasize-lines: 6
 
 Source: :ref:`examples/usage.py <example_usage.py>`
@@ -72,7 +72,7 @@ log levels.
 
 .. literalinclude:: examples/usage.py
    :linenos:
-   :lines: 77-83
+   :lines: 77-84
 
 **Example Logging Output:**
 
@@ -103,7 +103,7 @@ additional contextual information applicable for your application.
 
 .. literalinclude:: examples/usage_context.py
    :linenos:
-   :lines: 80-85
+   :lines: 78-82
    :emphasize-lines: 3-5
 
 **Example Logging Output:**

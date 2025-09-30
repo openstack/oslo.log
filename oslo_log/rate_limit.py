@@ -34,8 +34,10 @@ class _LogRateLimit(logging.Filter):
         self.emit_warn = False
 
     def filter(self, record):
-        if (self.except_level is not None
-           and record.levelno >= self.except_level):
+        if (
+            self.except_level is not None
+            and record.levelno >= self.except_level
+        ):
             # don't limit levels >= except_level
             return True
 
@@ -55,9 +57,11 @@ class _LogRateLimit(logging.Filter):
 
         if self.counter == self.burst + 1:
             self.emit_warn = True
-            self.logger.error("Logging rate limit: "
-                              "drop after %s records/%s sec",
-                              self.burst, self.interval)
+            self.logger.error(
+                "Logging rate limit: drop after %s records/%s sec",
+                self.burst,
+                self.interval,
+            )
             self.emit_warn = False
 
         # Drop the log
@@ -108,7 +112,7 @@ def install_filter(burst, interval, except_level='CRITICAL'):
     try:
         except_levelno = _LOG_LEVELS[except_level]
     except KeyError:
-        raise ValueError("invalid log level name: %r" % except_level)
+        raise ValueError(f"invalid log level name: {except_level!r}")
 
     log_filter = _LogRateLimit(burst, interval, except_levelno)
 

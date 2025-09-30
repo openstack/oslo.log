@@ -42,7 +42,7 @@ def main():
         levels=args.levels,
         level_key=args.levelkey,
         traceback_key=args.tbkey,
-        )
+    )
     if args.lines:
         # Read backward until we find all of our newline characters
         # or reach the beginning of the file
@@ -63,47 +63,74 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("file",
-                        nargs='?', default=sys.stdin,
-                        type=argparse.FileType(),
-                        help="JSON log file to read from (if not provided"
-                             " standard input is used instead)")
-    parser.add_argument("--prefix",
-                        default='%(asctime)s.%(msecs)03d'
-                                ' %(process)s %(levelname)s %(name)s',
-                        help="Message prefixes")
-    parser.add_argument("--locator",
-                        default='[%(funcname)s %(pathname)s:%(lineno)s]',
-                        help="Locator to append to DEBUG records")
-    parser.add_argument("--levelkey",
-                        default=DEFAULT_LEVEL_KEY,
-                        help="Key in the JSON record where the level is held")
-    parser.add_argument("--tbkey",
-                        default=DEFAULT_TRACEBACK_KEY,
-                        help="Key in the JSON record where the"
-                             " traceback/exception is held")
-    parser.add_argument("-c", "--color",
-                        action='store_true', default=False,
-                        help="Color log levels (requires `termcolor`)")
-    parser.add_argument("-f", "--follow",
-                        action='store_true', default=False,
-                        help="Continue parsing new data until"
-                             " KeyboardInterrupt")
-    parser.add_argument("-n", "--lines",
-                        required=False, type=int,
-                        help="Last N number of records to view."
-                             " (May show less than N records when used"
-                             " in conjuction with --loggers or --levels)")
-    parser.add_argument("--loggers",
-                        nargs='*', default=[],
-                        help="only return results matching given logger(s)")
-    parser.add_argument("--levels",
-                        nargs='*', default=[],
-                        help="Only return lines matching given log level(s)")
+    parser.add_argument(
+        "file",
+        nargs='?',
+        default=sys.stdin,
+        type=argparse.FileType(),
+        help="JSON log file to read from (if not provided"
+        " standard input is used instead)",
+    )
+    parser.add_argument(
+        "--prefix",
+        default='%(asctime)s.%(msecs)03d %(process)s %(levelname)s %(name)s',
+        help="Message prefixes",
+    )
+    parser.add_argument(
+        "--locator",
+        default='[%(funcname)s %(pathname)s:%(lineno)s]',
+        help="Locator to append to DEBUG records",
+    )
+    parser.add_argument(
+        "--levelkey",
+        default=DEFAULT_LEVEL_KEY,
+        help="Key in the JSON record where the level is held",
+    )
+    parser.add_argument(
+        "--tbkey",
+        default=DEFAULT_TRACEBACK_KEY,
+        help="Key in the JSON record where the traceback/exception is held",
+    )
+    parser.add_argument(
+        "-c",
+        "--color",
+        action='store_true',
+        default=False,
+        help="Color log levels (requires `termcolor`)",
+    )
+    parser.add_argument(
+        "-f",
+        "--follow",
+        action='store_true',
+        default=False,
+        help="Continue parsing new data until KeyboardInterrupt",
+    )
+    parser.add_argument(
+        "-n",
+        "--lines",
+        required=False,
+        type=int,
+        help="Last N number of records to view."
+        " (May show less than N records when used"
+        " in conjuction with --loggers or --levels)",
+    )
+    parser.add_argument(
+        "--loggers",
+        nargs='*',
+        default=[],
+        help="only return results matching given logger(s)",
+    )
+    parser.add_argument(
+        "--levels",
+        nargs='*',
+        default=[],
+        help="Only return lines matching given log level(s)",
+    )
     args = parser.parse_args()
     if args.color and not termcolor:
-        raise ImportError("Coloring requested but `termcolor` is not"
-                          " importable")
+        raise ImportError(
+            "Coloring requested but `termcolor` is not importable"
+        )
     return args
 
 
@@ -151,9 +178,15 @@ def reformat_json(fh, formatter, follow=False):
         yield from formatter(record)
 
 
-def console_format(prefix, locator, record, loggers=[], levels=[],
-                   level_key=DEFAULT_LEVEL_KEY,
-                   traceback_key=DEFAULT_TRACEBACK_KEY):
+def console_format(
+    prefix,
+    locator,
+    record,
+    loggers=[],
+    levels=[],
+    level_key=DEFAULT_LEVEL_KEY,
+    traceback_key=DEFAULT_TRACEBACK_KEY,
+):
     # Provide an empty string to format-specifiers the record is
     # missing, instead of failing. Doesn't work for non-string
     # specifiers.
@@ -175,13 +208,17 @@ def console_format(prefix, locator, record, loggers=[], levels=[],
     except TypeError:
         # Thrown when a non-string format-specifier can't be filled in.
         # Dict comprehension cleans up the output
-        yield warn('Missing non-string placeholder in record',
-                   {str(k): str(v) if isinstance(v, str) else v
-                    for k, v in record.items()})
+        yield warn(
+            'Missing non-string placeholder in record',
+            {
+                str(k): str(v) if isinstance(v, str) else v
+                for k, v in record.items()
+            },
+        )
         return
 
     locator = ''
-    if (record.get('levelno', 100) <= log.DEBUG or levelname == 'DEBUG'):
+    if record.get('levelno', 100) <= log.DEBUG or levelname == 'DEBUG':
         locator = locator % record
 
     yield ' '.join(x for x in [prefix, record['message'], locator] if x)

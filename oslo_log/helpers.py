@@ -20,8 +20,9 @@ import logging
 
 
 def _get_full_class_name(cls):
-    return '{}.{}'.format(cls.__module__,
-                          getattr(cls, '__qualname__', cls.__name__))
+    return '{}.{}'.format(
+        cls.__module__, getattr(cls, '__qualname__', cls.__name__)
+    )
 
 
 def _is_method(obj, method):
@@ -51,18 +52,28 @@ def log_method_call(method):
         if args:
             first_arg = args[0]
             if _is_method(first_arg, method):
-                cls = (first_arg if isinstance(first_arg, type)
-                       else first_arg.__class__)
+                cls = (
+                    first_arg
+                    if isinstance(first_arg, type)
+                    else first_arg.__class__
+                )
                 caller = _get_full_class_name(cls)
                 args_start_pos = 1
             else:
                 caller = 'static'
         else:
             caller = 'static'
-        data = {'caller': caller,
-                'method_name': method.__name__,
-                'args': args[args_start_pos:], 'kwargs': kwargs}
-        log.debug('%(caller)s method %(method_name)s '
-                  'called with arguments %(args)s %(kwargs)s', data)
+        data = {
+            'caller': caller,
+            'method_name': method.__name__,
+            'args': args[args_start_pos:],
+            'kwargs': kwargs,
+        }
+        log.debug(
+            '%(caller)s method %(method_name)s '
+            'called with arguments %(args)s %(kwargs)s',
+            data,
+        )
         return method(*args, **kwargs)
+
     return wrapper

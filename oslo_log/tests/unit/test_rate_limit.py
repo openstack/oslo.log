@@ -56,10 +56,12 @@ class LogRateLimitTestCase(test_base.BaseTestCase):
         logger.error("message 1")
         logger.error("message 2")
         logger.error("message 3")
-        self.assertEqual(stream.getvalue(),
-                         'message 1\n'
-                         'message 2\n'
-                         'Logging rate limit: drop after 2 records/1 sec\n')
+        self.assertEqual(
+            stream.getvalue(),
+            'message 1\n'
+            'message 2\n'
+            'Logging rate limit: drop after 2 records/1 sec\n',
+        )
 
         # second burst (clock changed)
         stream.seek(0)
@@ -69,10 +71,12 @@ class LogRateLimitTestCase(test_base.BaseTestCase):
         logger.error("message 4")
         logger.error("message 5")
         logger.error("message 6")
-        self.assertEqual(stream.getvalue(),
-                         'message 4\n'
-                         'message 5\n'
-                         'Logging rate limit: drop after 2 records/1 sec\n')
+        self.assertEqual(
+            stream.getvalue(),
+            'message 4\n'
+            'message 5\n'
+            'Logging rate limit: drop after 2 records/1 sec\n',
+        )
 
     @mock.patch('oslo_log.rate_limit.monotonic_clock')
     def test_rate_limit_except_level(self, mock_clock):
@@ -84,11 +88,13 @@ class LogRateLimitTestCase(test_base.BaseTestCase):
         logger.error("error 2")
         logger.critical("critical 3")
         logger.critical("critical 4")
-        self.assertEqual(stream.getvalue(),
-                         'error 1\n'
-                         'Logging rate limit: drop after 1 records/1 sec\n'
-                         'critical 3\n'
-                         'critical 4\n')
+        self.assertEqual(
+            stream.getvalue(),
+            'error 1\n'
+            'Logging rate limit: drop after 1 records/1 sec\n'
+            'critical 3\n'
+            'critical 4\n',
+        )
 
     def test_install_twice(self):
         rate_limit.install_filter(100, 1)
@@ -104,7 +110,6 @@ class LogRateLimitTestCase(test_base.BaseTestCase):
         logger.error("message 1")
         logger.error("message 2")
         logger.error("message 3")
-        self.assertEqual(stream.getvalue(),
-                         'message 1\n'
-                         'message 2\n'
-                         'message 3\n')
+        self.assertEqual(
+            stream.getvalue(), 'message 1\nmessage 2\nmessage 3\n'
+        )

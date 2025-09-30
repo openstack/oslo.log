@@ -33,6 +33,7 @@ import logging.config
 import logging.handlers
 import os
 import sys
+
 try:
     import syslog
 except ImportError:
@@ -67,7 +68,7 @@ LOG_ROTATE_INTERVAL_MAPPING = {
     'hours': 'h',
     'days': 'd',
     'weekday': 'w',
-    'midnight': 'midnight'
+    'midnight': 'midnight',
 }
 
 _EVENTLET_FIX_APPLIED = False
@@ -107,7 +108,6 @@ def _iter_loggers():
 
 
 class BaseLoggerAdapter(logging.LoggerAdapter):
-
     warn = logging.LoggerAdapter.warning
 
     @property
@@ -172,12 +172,10 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
         # only works for contexts that have the resource id set.
         resource = kwargs['extra'].get('resource', None)
         if resource:
-
             # Many OpenStack resources have a name entry in their db ref
             # of the form <resource_type>-<uuid>, let's just use that if
             # it's passed in
             if not resource.get('name', None):
-
                 # For resources that don't have the name of the format we wish
                 # to use (or places where the LOG call may not have the full
                 # object ref, allow them to pass in a dict:
@@ -187,14 +185,16 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
                 resource_id = resource.get('id', None)
 
                 if resource_type and resource_id:
-                    kwargs['extra']['resource'] = ('[' + resource_type +
-                                                   '-' + resource_id + '] ')
+                    kwargs['extra']['resource'] = (
+                        '[' + resource_type + '-' + resource_id + '] '
+                    )
             else:
                 # FIXME(jdg): Since the name format can be specified via conf
                 # entry, we may want to consider allowing this to be configured
                 # here as well
-                kwargs['extra']['resource'] = ('[' + resource.get('name', '')
-                                               + '] ')
+                kwargs['extra']['resource'] = (
+                    '[' + resource.get('name', '') + '] '
+                )
 
         return msg, kwargs
 
@@ -203,11 +203,11 @@ def _create_logging_excepthook(product_name):
     def logging_excepthook(exc_type, value, tb):
         extra = {'exc_info': (exc_type, value, tb)}
         getLogger(product_name).critical('Unhandled error', **extra)
+
     return logging_excepthook
 
 
 class LogConfigError(Exception):
-
     message = _('Error loading logging config %(log_config)s: %(err_msg)s')
 
     def __init__(self, log_config, err_msg):
@@ -215,8 +215,9 @@ class LogConfigError(Exception):
         self.err_msg = err_msg
 
     def __str__(self):
-        return self.message % dict(log_config=self.log_config,
-                                   err_msg=self.err_msg)
+        return self.message % dict(
+            log_config=self.log_config, err_msg=self.err_msg
+        )
 
 
 def _load_log_config(log_config_append):
@@ -231,8 +232,9 @@ def _load_log_config(log_config_append):
                 logger.setLevel(logging.NOTSET)
                 logger.handlers = []
                 logger.propagate = 1
-            logging.config.fileConfig(log_config_append,
-                                      disable_existing_loggers=False)
+            logging.config.fileConfig(
+                log_config_append, disable_existing_loggers=False
+            )
             _load_log_config.old_time = new_time
     except (configparser.Error, KeyError, OSError, RuntimeError) as exc:
         raise LogConfigError(log_config_append, str(exc))
@@ -278,12 +280,14 @@ def _fix_eventlet_logging():
 
     if eventletutils.is_monkey_patched('thread'):
         debtcollector.deprecate(
-            "Eventlet support is deprecated and will be removed")
+            "Eventlet support is deprecated and will be removed"
+        )
 
         # If eventlet was not loaded before call to setup assume it's not used.
         if not _EVENTLET_FIX_APPLIED:
             import eventlet.green.threading
             from oslo_log import pipe_mutex
+
             logging.threading = eventlet.green.threading
             logging._lock = logging.threading.RLock()
             logging.Handler.createLock = pipe_mutex.pipe_createLock
@@ -301,8 +305,7 @@ def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
     sys.excepthook = _create_logging_excepthook(product_name)
 
 
-def set_defaults(logging_context_format_string=None,
-                 default_log_levels=None):
+def set_defaults(logging_context_format_string=None, default_log_levels=None):
     """Set default values for the configuration options used by oslo.log."""
     # Just in case the caller is not setting the
     # default_log_level. This is insurance because
@@ -310,12 +313,13 @@ def set_defaults(logging_context_format_string=None,
     # later in a backwards in-compatible change
     if default_log_levels is not None:
         cfg.set_defaults(
-            _options.log_opts,
-            default_log_levels=default_log_levels)
+            _options.log_opts, default_log_levels=default_log_levels
+        )
     if logging_context_format_string is not None:
         cfg.set_defaults(
             _options.log_opts,
-            logging_context_format_string=logging_context_format_string)
+            logging_context_format_string=logging_context_format_string,
+        )
 
 
 def tempest_set_log_file(filename):
@@ -335,15 +339,32 @@ def tempest_set_log_file(filename):
 def _find_facility(facility):
     # NOTE(jd): Check the validity of facilities at run time as they differ
     # depending on the OS and Python version being used.
-    valid_facilities = [f for f in
-                        ["LOG_KERN", "LOG_USER", "LOG_MAIL",
-                         "LOG_DAEMON", "LOG_AUTH", "LOG_SYSLOG",
-                         "LOG_LPR", "LOG_NEWS", "LOG_UUCP",
-                         "LOG_CRON", "LOG_AUTHPRIV", "LOG_FTP",
-                         "LOG_LOCAL0", "LOG_LOCAL1", "LOG_LOCAL2",
-                         "LOG_LOCAL3", "LOG_LOCAL4", "LOG_LOCAL5",
-                         "LOG_LOCAL6", "LOG_LOCAL7"]
-                        if getattr(syslog, f, None)]
+    valid_facilities = [
+        f
+        for f in [
+            "LOG_KERN",
+            "LOG_USER",
+            "LOG_MAIL",
+            "LOG_DAEMON",
+            "LOG_AUTH",
+            "LOG_SYSLOG",
+            "LOG_LPR",
+            "LOG_NEWS",
+            "LOG_UUCP",
+            "LOG_CRON",
+            "LOG_AUTHPRIV",
+            "LOG_FTP",
+            "LOG_LOCAL0",
+            "LOG_LOCAL1",
+            "LOG_LOCAL2",
+            "LOG_LOCAL3",
+            "LOG_LOCAL4",
+            "LOG_LOCAL5",
+            "LOG_LOCAL6",
+            "LOG_LOCAL7",
+        ]
+        if getattr(syslog, f, None)
+    ]
 
     facility = facility.upper()
 
@@ -351,9 +372,10 @@ def _find_facility(facility):
         facility = "LOG_" + facility
 
     if facility not in valid_facilities:
-        raise TypeError(_('syslog facility must be one of: %s') %
-                        ', '.join("'%s'" % fac
-                                  for fac in valid_facilities))
+        raise TypeError(
+            _('syslog facility must be one of: %s')
+            % ', '.join(f"'{fac}'" for fac in valid_facilities)
+        )
 
     return getattr(syslog, facility)
 
@@ -389,16 +411,18 @@ def _setup_logging_from_conf(conf, project, version):
             # 'w0'-'w6' (w0 for Monday, w1 for Tuesday, and so on)'
             if interval_type == 'w':
                 interval_type = interval_type + str(conf.log_rotate_interval)
-            filelog = file_handler(logpath,
-                                   when=interval_type,
-                                   interval=conf.log_rotate_interval,
-                                   backupCount=conf.max_logfile_count)
+            filelog = file_handler(
+                logpath,
+                when=interval_type,
+                interval=conf.log_rotate_interval,
+                backupCount=conf.max_logfile_count,
+            )
         elif conf.log_rotation_type.lower() == "size":
             file_handler = logging.handlers.RotatingFileHandler
             maxBytes = conf.max_logfile_size_mb * units.Mi
-            filelog = file_handler(logpath,
-                                   maxBytes=maxBytes,
-                                   backupCount=conf.max_logfile_count)
+            filelog = file_handler(
+                logpath, maxBytes=maxBytes, backupCount=conf.max_logfile_count
+            )
         else:
             file_handler = logging.handlers.WatchedFileHandler
             filelog = file_handler(logpath)
@@ -430,7 +454,8 @@ def _setup_logging_from_conf(conf, project, version):
     if conf.publish_errors:
         handler = importutils.import_object(
             "oslo_messaging.notify.log_handler.PublishErrorsHandler",
-            logging.ERROR)
+            logging.ERROR,
+        )
         log_root.addHandler(handler)
 
     if conf.use_syslog:
@@ -443,10 +468,14 @@ def _setup_logging_from_conf(conf, project, version):
     datefmt = conf.log_date_format
     if not conf.use_json:
         for handler in log_root.handlers:
-            handler.setFormatter(formatters.ContextFormatter(project=project,
-                                                             version=version,
-                                                             datefmt=datefmt,
-                                                             config=conf))
+            handler.setFormatter(
+                formatters.ContextFormatter(
+                    project=project,
+                    version=version,
+                    datefmt=datefmt,
+                    config=conf,
+                )
+            )
     else:
         for handler in log_root.handlers:
             handler.setFormatter(formatters.JSONFormatter(datefmt=datefmt))
@@ -471,9 +500,12 @@ def _setup_logging_from_conf(conf, project, version):
 
     if conf.rate_limit_burst >= 1 and conf.rate_limit_interval >= 1:
         from oslo_log import rate_limit
-        rate_limit.install_filter(conf.rate_limit_burst,
-                                  conf.rate_limit_interval,
-                                  conf.rate_limit_except_level)
+
+        rate_limit.install_filter(
+            conf.rate_limit_burst,
+            conf.rate_limit_interval,
+            conf.rate_limit_except_level,
+        )
 
 
 _loggers = {}
@@ -505,9 +537,9 @@ def getLogger(name=None, project='unknown', version='unknown'):
     if name and name.startswith('oslo_'):
         name = 'oslo.' + name[5:]
     if name not in _loggers:
-        _loggers[name] = KeywordArgumentAdapter(logging.getLogger(name),
-                                                {'project': project,
-                                                 'version': version})
+        _loggers[name] = KeywordArgumentAdapter(
+            logging.getLogger(name), {'project': project, 'version': version}
+        )
     return _loggers[name]
 
 

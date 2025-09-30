@@ -61,14 +61,12 @@ def prepare():
     #  oslo_log._options.log_opts[0].default
     #
 
-    extra_log_level_defaults = [
-        'dogpile=INFO',
-        'routes=INFO'
-        ]
+    extra_log_level_defaults = ['dogpile=INFO', 'routes=INFO']
 
     logging.set_defaults(
-        default_log_levels=logging.get_default_log_levels() +
-        extra_log_level_defaults)
+        default_log_levels=logging.get_default_log_levels()
+        + extra_log_level_defaults
+    )
 
     # Required setup based on configuration and domain
     logging.setup(CONF, DOMAIN)
@@ -79,7 +77,7 @@ if __name__ == '__main__':
 
     LOG.info("Welcome to Oslo Logging")
     LOG.info("Without context")
-    context.RequestContext(user='6ce90b4d',
-                           project='d6134462',
-                           domain='a6b9360e')
+    context.RequestContext(
+        user='6ce90b4d', project='d6134462', domain='a6b9360e'
+    )
     LOG.info("With context")

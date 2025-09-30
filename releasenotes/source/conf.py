@@ -23,7 +23,7 @@
 # ones.
 extensions = [
     'reno.sphinxext',
-    'openstackdocstheme'
+    'openstackdocstheme',
 ]
 
 # The master toctree document.

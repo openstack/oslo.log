@@ -60,7 +60,8 @@ class ConvertJsonTestCase(test_base.BaseTestCase):
         text = jsonutils.dumps(TRIVIAL_RECORD)
         self.assertEqual(
             [TRIVIAL_RECORD, TRIVIAL_RECORD],
-            self._reformat("\n".join([text, text])))
+            self._reformat("\n".join([text, text])),
+        )
 
     def _lines(self, record, pre='pre', loc='loc', **args):
         return list(convert_json.console_format(pre, loc, record, **args))

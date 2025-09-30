@@ -14,7 +14,6 @@
 
 """Unit Tests for oslo.log with custom log handler"""
 
-
 import logging
 
 from oslo_log import log
@@ -36,11 +35,13 @@ class CustomLogHandler(logging.StreamHandler):
 class CustomLogHandlerTestCase(LogTestBase):
     def setUp(self):
         super().setUp()
-        self.config(logging_context_format_string="HAS CONTEXT "
-                                                  "[%(request_id)s]: "
-                                                  "%(message)s",
-                    logging_default_format_string="NOCTXT: %(message)s",
-                    logging_debug_format_suffix="--DBG")
+        self.config(
+            logging_context_format_string="HAS CONTEXT "
+            "[%(request_id)s]: "
+            "%(message)s",
+            logging_default_format_string="NOCTXT: %(message)s",
+            logging_debug_format_suffix="--DBG",
+        )
         self.log = log.getLogger('')  # obtain root logger instead of 'unknown'
         self._add_handler_with_cleanup(self.log, handler=CustomLogHandler)
         self._set_log_level_with_cleanup(self.log, logging.DEBUG)
@@ -48,4 +49,4 @@ class CustomLogHandlerTestCase(LogTestBase):
     def test_log(self):
         message = 'foo'
         self.log.info(message)
-        self.assertEqual("NOCTXT: %s\n" % message, self.stream.getvalue())
+        self.assertEqual(f"NOCTXT: {message}\n", self.stream.getvalue())

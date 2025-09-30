@@ -70,8 +70,8 @@ def prepare():
 
     custom_log_level_defaults = logging.get_default_log_levels() + [
         'dogpile=INFO',
-        'routes=INFO'
-        ]
+        'routes=INFO',
+    ]
 
     logging.set_defaults(default_log_levels=custom_log_level_defaults)
 

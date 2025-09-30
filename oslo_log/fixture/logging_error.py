@@ -24,8 +24,7 @@ def get_logging_handle_error_fixture():
 
       self.useFixture(log_fixture.get_logging_handle_error_fixture())
     """
-    return fixtures.MonkeyPatch('logging.Handler.handleError',
-                                _handleError)
+    return fixtures.MonkeyPatch('logging.Handler.handleError', _handleError)
 
 
 def _handleError(self, record):

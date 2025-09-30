@@ -17,7 +17,6 @@ from oslotest import base as test_base
 
 
 class TestSetLevelFixture(test_base.BaseTestCase):
-
     def test_unset_before(self):
         logger = logging.getLogger('no-such-logger-unset')
         self.assertEqual(logging.NOTSET, logger.level)

@@ -27,17 +27,18 @@ from oslo_log import log
 
 
 def _fake_context():
-    ctxt = context.RequestContext(user_id="user",
-                                  project_id="tenant",
-                                  project_domain_id="pdomain",
-                                  user_domain_id="udomain",
-                                  overwrite=True)
+    ctxt = context.RequestContext(
+        user_id="user",
+        project_id="tenant",
+        project_domain_id="pdomain",
+        user_domain_id="udomain",
+        overwrite=True,
+    )
 
     return ctxt
 
 
 class FormatterTest(test_base.BaseTestCase):
-
     def setUp(self):
         super().setUp()
 
@@ -60,8 +61,9 @@ class FormatterTest(test_base.BaseTestCase):
 
     def test_dictify_context_with_context(self):
         ctxt = _fake_context()
-        self.assertEqual(ctxt.get_logging_values(),
-                         formatters._dictify_context(ctxt))
+        self.assertEqual(
+            ctxt.get_logging_values(), formatters._dictify_context(ctxt)
+        )
 
 
 # Test for https://bugs.python.org/issue28603
@@ -69,7 +71,8 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.config_fixture = self.useFixture(
-            config_fixture.Config(cfg.ConfigOpts()))
+            config_fixture.Config(cfg.ConfigOpts())
+        )
         self.conf = self.config_fixture.conf
         log.register_options(self.conf)
 
@@ -84,8 +87,9 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
 
     def test_error_summary(self):
         exc_info = self._unhashable_exception_info()
-        record = logging.LogRecord('test', logging.ERROR, 'test', 0,
-                                   'test message', [], exc_info)
+        record = logging.LogRecord(
+            'test', logging.ERROR, 'test', 0, 'test message', [], exc_info
+        )
         err_summary = formatters._get_error_summary(record)
         self.assertTrue(err_summary)
 
@@ -110,7 +114,8 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
     def test_context_format_exception(self):
         exc_info = self._unhashable_exception_info()
         formatter = formatters.ContextFormatter(config=self.conf)
-        record = logging.LogRecord('test', logging.ERROR, 'test', 0,
-                                   'test message', [], exc_info)
+        record = logging.LogRecord(
+            'test', logging.ERROR, 'test', 0, 'test message', [], exc_info
+        )
         tb = formatter.format(record)
         self.assertTrue(tb)
