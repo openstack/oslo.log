@@ -13,13 +13,17 @@
 
 import argparse
 import collections
+from collections.abc import Callable, Iterator, Sequence
 import functools
+import io
 import sys
 import time
+from typing import cast
 
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
 
+from oslo_log.formatters import JSONLogRecord
 from oslo_log import log
 
 termcolor = importutils.try_import('termcolor')
@@ -30,7 +34,7 @@ DEFAULT_LEVEL_KEY = 'levelname'
 DEFAULT_TRACEBACK_KEY = 'traceback'
 
 
-def main():
+def main() -> None:
     global _USE_COLOR
     args = parse_args()
     _USE_COLOR = args.color
@@ -61,7 +65,7 @@ def main():
         sys.exit(0)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "file",
@@ -134,7 +138,7 @@ def parse_args():
     return args
 
 
-def colorise(key, text=None):
+def colorise(key: str, text: str | None = None) -> str:
     if text is None:
         text = key
     if not _USE_COLOR:
@@ -149,15 +153,19 @@ def colorise(key, text=None):
     }
     color, attrs = colors.get(key, ('', []))
     if color:
-        return termcolor.colored(text, color=color, attrs=attrs)
+        return cast(str, termcolor.colored(text, color=color, attrs=attrs))
     return text
 
 
-def warn(prefix, msg):
+def warn(prefix: str, msg: object) -> str:
     return "{}: {}".format(colorise('exc', prefix), msg)
 
 
-def reformat_json(fh, formatter, follow=False):
+def reformat_json(
+    fh: io.StringIO,
+    formatter: Callable[..., Iterator[str]],
+    follow: bool = False,
+) -> Iterator[str]:
     # using readline allows interactive stdin to respond to every line
     while True:
         line = fh.readline()
@@ -179,29 +187,31 @@ def reformat_json(fh, formatter, follow=False):
 
 
 def console_format(
-    prefix,
-    locator,
-    record,
-    loggers=[],
-    levels=[],
-    level_key=DEFAULT_LEVEL_KEY,
-    traceback_key=DEFAULT_TRACEBACK_KEY,
-):
+    prefix: str,
+    locator: str,
+    record: JSONLogRecord,
+    loggers: Sequence[str] = [],
+    levels: Sequence[str] = [],
+    level_key: str = DEFAULT_LEVEL_KEY,
+    traceback_key: str = DEFAULT_TRACEBACK_KEY,
+) -> Iterator[str]:
     # Provide an empty string to format-specifiers the record is
     # missing, instead of failing. Doesn't work for non-string
     # specifiers.
-    record = collections.defaultdict(str, record)
+    record = collections.defaultdict(str, record)  # type: ignore
     # skip if the record doesn't match a logger we are looking at
     if loggers:
-        name = record.get('name')
+        name = record['name']
         if not any(name.startswith(n) for n in loggers):
             return
+
     if levels:
         if record.get(level_key) not in levels:
             return
+
     levelname = record.get(level_key)
     if levelname:
-        record[level_key] = colorise(levelname)
+        record[level_key] = colorise(levelname)  # type: ignore
 
     try:
         prefix = prefix % record
@@ -227,7 +237,7 @@ def console_format(
     if tb:
         if type(tb) is str:
             tb = tb.rstrip().split("\n")
-        for tb_line in tb:
+        for tb_line in tb:  # type: ignore
             yield ' '.join([prefix, tb_line])
 
 

@@ -255,7 +255,7 @@ log_opts = [
 ]
 
 
-def list_opts():
+def list_opts() -> list[tuple[str | None, list[cfg.Opt]]]:
     """Returns a list of oslo.config options available in the library.
 
     The returned list includes all oslo.config options which may be registered

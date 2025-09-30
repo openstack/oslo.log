@@ -53,7 +53,7 @@ class FormatterTest(test_base.BaseTestCase):
         self.assertEqual("-", s)
 
     def test_dictify_context_empty(self):
-        self.assertEqual({}, formatters._dictify_context(None))
+        self.assertEqual({}, formatters._dictify_context(None))  # type: ignore
 
     def test_dictify_context_with_dict(self):
         d = {"user": "user"}
@@ -78,7 +78,7 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
 
     def _unhashable_exception_info(self):
         class UnhashableException(Exception):
-            __hash__ = None
+            __hash__ = None  # type: ignore
 
         try:
             raise UnhashableException()
@@ -88,7 +88,7 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
     def test_error_summary(self):
         exc_info = self._unhashable_exception_info()
         record = logging.LogRecord(
-            'test', logging.ERROR, 'test', 0, 'test message', [], exc_info
+            'test', logging.ERROR, 'test', 0, 'test message', {}, exc_info
         )
         err_summary = formatters._get_error_summary(record)
         self.assertTrue(err_summary)
@@ -115,7 +115,7 @@ class FormatUnhashableExceptionTest(test_base.BaseTestCase):
         exc_info = self._unhashable_exception_info()
         formatter = formatters.ContextFormatter(config=self.conf)
         record = logging.LogRecord(
-            'test', logging.ERROR, 'test', 0, 'test message', [], exc_info
+            'test', logging.ERROR, 'test', 0, 'test message', {}, exc_info
         )
         tb = formatter.format(record)
         self.assertTrue(tb)

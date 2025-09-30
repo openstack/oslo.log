@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from collections.abc import Sequence
 import logging
 
 import fixtures
@@ -35,11 +36,11 @@ class SetLogLevel(fixtures.Fixture):
     :type level: int
     """
 
-    def __init__(self, logger_names, level):
+    def __init__(self, logger_names: Sequence[str], level: int):
         self.logger_names = logger_names
         self.level = level
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         for name in self.logger_names:
             # NOTE(dhellmann): Use the stdlib version of getLogger()

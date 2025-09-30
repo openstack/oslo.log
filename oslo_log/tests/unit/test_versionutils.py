@@ -266,8 +266,8 @@ class DeprecatedTestCase(test_base.BaseTestCase):
         obj = OutdatedClass(*args, **kwargs)
 
         self.assertIsInstance(obj, OutdatedClass)
-        self.assertEqual('__init__', obj.__init__.__name__)
-        self.assertEqual('It is __init__ method.', obj.__init__.__doc__)
+        self.assertEqual('__init__', obj.__init__.__name__)  # type: ignore
+        self.assertEqual('It is __init__ method.', obj.__init__.__doc__)  # type: ignore
         self.assertEqual(args, mock_arguments.args)
         self.assertEqual(kwargs, mock_arguments.kwargs)
         self.assert_deprecated(

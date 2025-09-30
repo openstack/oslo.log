@@ -20,11 +20,16 @@ Helpers for comparing version strings.
 import functools
 import inspect
 import logging
+from typing import Any, TypeVar, cast, overload
+from collections.abc import Callable
 
 from oslo_config import cfg
 
 from oslo_log._i18n import _
 
+
+_F = TypeVar('_F', bound=Callable[..., Any])
+_C = TypeVar('_C', bound=type[Any])
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -87,7 +92,7 @@ _RELEASES = {
 }
 
 
-def register_options():
+def register_options() -> None:
     """Register configuration options used by this library.
 
     .. note: This is optional since the options are also registered
@@ -174,7 +179,13 @@ class deprecated:
     YOGA = 'Y'
     ZED = 'Z'
 
-    def __init__(self, as_of, in_favor_of=None, remove_in=2, what=None):
+    def __init__(
+        self,
+        as_of: str,
+        in_favor_of: str | None = None,
+        remove_in: int | None = 2,
+        what: str | None = None,
+    ) -> None:
         """Initialize decorator
 
         :param as_of: the release deprecating the callable. Constants
@@ -191,7 +202,13 @@ class deprecated:
         self.remove_in = remove_in
         self.what = what
 
-    def __call__(self, func_or_cls):
+    @overload
+    def __call__(self, func_or_cls: _C) -> _C: ...
+
+    @overload
+    def __call__(self, func_or_cls: _F) -> _F: ...
+
+    def __call__(self, func_or_cls: _F | _C) -> _F | _C:
         report_deprecated = functools.partial(
             deprecation_warning,
             what=self.what or func_or_cls.__name__ + '()',
@@ -203,16 +220,16 @@ class deprecated:
         if inspect.isfunction(func_or_cls):
 
             @functools.wraps(func_or_cls)
-            def wrapped(*args, **kwargs):
+            def wrapped(*args: Any, **kwargs: Any) -> Any:
                 report_deprecated()
                 return func_or_cls(*args, **kwargs)
 
-            return wrapped
+            return cast(_F, wrapped)
         elif inspect.isclass(func_or_cls):
             orig_init = func_or_cls.__init__
 
             @functools.wraps(orig_init, assigned=('__name__', '__doc__'))
-            def new_init(self, *args, **kwargs):
+            def new_init(self: Any, *args: Any, **kwargs: Any) -> None:
                 if self.__class__ in _DEPRECATED_EXCEPTIONS:
                     report_deprecated()
                 orig_init(self, *args, **kwargs)
@@ -232,7 +249,7 @@ class deprecated:
                 # PyObject_IsSubclass in cpython/Objects/abstract.c
                 # for the short-cut.)
                 class ExceptionMeta(type):
-                    def __subclasscheck__(self, subclass):
+                    def __subclasscheck__(self, subclass: type) -> bool:
                         if self in _DEPRECATED_EXCEPTIONS:
                             report_deprecated()
                         return super().__subclasscheck__(subclass)
@@ -240,14 +257,14 @@ class deprecated:
                 func_or_cls.__meta__ = ExceptionMeta
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
-            return func_or_cls
+            return cast(_C, func_or_cls)
         else:
             raise TypeError(
                 'deprecated can be used only with functions or classes'
             )
 
 
-def _get_safe_to_remove_release(release, remove_in):
+def _get_safe_to_remove_release(release: str, remove_in: int | None) -> str:
     # TODO(dstanek): this method will have to be reimplemented once
     #    when we get to the X release because once we get to the Y
     #    release, what is Y+2?
@@ -261,8 +278,12 @@ def _get_safe_to_remove_release(release, remove_in):
 
 
 def deprecation_warning(
-    what, as_of, in_favor_of=None, remove_in=2, logger=LOG
-):
+    what: str,
+    as_of: str,
+    in_favor_of: str | None = None,
+    remove_in: int | None = 2,
+    logger: logging.Logger = LOG,
+) -> None:
     """Warn about the deprecation of a feature.
 
     :param what: name of the thing being deprecated.
@@ -299,10 +320,15 @@ def deprecation_warning(
 
 # Track the messages we have sent already. See
 # report_deprecated_feature().
-_deprecated_messages_sent = {}
+_deprecated_messages_sent: dict[str, list[Any]] = {}
 
 
-def report_deprecated_feature(logger, msg, *args, **kwargs):
+def report_deprecated_feature(
+    logger: logging.Logger,
+    msg: str,
+    *args: Any,
+    **kwargs: Any,
+) -> None:
     """Call this function when a deprecated feature is used.
 
     If the system is configured for fatal deprecations then the message
@@ -334,5 +360,5 @@ def report_deprecated_feature(logger, msg, *args, **kwargs):
 class DeprecatedConfig(Exception):
     message = _("Fatal call to deprecated config: %(msg)s")
 
-    def __init__(self, msg):
+    def __init__(self, msg: str) -> None:
         super(Exception, self).__init__(self.message % dict(msg=msg))

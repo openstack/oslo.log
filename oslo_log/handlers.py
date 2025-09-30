@@ -10,11 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import annotations
+
 import inspect
 import logging
 import logging.config
 import logging.handlers
 import os
+from typing import TYPE_CHECKING
 
 try:
     from systemd import journal
@@ -23,15 +26,19 @@ except ImportError:
 try:
     import syslog
 except ImportError:
-    syslog = None
+    syslog = None  # type: ignore
 
+if TYPE_CHECKING:
+    # Needed until we bump our minimum to Python 3.11
+    #
+    # https://github.com/python/typeshed/issues/7855
+    from _typeshed import SupportsWrite
+
+    _StreamHandler = logging.StreamHandler[SupportsWrite[str]]
+else:
+    _StreamHandler = logging.StreamHandler
 
 NullHandler = logging.NullHandler
-
-
-def _get_binary_name():
-    return os.path.basename(inspect.stack()[-1][1])
-
 
 _AUDIT = logging.INFO + 1
 _TRACE = 5
@@ -50,22 +57,24 @@ SYSLOG_MAP = {
 }
 
 
+def _get_binary_name() -> str:
+    return os.path.basename(inspect.stack()[-1][1])
+
+
 class OSSysLogHandler(logging.Handler):
     """Syslog based handler. Only available on UNIX-like platforms."""
 
-    def __init__(self, facility=None):
+    def __init__(self, facility: int | None = None) -> None:
         # Default values always get evaluated, for which reason we avoid
         # using 'syslog' directly, which may not be available.
         facility = facility if facility is not None else syslog.LOG_USER
-        # Do not use super() unless type(logging.Handler) is 'type'
-        # (i.e. >= Python 2.7).
         if not syslog:
             raise RuntimeError("Syslog not available on this platform")
-        logging.Handler.__init__(self)
+        super().__init__()
         binary_name = _get_binary_name()
         syslog.openlog(binary_name, 0, facility)
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         priority = SYSLOG_MAP.get(record.levelname, 7)
         message = self.format(record)
         syslog.syslog(priority, message)
@@ -80,7 +89,7 @@ class OSJournalHandler(logging.Handler):
         'request_id',
     )
 
-    def __init__(self, facility=None):
+    def __init__(self, facility: int | None = None):
         if not journal:
             raise RuntimeError("Systemd bindings do not exist")
 
@@ -95,7 +104,7 @@ class OSJournalHandler(logging.Handler):
         self.binary_name = _get_binary_name()
         self.facility = facility
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         priority = SYSLOG_MAP.get(record.levelname, 7)
         message = self.format(record)
 
@@ -115,7 +124,7 @@ class OSJournalHandler(logging.Handler):
         if record.exc_info:
             # Cache the traceback text to avoid converting it multiple times
             # (it's constant anyway)
-            if not record.exc_text:
+            if not record.exc_text and self.formatter is not None:
                 record.exc_text = self.formatter.formatException(
                     record.exc_info
                 )
@@ -132,7 +141,7 @@ class OSJournalHandler(logging.Handler):
         journal.send(message, **extras)
 
 
-class ColorHandler(logging.StreamHandler):
+class ColorHandler(_StreamHandler):
     """Log handler that sets the 'color' key based on the level
 
     To use, include a '%(color)s' entry in the logging_context_format_string.
@@ -140,7 +149,7 @@ class ColorHandler(logging.StreamHandler):
     the color within a log line.
     """
 
-    LEVEL_COLORS = {
+    LEVEL_COLORS: dict[int, str] = {
         _TRACE: '\033[00;35m',  # MAGENTA
         logging.DEBUG: '\033[00;32m',  # GREEN
         logging.INFO: '\033[00;36m',  # CYAN
@@ -150,7 +159,6 @@ class ColorHandler(logging.StreamHandler):
         logging.CRITICAL: '\033[01;31m',  # BOLD RED
     }
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         record.color = self.LEVEL_COLORS[record.levelno]
-        record.reset_color = '\033[00m'
-        return logging.StreamHandler.format(self, record) + record.reset_color
+        return logging.StreamHandler.format(self, record) + '\033[00m'

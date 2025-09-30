@@ -26,7 +26,7 @@ import sys
 try:
     import syslog
 except ImportError:
-    syslog = None
+    syslog = None  # type: ignore
 try:
     from systemd import journal
 except ImportError:
@@ -37,11 +37,12 @@ from unittest import mock
 
 from dateutil import tz
 from oslo_config import cfg
-from oslo_config import fixture as fixture_config  # noqa
+from oslo_config import fixture as fixture_config
 from oslo_context import context
 from oslo_context import fixture as fixture_context
 from oslo_i18n import fixture as fixture_trans
 from oslo_serialization import jsonutils
+from oslo_utils import units
 from oslotest import base as test_base
 import testtools
 
@@ -49,7 +50,7 @@ from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
 from oslo_log import log
-from oslo_utils import units
+from oslo_log import versionutils
 
 
 MIN_LOG_INI = b"""[loggers]
@@ -82,11 +83,7 @@ def _fake_context():
     return ctxt
 
 
-class CommonLoggerTestsMixIn:
-    """These tests are shared between LoggerTestCase and
-    LazyLoggerTestCase.
-    """
-
+class LoggerTestCase(test_base.BaseTestCase):
     def setUp(self):
         super().setUp()
         # common context has different fields to the defaults in log.py
@@ -102,7 +99,7 @@ class CommonLoggerTestsMixIn:
             '%(user)s %(project)s] '
             '%(message)s'
         )
-        self.log = None
+        self.log = log.getLogger(None)
         log._setup_logging_from_conf(self.config_fixture.conf, 'test', 'test')
         self.log_handlers = log.getLogger(None).logger.handlers
 
@@ -185,12 +182,6 @@ class CommonLoggerTestsMixIn:
             path_mock.return_value, maxBytes=maxBytes, backupCount=backup_count
         )
         self.assertEqual(self.log_handlers[0], handler_mock.return_value)
-
-
-class LoggerTestCase(CommonLoggerTestsMixIn, test_base.BaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.log = log.getLogger(None)
 
 
 class BaseTestCase(test_base.BaseTestCase):
@@ -629,7 +620,6 @@ class JSONFormatterTestCase(LogTestBase):
         self.assertEqual(special_user, data['extra'][extra_keys[1]])
 
     def test_can_process_strings(self):
-        expected = b'\\u2622'
         # see ContextFormatterTestCase.test_can_process_strings
         expected = '\\\\xe2\\\\x98\\\\xa2'
         self.log.info(b'%s', '\u2622'.encode())
@@ -716,7 +706,7 @@ class JSONFormatterTestCase(LogTestBase):
 def get_fake_datetime(retval):
     class FakeDateTime(datetime.datetime):
         @classmethod
-        def fromtimestamp(cls, timestamp):
+        def fromtimestamp(cls, timestamp, /, tzinfo=None):
             return retval
 
     return FakeDateTime
@@ -905,14 +895,13 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt = _fake_context()
         ctxt.request_id = '99'
         message = self.trans_fixture.lazy('test ' + chr(128))
-        ignored_exceptions = [
+        for ignore in (
             ValueError,
             TypeError,
             KeyError,
             AttributeError,
             ImportError,
-        ]
-        for ignore in ignored_exceptions:
+        ):
             try:
                 raise ignore('test_exception_logging')
             except ignore as e:
@@ -1055,7 +1044,6 @@ class ContextFormatterTestCase(LogTestBase):
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_can_process_strings(self):
-        expected = b'\xe2\x98\xa2'
         # logging format string should be unicode string
         # or it will fail and inserting byte string in unicode string
         # causes such formatting
@@ -1645,6 +1633,7 @@ keys=
         root = logging.getLogger()
         self.assertEqual(1, len(root.handlers))
         handler = root.handlers[0]
+        assert isinstance(handler, logging.StreamHandler)
         handler.stream = io.StringIO()
         return handler.stream
 
@@ -1788,14 +1777,14 @@ class LogConfigOptsTestCase(BaseTestCase):
     def test_handlers_cleanup(self):
         """Test that all old handlers get removed from log_root."""
         old_handlers = [
-            log.handlers.ColorHandler(),
-            log.handlers.ColorHandler(),
+            handlers.ColorHandler(),
+            handlers.ColorHandler(),
         ]
         log._loggers[None].logger.handlers = list(old_handlers)
         log._setup_logging_from_conf(self.CONF, 'test', 'test')
-        handlers = log._loggers[None].logger.handlers
-        self.assertEqual(1, len(handlers))
-        self.assertNotIn(handlers[0], old_handlers)
+        new_handlers = log._loggers[None].logger.handlers
+        self.assertEqual(1, len(new_handlers))
+        self.assertNotIn(new_handlers[0], old_handlers)
 
     def test_list_opts(self):
         all_options = _options.list_opts()
@@ -1807,7 +1796,7 @@ class LogConfigOptsTestCase(BaseTestCase):
                 + _options.logging_cli_opts
                 + _options.generic_log_opts
                 + _options.log_opts
-                + _options.versionutils.deprecated_opts
+                + versionutils.deprecated_opts
             ),
             options,
         )
@@ -1929,7 +1918,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
         a = SavingAdapter(self.mock_log, {})
 
         message = 'message'
-        exc_message = 'exception'
+        exc_message = Exception('exception')
         val = 'value'
         a.log(logging.DEBUG, message, name=val, exc_info=exc_message)
 
@@ -1948,7 +1937,7 @@ class KeywordArgumentAdapterTestCase(BaseTestCase):
     def test_pass_args_via_debug(self):
         a = SavingAdapter(self.mock_log, {})
         message = 'message'
-        exc_message = 'exception'
+        exc_message = Exception('exception')
         val = 'value'
         a.debug(message, name=val, exc_info=exc_message)
 

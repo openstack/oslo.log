@@ -24,20 +24,25 @@ may be passed as part of the log message, which is intended to make it easier
 for admins to find messages related to a specific instance.
 
 It also allows setting of formatting information through conf.
-
 """
 
+from collections.abc import Callable
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import MutableMapping
 import configparser
 import logging
 import logging.config
 import logging.handlers
 import os
 import sys
+from types import TracebackType
+from typing import Any, cast, TYPE_CHECKING
 
 try:
     import syslog
 except ImportError:
-    syslog = None
+    syslog = None  # type: ignore
 
 import debtcollector
 from oslo_config import cfg
@@ -49,6 +54,15 @@ from oslo_log._i18n import _
 from oslo_log import _options
 from oslo_log import formatters
 from oslo_log import handlers
+
+if TYPE_CHECKING:
+    # Needed until we bump our minimum to Python 3.11
+    #
+    # https://github.com/python/typeshed/issues/7855
+    _LoggerAdapter = logging.LoggerAdapter[logging.Logger]
+else:
+    _LoggerAdapter = logging.LoggerAdapter
+
 
 CRITICAL = logging.CRITICAL
 FATAL = logging.FATAL
@@ -74,9 +88,11 @@ LOG_ROTATE_INTERVAL_MAPPING = {
 _EVENTLET_FIX_APPLIED = False
 
 
-def _get_log_file_path(conf, binary=None):
-    logfile = conf.log_file
-    logdir = conf.log_dir
+def _get_log_file_path(
+    conf: cfg.ConfigOpts, binary: str | None = None
+) -> str | None:
+    logfile: str | None = conf.log_file
+    logdir: str | None = conf.log_dir
 
     if logfile and not logdir:
         return logfile
@@ -91,7 +107,7 @@ def _get_log_file_path(conf, binary=None):
     return None
 
 
-def _iter_loggers():
+def _iter_loggers() -> Generator[logging.Logger, None, None]:
     """Iterate on existing loggers."""
 
     # Sadly, Logger.manager and Manager.loggerDict are not documented,
@@ -107,14 +123,14 @@ def _iter_loggers():
         yield logger
 
 
-class BaseLoggerAdapter(logging.LoggerAdapter):
+class BaseLoggerAdapter(_LoggerAdapter):
     warn = logging.LoggerAdapter.warning
 
     @property
-    def handlers(self):
+    def handlers(self) -> Iterable[logging.Handler] | None:
         return self.logger.handlers
 
-    def trace(self, msg, *args, **kwargs):
+    def trace(self, msg: Any, *args: Any, **kwargs: Any) -> None:
         self.log(TRACE, msg, *args, **kwargs)
 
 
@@ -136,11 +152,13 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
 
     """
 
-    def process(self, msg, kwargs):
+    def process(
+        self, msg: Any, kwargs: MutableMapping[str, Any]
+    ) -> tuple[Any, MutableMapping[str, Any]]:
         # Make a new extra dictionary combining the values we were
         # given when we were constructed and anything from kwargs.
-        extra = {}
-        extra.update(self.extra)
+        extra: dict[str, Any] = {}
+        extra.update(self.extra)  # type: ignore
         if 'extra' in kwargs:
             extra.update(kwargs.pop('extra'))
         # Move any unknown keyword arguments into the extra
@@ -199,10 +217,21 @@ class KeywordArgumentAdapter(BaseLoggerAdapter):
         return msg, kwargs
 
 
-def _create_logging_excepthook(product_name):
-    def logging_excepthook(exc_type, value, tb):
-        extra = {'exc_info': (exc_type, value, tb)}
-        getLogger(product_name).critical('Unhandled error', **extra)
+def _create_logging_excepthook(
+    product_name: str,
+) -> Callable[
+    [type[BaseException], BaseException, TracebackType | None],
+    None,
+]:
+    def logging_excepthook(
+        exc_type: type[BaseException],
+        value: BaseException,
+        tb: TracebackType | None,
+    ) -> None:
+        getLogger(product_name).critical(
+            'Unhandled error',
+            exc_info=(exc_type, value, tb),
+        )
 
     return logging_excepthook
 
@@ -210,49 +239,50 @@ def _create_logging_excepthook(product_name):
 class LogConfigError(Exception):
     message = _('Error loading logging config %(log_config)s: %(err_msg)s')
 
-    def __init__(self, log_config, err_msg):
+    def __init__(self, log_config: str, err_msg: str) -> None:
         self.log_config = log_config
         self.err_msg = err_msg
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message % dict(
             log_config=self.log_config, err_msg=self.err_msg
         )
 
 
-def _load_log_config(log_config_append):
+def _load_log_config(log_config_append: str) -> None:
     try:
-        if not hasattr(_load_log_config, "old_time"):
-            _load_log_config.old_time = 0
+        if not hasattr(_load_log_config, 'old_time'):
+            setattr(_load_log_config, 'old_time', 0)
         new_time = os.path.getmtime(log_config_append)
-        if _load_log_config.old_time != new_time:
+        if getattr(_load_log_config, 'old_time') != new_time:
             # Reset all existing loggers before reloading config as fileConfig
             # does not reset non-child loggers.
             for logger in _iter_loggers():
                 logger.setLevel(logging.NOTSET)
                 logger.handlers = []
-                logger.propagate = 1
+                logger.propagate = True
             logging.config.fileConfig(
                 log_config_append, disable_existing_loggers=False
             )
-            _load_log_config.old_time = new_time
+            setattr(_load_log_config, 'old_time', new_time)
     except (configparser.Error, KeyError, OSError, RuntimeError) as exc:
         raise LogConfigError(log_config_append, str(exc))
 
 
-def _mutate_hook(conf, fresh):
+def _mutate_hook(conf: cfg.ConfigOpts, fresh: cfg.ConfigOpts) -> None:
     """Reconfigures oslo.log according to the mutated options."""
 
     if (None, 'debug') in fresh:
         _refresh_root_level(conf.debug)
 
     if (None, 'log-config-append') in fresh:
-        _load_log_config.old_time = 0
+        setattr(_load_log_config, 'old_time', 0)
+
     if conf.log_config_append:
         _load_log_config(conf.log_config_append)
 
 
-def register_options(conf):
+def register_options(conf: cfg.ConfigOpts) -> None:
     """Register the command line and configuration options used by oslo.log."""
 
     # Sometimes logging occurs before logging is ready (e.g., oslo_config).
@@ -270,7 +300,7 @@ def register_options(conf):
     conf.register_mutate_hook(_mutate_hook)
 
 
-def _fix_eventlet_logging():
+def _fix_eventlet_logging() -> None:
     """Properly setup logging with eventlet on native threads.
 
     Workaround for: https://github.com/eventlet/eventlet/issues/432
@@ -288,13 +318,19 @@ def _fix_eventlet_logging():
             import eventlet.green.threading
             from oslo_log import pipe_mutex
 
-            logging.threading = eventlet.green.threading
-            logging._lock = logging.threading.RLock()
-            logging.Handler.createLock = pipe_mutex.pipe_createLock
+            logging.threading = eventlet.green.threading  # type: ignore
+            logging._lock = logging.threading.RLock()  # type: ignore
+            logging.Handler.createLock = pipe_mutex.pipe_createLock  # type: ignore
             _EVENTLET_FIX_APPLIED = True
 
 
-def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
+def setup(
+    conf: cfg.ConfigOpts,
+    product_name: str,
+    version: str = 'unknown',
+    *,
+    fix_eventlet: bool = True,
+) -> None:
     """Setup logging for the current application."""
     if fix_eventlet:
         _fix_eventlet_logging()
@@ -305,7 +341,10 @@ def setup(conf, product_name, version='unknown', *, fix_eventlet=True):
     sys.excepthook = _create_logging_excepthook(product_name)
 
 
-def set_defaults(logging_context_format_string=None, default_log_levels=None):
+def set_defaults(
+    logging_context_format_string: str | None = None,
+    default_log_levels: Iterable[str] | None = None,
+) -> None:
     """Set default values for the configuration options used by oslo.log."""
     # Just in case the caller is not setting the
     # default_log_level. This is insurance because
@@ -322,7 +361,7 @@ def set_defaults(logging_context_format_string=None, default_log_levels=None):
         )
 
 
-def tempest_set_log_file(filename):
+def tempest_set_log_file(filename: str) -> None:
     """Provide an API for tempest to set the logging filename.
 
     .. warning:: Only Tempest should use this function.
@@ -336,7 +375,7 @@ def tempest_set_log_file(filename):
     cfg.set_defaults(_options.logging_cli_opts, log_file=filename)
 
 
-def _find_facility(facility):
+def _find_facility(facility: str) -> Any:
     # NOTE(jd): Check the validity of facilities at run time as they differ
     # depending on the OS and Python version being used.
     valid_facilities = [
@@ -380,7 +419,7 @@ def _find_facility(facility):
     return getattr(syslog, facility)
 
 
-def _refresh_root_level(debug):
+def _refresh_root_level(debug: bool) -> None:
     """Set the level of the root logger.
 
     :param debug: If 'debug' is True, the level will be DEBUG.
@@ -393,7 +432,9 @@ def _refresh_root_level(debug):
         log_root.setLevel(logging.INFO)
 
 
-def _setup_logging_from_conf(conf, project, version):
+def _setup_logging_from_conf(
+    conf: cfg.ConfigOpts, project: str, version: str
+) -> None:
     log_root = getLogger(None).logger
 
     # Remove all handlers
@@ -402,6 +443,9 @@ def _setup_logging_from_conf(conf, project, version):
 
     logpath = _get_log_file_path(conf)
     if logpath:
+        file_handler: type[logging.Handler]
+        filelog: logging.Handler
+
         # On Windows, in-use files cannot be moved or deleted.
         if conf.log_rotation_type.lower() == "interval":
             file_handler = logging.handlers.TimedRotatingFileHandler
@@ -430,6 +474,7 @@ def _setup_logging_from_conf(conf, project, version):
         log_root.addHandler(filelog)
 
     if conf.use_stderr:
+        streamlog: logging.Handler
         if conf.log_color:
             streamlog = handlers.ColorHandler()
         else:
@@ -508,15 +553,19 @@ def _setup_logging_from_conf(conf, project, version):
         )
 
 
-_loggers = {}
+_loggers: dict[str | None, BaseLoggerAdapter] = {}
 
 
-def get_loggers():
+def get_loggers() -> dict[str | None, BaseLoggerAdapter]:
     """Return a copy of the oslo loggers dictionary."""
     return _loggers.copy()
 
 
-def getLogger(name=None, project='unknown', version='unknown'):
+def getLogger(
+    name: str | None = None,
+    project: str = 'unknown',
+    version: str = 'unknown',
+) -> BaseLoggerAdapter:
     """Build a logger with the given name.
 
     :param name: The name for the logger. This is usually the module
@@ -543,7 +592,7 @@ def getLogger(name=None, project='unknown', version='unknown'):
     return _loggers[name]
 
 
-def get_default_log_levels():
+def get_default_log_levels() -> list[str]:
     """Return the Oslo Logging default log levels.
 
     Returns a copy of the list so an application can change the value
@@ -553,6 +602,6 @@ def get_default_log_levels():
     return list(_options.DEFAULT_LOG_LEVELS)
 
 
-def is_debug_enabled(conf):
+def is_debug_enabled(conf: cfg.ConfigOpts) -> bool:
     """Determine if debug logging mode is enabled."""
-    return conf.debug
+    return cast(bool, conf.debug)

@@ -12,10 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
+from typing import Any
+
 import fixtures
 
 
-def get_logging_handle_error_fixture():
+def get_logging_handle_error_fixture() -> Any:
     """returns a fixture to make logging raise formatting exceptions.
 
     To use::
@@ -27,7 +30,7 @@ def get_logging_handle_error_fixture():
     return fixtures.MonkeyPatch('logging.Handler.handleError', _handleError)
 
 
-def _handleError(self, record):
+def _handleError(self: logging.Handler, record: logging.LogRecord) -> None:
     """Monkey patch for logging.Handler.handleError.
 
     The default handleError just logs the error to stderr but we want

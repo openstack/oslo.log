@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from typing import Any
 from unittest import mock
 
 from oslotest import base as test_base
@@ -61,7 +62,7 @@ class LogHelpersTestCase(test_base.BaseTestCase):
             def test_staticmethod(arg1, arg2, arg3, *args, **kwargs):
                 pass
 
-        data = {
+        data: dict[str, Any] = {
             'caller': 'static',
             'method_name': '_static_method',
             'args': (),
