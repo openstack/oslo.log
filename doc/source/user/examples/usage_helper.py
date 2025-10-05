@@ -81,7 +81,7 @@ def prepare():
     LOG.info("List of Oslo Logging configuration options and current values")
     LOG.info("=" * 80)
     for c in CONF:
-        LOG.info("{} = {}".format(c, CONF[c]))
+        LOG.info(f"{c} = {CONF[c]}")
     LOG.info("=" * 80)
 
     # Required setup based on configuration and domain

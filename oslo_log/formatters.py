@@ -527,7 +527,7 @@ class ContextFormatter(logging.Formatter):
         formatted_lines = []
         for line in lines:
             pl = self.conf.logging_exception_prefix % record.__dict__
-            fl = '{}{}'.format(pl, line)
+            fl = f'{pl}{line}'
             formatted_lines.append(fl)
         return '\n'.join(formatted_lines)
 

@@ -776,14 +776,14 @@ class ContextFormatterTestCase(LogTestBase):
         ctxt = _fake_context()
         message = 'bar'
         self.log.info(message, context=ctxt)
-        expected = 'HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id, message)
+        expected = f'HAS CONTEXT [{ctxt.request_id}]: {message}\n'
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_context_is_taken_from_tls_variable(self):
         ctxt = _fake_context()
         message = 'bar'
         self.log.info(message)
-        expected = "HAS CONTEXT [{}]: {}\n".format(ctxt.request_id, message)
+        expected = f"HAS CONTEXT [{ctxt.request_id}]: {message}\n"
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_contextual_information_is_imparted_to_3rd_party_log_records(self):
@@ -793,7 +793,7 @@ class ContextFormatterTestCase(LogTestBase):
         message = 'emulate logging within sqlalchemy'
         sa_log.info(message)
 
-        expected = ('HAS CONTEXT [{}]: {}\n'.format(ctxt.request_id, message))
+        expected = (f'HAS CONTEXT [{ctxt.request_id}]: {message}\n')
         self.assertEqual(expected, self.stream.getvalue())
 
     def test_message_logging_3rd_party_log_records(self):
@@ -855,7 +855,7 @@ class ContextFormatterTestCase(LogTestBase):
                 raise ignore('test_exception_logging')
             except ignore as e:
                 self.log.warning(message, context=ctxt)
-                expected = '{}: {}'.format(e.__class__.__name__, e)
+                expected = f'{e.__class__.__name__}: {e}'
             self.assertNotIn(expected, self.stream.getvalue())
 
     def test_exception_logging_format_string(self):
@@ -1090,8 +1090,8 @@ class FancyRecordTestCase(LogTestBase):
         warncolor = handlers.ColorHandler.LEVEL_COLORS[logging.WARN]
         info_msg = 'info'
         warn_msg = 'warn'
-        infoexpected = "{} {} {}".format(infocolor, keyed_log_string, info_msg)
-        warnexpected = "{} {} {}".format(warncolor, keyed_log_string, warn_msg)
+        infoexpected = f"{infocolor} {keyed_log_string} {info_msg}"
+        warnexpected = f"{warncolor} {keyed_log_string} {warn_msg}"
 
         self.colorlog.info(info_msg, context=ctxt)
         self.assertIn(infoexpected, self.stream.getvalue())
@@ -1241,9 +1241,9 @@ class DomainTestCase(LogTestBase):
 
     def _validate_keys(self, ctxt, keyed_log_string):
         info_message = 'info'
-        infoexpected = "{} {}\n".format(keyed_log_string, info_message)
+        infoexpected = f"{keyed_log_string} {info_message}\n"
         warn_message = 'warn'
-        warnexpected = "{} {}\n".format(keyed_log_string, warn_message)
+        warnexpected = f"{keyed_log_string} {warn_message}\n"
 
         self.mylog.info(info_message, context=ctxt)
         self.assertEqual(infoexpected, self.stream.getvalue())
@@ -1424,9 +1424,9 @@ class MutateTestCase(BaseTestCase):
                           "keys=%s" % skeys])
             for key in keys:
                 lines.extend(["",
-                              "[{}_{}]".format(section[:-1], key)])
+                              f"[{section[:-1]}_{key}]"])
                 item = items[key]
-                lines.extend("{}={}".format(k, item[k]) for k in sorted(item))
+                lines.extend(f"{k}={item[k]}" for k in sorted(item))
                 if section == 'handlers':
                     if 'args' not in item:
                         lines.append("args=()")
@@ -1438,7 +1438,7 @@ class MutateTestCase(BaseTestCase):
         root = data.get('root', {})
         if root:
             lines.extend(["[logger_root]"])
-            lines.extend("{}={}".format(k, root[k]) for k in sorted(root))
+            lines.extend(f"{k}={root[k]}" for k in sorted(root))
             if 'handlers' not in root:
                 lines.append("handlers=")
         return "\n".join(lines)

@@ -85,7 +85,7 @@ def _get_log_file_path(conf, binary=None):
 
     if logdir:
         binary = binary or handlers._get_binary_name()
-        return '{}.log'.format(os.path.join(logdir, binary))
+        return f'{os.path.join(logdir, binary)}.log'
 
     return None
 
