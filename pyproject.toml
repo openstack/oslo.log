@@ -47,3 +47,6 @@ convert-json = "oslo_log.cmds.convert_json:main"
 
 [tool.setuptools]
 packages = ["oslo_log"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
