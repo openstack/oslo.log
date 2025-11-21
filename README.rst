@@ -1,15 +1,10 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/oslo.log.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
 ================================
 oslo.log -- Oslo Logging Library
 ================================
+
+.. image:: https://governance.openstack.org/tc/badges/oslo.log.svg
+
+.. Change things from this point on
 
 .. image:: https://img.shields.io/pypi/v/oslo.log.svg
     :target: https://pypi.org/project/oslo.log/
