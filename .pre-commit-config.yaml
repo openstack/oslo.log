@@ -13,7 +13,7 @@ repos:
       - id: check-yaml
         files: .*\.(yaml|yml)$
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.14.8
     hooks:
       - id: ruff-check
         args: ['--fix', '--unsafe-fixes']
@@ -23,20 +23,3 @@ repos:
     hooks:
       - id: hacking
         additional_dependencies: []
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
-    hooks:
-      - id: mypy
-        additional_dependencies: [
-          'fixtures>=4.2.6',
-          'oslo.context',
-          'oslo.i18n',
-          'oslo.utils',
-          'types-python-dateutil',
-        ]
-        # keep this in-sync with '[tool.mypy] exclude' in 'pyproject.toml'
-        exclude: |
-          (?x)(
-            doc/.*
-            | releasenotes/.*
-          )
