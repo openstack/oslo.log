@@ -1166,7 +1166,7 @@ class FancyRecordTestCase(LogTestBase):
 
     def _validate_keys(self, ctxt, keyed_log_string):
         infocolor = handlers.ColorHandler.LEVEL_COLORS[logging.INFO]
-        warncolor = handlers.ColorHandler.LEVEL_COLORS[logging.WARN]
+        warncolor = handlers.ColorHandler.LEVEL_COLORS[logging.WARNING]
         info_msg = 'info'
         warn_msg = 'warn'
         infoexpected = f"{infocolor} {keyed_log_string} {info_msg}"
