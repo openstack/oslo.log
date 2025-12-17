@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The ``oslo_log.versionutils`` module now supports releases after Zed.

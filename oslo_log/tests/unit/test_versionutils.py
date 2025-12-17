@@ -69,9 +69,9 @@ class DeprecatedTestCase(test_base.BaseTestCase):
         self.assertThat(retval, matchers.Equals((1, 'of anything')))
 
     @mock.patch('oslo_log.versionutils.report_deprecated_feature')
-    def test_deprecated_with_unknown_future_release(self, mock_reporter):
+    def test_deprecated_with_old_style_release(self, mock_reporter):
         @versionutils.deprecated(
-            as_of=versionutils.deprecated.BEXAR,
+            as_of=versionutils.deprecated.ZED,
             in_favor_of='different_stuff()',
         )
         def do_outdated_stuff():
@@ -83,8 +83,27 @@ class DeprecatedTestCase(test_base.BaseTestCase):
             mock_reporter,
             what='do_outdated_stuff()',
             in_favor_of='different_stuff()',
-            as_of='Bexar',
-            remove_in='D',
+            as_of='Zed',
+            remove_in='2023.2',
+        )
+
+    @mock.patch('oslo_log.versionutils.report_deprecated_feature')
+    def test_deprecated_with_new_style_release(self, mock_reporter):
+        @versionutils.deprecated(
+            as_of=versionutils.deprecated.ANTELOPE,
+            in_favor_of='different_stuff()',
+        )
+        def do_outdated_stuff():
+            return
+
+        do_outdated_stuff()
+
+        self.assert_deprecated(
+            mock_reporter,
+            what='do_outdated_stuff()',
+            in_favor_of='different_stuff()',
+            as_of='2023.1',
+            remove_in='2024.1',
         )
 
     @mock.patch('oslo_log.versionutils.report_deprecated_feature')

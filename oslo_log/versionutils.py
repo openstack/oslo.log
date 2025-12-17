@@ -65,9 +65,6 @@ _deprecated_msg_with_no_alternative_no_removal = _(
 
 
 _RELEASES = {
-    # NOTE(morganfainberg): Bexar is used for unit test purposes, it is
-    # expected we maintain a gap between Bexar and Folsom in this list.
-    'B': 'Bexar',
     'F': 'Folsom',
     'G': 'Grizzly',
     'H': 'Havana',
@@ -89,7 +86,21 @@ _RELEASES = {
     'X': 'Xena',
     'Y': 'Yoga',
     'Z': 'Zed',
+    '2023.1': '2023.1',
+    '2023.2': '2023.2',
+    '2024.1': '2024.1',
+    '2024.2': '2024.2',
+    '2025.1': '2025.1',
+    '2025.2': '2025.2',
+    '2026.1': '2026.1',
+    '2026.2': '2026.2',
+    '2027.1': '2027.1',
+    '2027.2': '2027.2',
+    '2028.1': '2028.1',
+    '2028.2': '2028.2',
 }
+
+_RELEASE_KEYS = list(_RELEASES)
 
 
 def register_options() -> None:
@@ -154,9 +165,6 @@ class deprecated:
 
     """
 
-    # NOTE(morganfainberg): Bexar is used for unit test purposes, it is
-    # expected we maintain a gap between Bexar and Folsom in this list.
-    BEXAR = 'B'
     FOLSOM = 'F'
     GRIZZLY = 'G'
     HAVANA = 'H'
@@ -178,6 +186,13 @@ class deprecated:
     XENA = 'X'
     YOGA = 'Y'
     ZED = 'Z'
+    ANTELOPE = '2023.1'
+    BOBCAT = '2023.2'
+    CARACAL = '2024.1'
+    DALMATIAN = '2024.2'
+    EPOXY = '2025.1'
+    FLAMINGO = '2026.1'
+    GAZPACHO = '2026.2'
 
     def __init__(
         self,
@@ -265,16 +280,14 @@ class deprecated:
 
 
 def _get_safe_to_remove_release(release: str, remove_in: int | None) -> str:
-    # TODO(dstanek): this method will have to be reimplemented once
-    #    when we get to the X release because once we get to the Y
-    #    release, what is Y+2?
     if remove_in is None:
         remove_in = 0
-    new_release = chr(ord(release) + remove_in)
-    if new_release in _RELEASES:
-        return _RELEASES[new_release]
-    else:
-        return new_release
+
+    new_release_idx = _RELEASE_KEYS.index(release) + remove_in
+    try:
+        return _RELEASES[_RELEASE_KEYS[new_release_idx]]
+    except IndexError:
+        return 'UNKOWN'
 
 
 def deprecation_warning(
