@@ -1692,7 +1692,7 @@ class LogConfigOptsTestCase(BaseTestCase):
         f = io.StringIO()
         self.CONF([])
         self.CONF.print_help(file=f)
-        for option in ['debug', 'log-config']:
+        for option in ['debug', 'log-config-append']:
             self.assertIn(option, f.getvalue())
 
     def test_debug(self):
@@ -1750,20 +1750,10 @@ class LogConfigOptsTestCase(BaseTestCase):
                 logging.ERROR,
             )
 
-    def test_logfile_deprecated(self):
-        logfile = '/some/other/path/foo-bar.log'
-        self.CONF(['--logfile', logfile])
-        self.assertEqual(logfile, self.CONF.log_file)
-
     def test_log_dir(self):
         log_dir = '/some/path/'
         self.CONF(['--log-dir', log_dir])
         self.assertEqual(log_dir, self.CONF.log_dir)
-
-    def test_logdir_deprecated(self):
-        logdir = '/some/other/path/'
-        self.CONF(['--logdir', logdir])
-        self.assertEqual(logdir, self.CONF.log_dir)
 
     def test_default_formatter(self):
         log._setup_logging_from_conf(self.CONF, 'test', 'test')

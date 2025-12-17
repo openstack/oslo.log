@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The following deprecated option aliases have been removed:
+
+    - ``[oslo_log] log-config`` (use ``[oslo_log] log-config-append``)
+    - ``[oslo_log] logfile`` (use ``[oslo_log] log-file``)
+    - ``[oslo_log] logdir`` (use ``[oslo_log] log-dir``)
