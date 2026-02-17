@@ -22,7 +22,7 @@ import socket
 import sys
 import traceback
 from types import TracebackType
-from typing import Any, cast, TypeAlias, TypedDict
+from typing import Any, TypeAlias, TypedDict
 
 from dateutil import tz
 
@@ -182,7 +182,7 @@ def _json_dumps_with_fallback(obj: Any) -> str:
     # especially when the code using logs is not aware that the
     # JSONFormatter will be used.
     convert = functools.partial(jsonutils.to_primitive, fallback=repr)
-    return cast(str, jsonutils.dumps(obj, default=convert))
+    return jsonutils.dumps(obj, default=convert)
 
 
 class JSONLogRecord(TypedDict):
