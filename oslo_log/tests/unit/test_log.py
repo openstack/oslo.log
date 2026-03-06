@@ -307,7 +307,7 @@ class SysLogHandlersTestCase(BaseTestCase):
         self.assertEqual(expected.getMessage(), self.logger.format(logrecord))
 
 
-@testtools.skipUnless(syslog, "syslog is not available")
+@testtools.skipIf(syslog is None, "syslog is not available")
 class OSSysLogHandlerTestCase(BaseTestCase):
     def test_handler(self):
         handler = handlers.OSSysLogHandler()
@@ -367,7 +367,9 @@ class OSJournalHandlerTestCase(BaseTestCase):
         self.addCleanup(self.journal.stop)
         log.setup(self.CONF, 'testing')
 
-    @testtools.skipUnless(journal, "systemd journal binding is not available")
+    @testtools.skipIf(
+        journal is None, "systemd journal binding is not available"
+    )
     def test_handler(self):
         handler = handlers.OSJournalHandler()
         handler.emit(
