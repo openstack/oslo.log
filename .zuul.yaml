@@ -7,6 +7,8 @@
       - ^setup.cfg$
       - ^.*\.rst$
       - ^doc/.*$
+      - ^oslo_log/tests/.*$
+      - ^tox\.ini*$
       - ^releasenotes/.*$
       - ^\.pre-commit-config\.yaml$
     required-projects:
@@ -37,6 +39,8 @@
     irrelevant-files:
       - ^.*\.rst$
       - ^doc/.*$
+      - ^oslo_log/tests/.*$
+      - ^tox\.ini*$
       - ^releasenotes/.*$
       - ^\.pre-commit-config\.yaml$
 
