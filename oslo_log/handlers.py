@@ -20,7 +20,7 @@ import os
 from typing import TYPE_CHECKING
 
 try:
-    from systemd import journal
+    from systemd import journal  # type: ignore [import-not-found]
 except ImportError:
     journal = None
 try:

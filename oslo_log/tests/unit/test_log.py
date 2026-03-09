@@ -28,7 +28,7 @@ try:
 except ImportError:
     syslog = None  # type: ignore
 try:
-    from systemd import journal
+    from systemd import journal  # type: ignore [import-not-found]
 except ImportError:
     journal = None
 import tempfile
