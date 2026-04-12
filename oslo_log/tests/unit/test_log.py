@@ -1416,7 +1416,7 @@ class MutateTestCase(BaseTestCase):
 
     def setup_confs(self, *confs):
         paths = self.create_tempfiles(
-            (f'conf_{i}', conf) for i, conf in enumerate(confs)
+            [(f'conf_{i}', conf) for i, conf in enumerate(confs)]
         )
         self.CONF(['--config-file', paths[0]])
         return paths
