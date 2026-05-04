@@ -9,12 +9,12 @@ readme = "README.rst"
 authors = [
     {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
 ]
+license = "Apache-2.0"
 requires-python = ">=3.10"
 classifiers = [
     "Environment :: OpenStack",
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -46,8 +46,8 @@ systemd = [
 [project.scripts]
 convert-json = "oslo_log.cmds.convert_json:main"
 
-[tool.setuptools]
-packages = ["oslo_log"]
+[tool.setuptools.packages.find]
+include = ["oslo_log"]
 
 [tool.mypy]
 python_version = "3.10"
