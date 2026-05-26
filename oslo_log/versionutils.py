@@ -33,7 +33,7 @@ _C = TypeVar('_C', bound=type[Any])
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-_DEPRECATED_EXCEPTIONS = set()
+_DEPRECATED_EXCEPTIONS: set[type] = set()
 
 
 deprecated_opts = [

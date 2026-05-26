@@ -275,12 +275,12 @@ def list_opts() -> list[tuple[str | None, list[cfg.Opt]]]:
     return [
         (
             None,
-            (
-                common_cli_opts
-                + logging_cli_opts
-                + generic_log_opts
-                + log_opts
-                + versionutils.deprecated_opts
-            ),
+            [
+                *common_cli_opts,
+                *logging_cli_opts,
+                *generic_log_opts,
+                *log_opts,
+                *versionutils.deprecated_opts,
+            ],
         )
     ]
