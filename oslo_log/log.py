@@ -272,10 +272,10 @@ def _load_log_config(log_config_append: str) -> None:
 def _mutate_hook(conf: cfg.ConfigOpts, fresh: cfg.ConfigOpts) -> None:
     """Reconfigures oslo.log according to the mutated options."""
 
-    if (None, 'debug') in fresh:
+    if (None, 'debug') in fresh:  # type: ignore[comparison-overlap]
         _refresh_root_level(conf.debug)
 
-    if (None, 'log-config-append') in fresh:
+    if (None, 'log-config-append') in fresh:  # type: ignore[comparison-overlap]
         setattr(_load_log_config, 'old_time', 0)
 
     if conf.log_config_append:

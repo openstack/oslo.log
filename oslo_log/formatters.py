@@ -55,7 +55,7 @@ def _dictify_context(
 _CONF = None
 
 
-def _store_global_conf(conf: cfg.ConfigOpts) -> cfg.ConfigOpts:
+def _store_global_conf(conf: cfg.ConfigOpts) -> None:
     global _CONF
     _CONF = conf
 

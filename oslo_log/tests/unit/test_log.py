@@ -1340,7 +1340,7 @@ class DomainTestCase(LogTestBase):
 
 class SetDefaultsTestCase(BaseTestCase):
     class TestConfigOpts(cfg.ConfigOpts):
-        def __call__(self, args=None):
+        def __call__(self, args=None):  # type: ignore[override]
             return cfg.ConfigOpts.__call__(
                 self,
                 args=args,
