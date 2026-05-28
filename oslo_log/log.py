@@ -46,7 +46,6 @@ except ImportError:
 
 import debtcollector
 from oslo_config import cfg
-from oslo_utils import eventletutils
 from oslo_utils import importutils
 from oslo_utils import units
 
@@ -308,7 +307,9 @@ def _fix_eventlet_logging() -> None:
 
     global _EVENTLET_FIX_APPLIED
 
-    if eventletutils.is_monkey_patched('thread'):
+    if 'eventlet.patcher' in sys.modules and sys.modules[
+        'eventlet.patcher'
+    ].is_monkey_patched('thread'):
         debtcollector.deprecate(
             "Eventlet support is deprecated and will be removed"
         )
