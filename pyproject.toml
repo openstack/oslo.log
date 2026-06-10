@@ -10,7 +10,7 @@ authors = [
     {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
 ]
 license = "Apache-2.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Environment :: OpenStack",
     "Intended Audience :: Information Technology",
@@ -18,10 +18,10 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: Implementation :: CPython",
     "Typing :: Typed",
@@ -50,7 +50,7 @@ convert-json = "oslo_log.cmds.convert_json:main"
 include = ["oslo_log"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 show_column_numbers = true
 show_error_context = true
 strict = true

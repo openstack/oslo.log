@@ -20,7 +20,7 @@ import fcntl
 import importlib.metadata
 import logging
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import Self, TYPE_CHECKING
 
 import eventlet
 import eventlet.asyncio
@@ -31,8 +31,6 @@ import eventlet.hubs.asyncio
 import eventlet.patcher
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
-
     # Needed until we bump our minimum to Python 3.11
     #
     # https://github.com/python/typeshed/issues/7855
