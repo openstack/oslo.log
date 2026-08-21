@@ -163,7 +163,9 @@ class LoggerTestCase(test_base.BaseTestCase):
             interval=interval,
             backupCount=backup_count,
         )
-        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
+        self.assertEqual(
+            log.getLogger(None).logger.handlers[0], handler_mock.return_value
+        )
 
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('oslo_log.log._get_log_file_path', return_value='test.conf')
@@ -181,7 +183,9 @@ class LoggerTestCase(test_base.BaseTestCase):
         handler_mock.assert_called_once_with(
             path_mock.return_value, maxBytes=maxBytes, backupCount=backup_count
         )
-        self.assertEqual(self.log_handlers[0], handler_mock.return_value)
+        self.assertEqual(
+            log.getLogger(None).logger.handlers[0], handler_mock.return_value
+        )
 
 
 class BaseTestCase(test_base.BaseTestCase):

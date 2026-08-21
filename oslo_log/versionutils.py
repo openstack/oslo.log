@@ -249,7 +249,7 @@ class deprecated:
                     report_deprecated()
                 orig_init(self, *args, **kwargs)
 
-            func_or_cls.__init__ = new_init
+            func_or_cls.__init__ = new_init  # type: ignore[method-assign]
             _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
             if issubclass(func_or_cls, Exception):
@@ -269,7 +269,7 @@ class deprecated:
                             report_deprecated()
                         return super().__subclasscheck__(subclass)
 
-                func_or_cls.__meta__ = ExceptionMeta
+                func_or_cls.__meta__ = ExceptionMeta  # type: ignore[union-attr]
                 _DEPRECATED_EXCEPTIONS.add(func_or_cls)
 
             return cast(_C, func_or_cls)
