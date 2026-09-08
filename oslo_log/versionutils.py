@@ -191,8 +191,10 @@ class deprecated:
     CARACAL = '2024.1'
     DALMATIAN = '2024.2'
     EPOXY = '2025.1'
-    FLAMINGO = '2026.1'
-    GAZPACHO = '2026.2'
+    FLAMINGO = '2025.2'
+    GAZPACHO = '2026.1'
+    HIBISCUS = '2026.2'
+    INDRI = '2027.1'
 
     def __init__(
         self,
