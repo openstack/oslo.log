@@ -102,6 +102,18 @@ class _BaseMutex:
         self.owner = None
         self.recursion_depth = 0
 
+    def __enter__(self) -> 'Self':
+        self.acquire()
+        return self
+
+    def __exit__(
+        self,
+        type_: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.release()
+
 
 class _ReallyPipeMutex(_BaseMutex):
     """Mutex using a pipe.
@@ -192,18 +204,6 @@ class _ReallyPipeMutex(_BaseMutex):
         # [1] and that's a completely ridiculous thing to expect callers to
         # do, so nobody does it and that's okay.
         self.close()
-
-    def __enter__(self) -> 'Self':
-        self.acquire()
-        return self
-
-    def __exit__(
-        self,
-        type_: type[BaseException] | None,
-        value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        self.release()
 
 
 class _AsyncioMutex(_BaseMutex):
