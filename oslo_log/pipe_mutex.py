@@ -17,7 +17,6 @@ import asyncio
 from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 import errno
 import fcntl
-import importlib.metadata
 import logging
 from types import TracebackType
 from typing import Self, TYPE_CHECKING
@@ -292,13 +291,6 @@ class _AsyncioMutex(_BaseMutex):
 
 _HUB = eventlet.hubs.get_hub()
 if isinstance(_HUB, eventlet.hubs.asyncio.Hub):
-    major, minor, patch = map(
-        int, importlib.metadata.version("eventlet").split(".")[:3]
-    )
-    if (major, minor, patch) < (0, 38, 2):
-        raise RuntimeError(
-            "eventlet 0.38.2 or later is required when using asyncio hub"
-        )
     PipeMutex: type[_AsyncioMutex | _ReallyPipeMutex] = _AsyncioMutex
 else:
     PipeMutex = _ReallyPipeMutex
