@@ -50,6 +50,20 @@ convert-json = "oslo_log.cmds.convert_json:main"
 [tool.setuptools.packages.find]
 include = ["oslo_log*"]
 
+[tool.coverage.run]
+source = [
+    "oslo_log"
+]
+branch = true
+parallel = true
+omit = [
+    "oslo_log/tests/*"
+]
+
+[tool.coverage.report]
+ignore_errors = true
+show_missing = true
+
 [tool.mypy]
 python_version = "3.11"
 show_column_numbers = true
