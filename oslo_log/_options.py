@@ -77,8 +77,10 @@ logging_cli_opts = [
         'log-file',
         metavar='PATH',
         help='(Optional) Name of log file to send logging output to. '
-        'If no default is set, logging will go to stderr as '
-        'defined by use_stderr. ' + _IGNORE_MESSAGE,
+        'If both of this option and the log_dir option are unset, '
+        'logging will go to stderr as defined by use_stderr. '
+        'When only the log_dir option is set, the file is named according '
+        'to the entry script path.' + _IGNORE_MESSAGE,
     ),
     cfg.StrOpt(
         'log-dir',
