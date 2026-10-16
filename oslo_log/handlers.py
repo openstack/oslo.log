@@ -17,6 +17,7 @@ import logging
 import logging.config
 import logging.handlers
 import os
+import sys
 from typing import TYPE_CHECKING
 
 try:
@@ -58,7 +59,14 @@ SYSLOG_MAP = {
 
 
 def _get_binary_name() -> str:
-    return os.path.basename(inspect.stack()[-1][1])
+    entry_script_path = inspect.stack()[-1].filename
+    if entry_script_path and os.path.isfile(entry_script_path):
+        return os.path.basename(entry_script_path)
+
+    # Some wsgi servers (eg. uwsgi) use c-bindings or whatever to load python
+    # apps and stack trace doesn't show a valid entry script. Use program name
+    # in such case.
+    return os.path.basename(sys.argv[0])
 
 
 class OSSysLogHandler(logging.Handler):
